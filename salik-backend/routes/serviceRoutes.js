@@ -16,6 +16,6 @@ router.delete("/:serviceId", verifyToken, serviceController.deleteService);
 router.get("/", verifyToken, serviceController.getServicesByProvider);
 
 // Search for services by location
-router.get("/searchServices", serviceController.searchServices);
+router.get("/search", serviceController.searchServices);
 
 module.exports = router;
