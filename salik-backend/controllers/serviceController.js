@@ -3,69 +3,74 @@ const User = require("../models/User");
 
 // Create a new service (fuel or mechanic)
 exports.createService = async (req, res) => {
-    try {
-      const { serviceType, location, workingDays, workingHours } = req.body;
-      const { userId } = req;
-  
-      if (!serviceType || !location || !workingDays || !workingHours) {
-        return res.status(400).json({ message: "All fields are required." });
-      }
-  
-      // Check if the provider already has a service of the same type
-      const existingService = await Service.findOne({ userId, serviceType });
-      if (existingService) {
-        return res.status(400).json({
-          message: `You already have a ${serviceType} service. You need to delete the old one before creating a new one.`,
-        });
-      }
-  
-      let locationData = {};
-  
-      // If it's a GeoJSON Point location
-      if (location.type === "Point" && location.coordinates) {
-        locationData = {
-          type: "Point",
-          coordinates: location.coordinates, // [longitude, latitude]
-        };
-      }
-      // If it's a string-based location
-      else if (location.type === "String" && location.description) {
-        locationData = {
-          type: "String",
-          description: location.description, // e.g., "New York"
-        };
-      } else {
-        return res.status(400).json({ message: "Invalid location format" });
-      }
-  
-      // Create the new service
-      const newService = new Service({
-        userId,
-        serviceType,
-        location: locationData,
-        workingDays,
-        workingHours,
-      });
-  
-      await newService.save();
-      res.status(201).json({
-        message: `${serviceType.charAt(0).toUpperCase() + serviceType.slice(1)} service created successfully.`,
-        service: newService,
-      });
-    } catch (err) {
-      res.status(500).json({ message: "Error creating service", error: err.message });
-    }
-  };
-  
+  try {
+    const { serviceType, location, workingDays, workingHours } = req.body;
+    const { userId } = req;
 
-// Update an existing service (fuel or mechanic)
+    if (!serviceType || !workingDays || !workingHours) {
+      return res.status(400).json({ message: "Service type, working days, and working hours are required." });
+    }
+
+    if (!location || (!location.coordinates && !location.description)) {
+      return res.status(400).json({ message: "At least one location format (coordinates or description) is required." });
+    }
+
+    let locationData = null;
+    let addressOnly = null;
+
+    // Handle coordinates-based location
+    if (location.coordinates) {
+      if (
+        !Array.isArray(location.coordinates) ||
+        location.coordinates.length !== 2 ||
+        typeof location.coordinates[0] !== "number" ||
+        typeof location.coordinates[1] !== "number"
+      ) {
+        return res.status(400).json({ message: "Invalid coordinates format. Expected [longitude, latitude]." });
+      }
+
+      locationData = {
+        type: "Point",
+        coordinates: location.coordinates,
+      };
+    }
+
+    // Store description separately
+    if (location.description) {
+      addressOnly = location.description;
+    }
+
+    // Ensure provider does not create duplicate services
+    const existingService = await Service.findOne({ userId, serviceType });
+    if (existingService) {
+      return res.status(400).json({ message: `You already have a ${serviceType} service. Delete the old one before creating a new one.` });
+    }
+
+    // Create new service
+    const newService = new Service({
+      userId,
+      serviceType,
+      location: locationData,
+      addressOnly, // Store the description separately
+      workingDays,
+      workingHours,
+    });
+
+    await newService.save();
+    res.status(201).json({ message: `${serviceType} service created successfully.`, service: newService });
+
+  } catch (err) {
+    res.status(500).json({ message: "Error creating service", error: err.message });
+  }
+};
+
+
 exports.updateService = async (req, res) => {
   try {
     const { serviceId } = req.params;
     const { location, workingDays, workingHours } = req.body;
     const { userId } = req;
 
-    // Find the service by ID and check if the logged-in user owns the service
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ message: "Service not found" });
@@ -74,35 +79,38 @@ exports.updateService = async (req, res) => {
       return res.status(403).json({ message: "You can only update your own services" });
     }
 
-    // Validate and update location if provided
-    if (location) {
-      let locationData = {};
-      if (location.type === "Point" && location.coordinates && location.coordinates.length === 2) {
-        locationData = {
-          type: "Point",
-          coordinates: location.coordinates, // [longitude, latitude]
-        };
-      } else if (location.type === "String" && location.description) {
-        locationData = {
-          type: "String",
-          description: location.description, // e.g., "New York"
-        };
-      } else {
-        return res.status(400).json({ message: "Invalid location format. Coordinates required for GeoJSON." });
+    if (location && location.coordinates) {
+      if (
+        !Array.isArray(location.coordinates) ||
+        location.coordinates.length !== 2 ||
+        typeof location.coordinates[0] !== "number" ||
+        typeof location.coordinates[1] !== "number"
+      ) {
+        return res.status(400).json({ message: "Invalid coordinates format. Expected [longitude, latitude]." });
       }
-      service.location = locationData;
+      service.location = {
+        type: "Point",
+        coordinates: location.coordinates,
+      };
     }
 
-    // Update other fields
+    // ✅ Update description without affecting coordinates
+    if (location && location.description) {
+      service.addressOnly = location.description;
+      service.markModified("addressOnly"); // ✅ Ensures Mongoose detects the change
+    }
+
     if (workingDays) service.workingDays = workingDays;
     if (workingHours) service.workingHours = workingHours;
 
     await service.save();
     res.status(200).json({ message: "Service updated successfully", service });
+
   } catch (err) {
     res.status(500).json({ message: "Error updating service", error: err.message });
   }
 };
+
 
 // Delete a service
 exports.deleteService = async (req, res) => {
@@ -141,17 +149,15 @@ exports.getServicesByProvider = async (req, res) => {
   }
 };
 
-// Search services (fuel or mechanic) by location
+// Search services by location (coordinates or description) or serviceType
 exports.searchServices = async (req, res) => {
   try {
-    const { latitude, longitude, serviceType } = req.query;
+    const { latitude, longitude, location, serviceType } = req.query;
+    let query = {};
 
-    if (!latitude || !longitude) {
-      return res.status(400).json({ message: "Latitude and Longitude are required." });
-    }
-
-    let query = {
-      location: {
+    // Search by Geo-coordinates
+    if (latitude && longitude) {
+      query.location = {
         $nearSphere: {
           $geometry: {
             type: "Point",
@@ -159,14 +165,21 @@ exports.searchServices = async (req, res) => {
           },
           $maxDistance: 5000, // 5 km max distance
         },
-      },
-    };
+      };
+    }
 
+    // Search by Text Location (Description)
+    if (location) {
+      query.addressOnly = { $regex: new RegExp(location, "i") }; // Case-insensitive match
+    }
+
+    // Search by Service Type
     if (serviceType) {
       query.serviceType = serviceType;
     }
 
     const services = await Service.find(query);
+
     if (services.length === 0) {
       return res.status(404).json({ message: "No services found." });
     }
