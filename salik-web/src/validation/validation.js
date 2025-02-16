@@ -28,7 +28,7 @@ export const validateField = (name, value, formData) => {
   let error = '';
 
   switch (name) {
-    case 'userName':
+    case 'fullName':
       if (!value.trim()) {
         error = 'User Name is required';
       } else if (value.length < 3) {
