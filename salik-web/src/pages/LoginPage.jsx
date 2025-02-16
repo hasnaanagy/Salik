@@ -30,7 +30,7 @@ export default function LoginPage() {
           />
         </Grid>
 
-        {/* Right Side Form */}
+      
         <Grid item xs={12} md={6}>
             
           <Box

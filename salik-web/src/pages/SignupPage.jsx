@@ -51,15 +51,15 @@ export default function SignUpPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1, // Adds spacing between the logo and text
+                gap: 1, 
               }}
             >
               <img
                 src="/images/logo.png"
                 alt="Brand Logo"
                 style={{
-                  width: "40px", // Adjust the width
-                  height: "40px", // Adjust the height
+                  width: "40px", 
+                  height: "40px", 
                 }}
               />
               ALIK

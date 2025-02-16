@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FormControl, Box, FormHelperText, InputAdornment, IconButton } from '@mui/material';
-import { validateField } from '../validation/validation';
+import { validateField } from '../validation/validation';  // Import validateField
 import { useDispatch, useSelector } from 'react-redux';
 import { signUpUser } from '../redux/slices/authSlices';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +18,7 @@ export default function SignUp() {
     nationalId: '',
   });
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({}); 
   const [showPassword, setShowPassword] = useState({ password: false, confirmPassword: false });
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
@@ -28,9 +28,9 @@ export default function SignUp() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Validate the field
+   
     const error = validateField(name, value, formData);
-    setErrors({ ...errors, [name]: error });
+    setErrors({ ...errors, [name]: error }); 
   };
 
   const handlePasswordToggle = (field) => {
@@ -39,21 +39,21 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = {};
+    let formErrors = {};
+
+  
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
-      if (error) {
-        validationErrors[field] = error;
-      }
+      if (error) formErrors[field] = error;
     });
 
-    setErrors(validationErrors);
+    setErrors(formErrors);
 
-    // Check if there are no validation errors
-    if (Object.keys(validationErrors).length === 0) {
+
+    if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
       await dispatch(signUpUser(dataToSubmit));
-      navigate('/');
+      navigate('/login');
     }
   };
 

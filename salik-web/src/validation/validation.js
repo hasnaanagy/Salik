@@ -1,25 +1,11 @@
 export const validateForm = (formData) => {
   let errors = {};
 
-  for (const field in formData) {
+  // Loop over formData and validate each field
+  Object.keys(formData).forEach(field => {
     const error = validateField(field, formData[field], formData);
-    if (error) {
-      errors[field] = error;
-    }
-  }
-
-  return errors;
-};
-
-export const validateLoginForm = (formData) => {
-  let errors = {};
-
-  for (const field in formData) {
-    const error = validateField(field, formData[field], formData);
-    if (error) {
-      errors[field] = error;
-    }
-  }
+    if (error) errors[field] = error;
+  });
 
   return errors;
 };
@@ -37,9 +23,9 @@ export const validateField = (name, value, formData) => {
       break;
     case 'phone':
       if (!value.trim()) {
-        error = 'phone is required';
+        error = 'Phone is required';
       } else if (!/^[0-9]{11}$/.test(value)) {
-        error = 'Invalid phone number';
+        error = 'Invalid phone number (must be 11 digits)';
       }
       break;
     case 'password':
@@ -70,7 +56,7 @@ export const validateField = (name, value, formData) => {
       if (!value.trim()) {
         error = 'National ID is required';
       } else if (value.length !== 14) {
-        error = 'National ID must be 14 characters long';
+        error = 'National ID must be exactly 14 characters';
       }
       break;
     default:

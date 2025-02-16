@@ -6,7 +6,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { validateLoginForm } from "../validation/validation";
+import { validateField } from "../validation/validation";  
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/slices/authSlices";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ import styles from "../styles/styles.module.css";
 
 export default function Login() {
   const [formData, setFormData] = useState({ phone: "", password: "" });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({}); 
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
@@ -26,15 +26,25 @@ export default function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors(validateLoginForm({ ...formData, [name]: value }));
+
+    
+    const error = validateField(name, value, formData);
+    setErrors({ ...errors, [name]: error }); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateLoginForm(formData);
-    setErrors(validationErrors);
+    let formErrors = {};
+    
+    
+    Object.keys(formData).forEach((field) => {
+      const error = validateField(field, formData[field], formData);
+      if (error) formErrors[field] = error;
+    });
 
-    if (Object.keys(validationErrors).length === 0) {
+    setErrors(formErrors);
+
+    if (Object.keys(formErrors).length === 0) {
       await dispatch(loginUser(formData));
       navigate("/addTrip");
     }
