@@ -2,7 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AuthPage from '../pages/AuthPage';
 import Home from '../pages/Home';
-import AddTrip from '../components/AddTrip';
+import AddTrip from '../pages/AddTrip';
+import AddFuel from '../pages/addFuel';
+import AddMechanic from '../pages/addMechanic';
 
 export default function MainLayout() {
   return (
@@ -11,6 +13,8 @@ export default function MainLayout() {
         {/* <Route path="/auth" element={<AuthPage />} /> */}
         <Route path="/" element={<AuthPage />} />
         <Route path="/addTrip" element={<AddTrip />} />
+        <Route path="/addFuel" element={<AddFuel />} />
+        <Route path="/addMechanic" element={<AddMechanic />} />
       </Routes>
     </Router>
   );

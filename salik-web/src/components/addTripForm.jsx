@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postRideData, clearError } from "../redux/slices/addServiceSlice";
-import mapImage from "../../public/images/map.png";  
+import mapImage from "../../public/images/map.png";
 
 const schema = yup.object().shape({
     pickup: yup.string().required("Pickup location is required"),
@@ -26,7 +26,7 @@ const schema = yup.object().shape({
     time: yup.string().required("Time is required"),
 });
 
-const AddTrip = () => {
+const AddTripForm = () => {
     const dispatch = useDispatch();
     const { loading, error } = useSelector((state) => state.addService);
     const {
@@ -40,7 +40,7 @@ const AddTrip = () => {
     };
 
     return (
-        <Container maxWidth="lg" style={{ padding: "50px 0" }}>
+        <Container maxWidth="lg" style={{ padding: "50px" }}>
             <Grid container spacing={4} alignItems="center">
                 <Grid item xs={12} md={6}>
                     <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -65,14 +65,25 @@ const AddTrip = () => {
                         <Controller
                             name="carType"
                             control={control}
+                            defaultValue=""
                             render={({ field }) => (
-                                <TextField select {...field} label="Car Type" fullWidth margin="normal" error={!!errors.carType} helperText={errors.carType?.message}>
+                                <TextField
+                                    select
+                                    {...field}
+                                    value={field.value || ""}
+                                    label="Car Type"
+                                    fullWidth
+                                    margin="normal"
+                                    error={!!errors.carType}
+                                    helperText={errors.carType?.message}
+                                >
                                     <MenuItem value="Bus">Bus</MenuItem>
                                     <MenuItem value="MicroBus">MicroBus</MenuItem>
                                     <MenuItem value="Verna">Verna</MenuItem>
                                 </TextField>
                             )}
                         />
+
                         <Grid container spacing={2}>
                             <Grid item xs={6}>
                                 <Controller
@@ -113,17 +124,17 @@ const AddTrip = () => {
                                 />
                             </Grid>
                         </Grid>
-                        <Button type="submit" variant="contained"  fullWidth style={{ marginTop: "20px" ,backgroundColor:'#ffb800',color:'black'}} disabled={loading}>
+                        <Button type="submit" variant="contained" fullWidth style={{ marginTop: "20px", backgroundColor: '#ffb800', color: 'black' }} disabled={loading}>
                             {loading ? "Submitting..." : "Confirm Pickup"}
                         </Button>
                     </form>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <img src={mapImage} alt="Map Placeholder" style={{ width: "100%", height: "100vh", objectFit: "cover" }} />
+                    <img src={mapImage} alt="Map Placeholder" style={{ width: "100%", height: "80vh", objectFit: "cover" }} />
                 </Grid>
             </Grid>
         </Container>
     );
 };
 
-export default AddTrip;
+export default AddTripForm;
