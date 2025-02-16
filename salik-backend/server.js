@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const rideRoutes = require("./routes/rideRoutes"); // Import ride routes
 const serviceRoutes = require("./routes/serviceRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const rideBookingsRoutes = require("./routes/rideBookingRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/rides", rideRoutes);
 app.use("/api/service", serviceRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/rideBooking", rideBookingsRoutes);
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

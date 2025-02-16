@@ -2,14 +2,15 @@ const mongoose = require("mongoose");
 
 const rideSchema = new mongoose.Schema(
     {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        providerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Provider who posted the ride
         carType: { type: String, required: true },
         fromLocation: { type: String, required: true },
         toLocation: { type: String, required: true },
-        availableSeats: { type: Number, required: true },
+        totalSeats: { type: Number, required: true },
+        bookedSeats: { type: Number, default: 0 }, // Track how many seats are booked
         price: { type: Number, required: true },
-        date: { type: Date, required: true }, // Store date in Date format
-        time: { type: String, required: true, match: /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/ }, // Store time in 12-hour format with AM/PM
+        rideDateTime: { type: Date, required: true }, // Store both date and time
+        status: { type: String, enum: ["upcoming", "completed", "cancelled"], default: "upcoming" }, // Ride status
     },
     { timestamps: true }
 );
