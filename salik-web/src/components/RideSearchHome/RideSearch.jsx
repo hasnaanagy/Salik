@@ -15,7 +15,7 @@ import rideImage from "../../../public/images/car.png";
 import fuelImage from "../../../public/images/gas-pump.png";
 import mechanicImage from "../../../public/images/technician.png";
 import { StyledTextField } from "../../custom/StyledTextField";
-export function PickupForm() {
+export function RideSearch() {
   const [formData, setFormData] = useState({
     pickup: "",
     dropoff: "",
@@ -43,7 +43,7 @@ export function PickupForm() {
   };
 
   return (
-    <Container sx={{ mt: 5, pb: 5, mb: 3 }}>
+    <Container sx={{ mt: 5, pb: 5, mb: 4 }}>
       <Grid container spacing={4} alignItems="center">
         {/* Form Section */}
         <Grid item xs={10} md={5}>
@@ -65,7 +65,7 @@ export function PickupForm() {
           >
             <IconButton
               component={Link}
-              to="/mechanic"
+              to="/"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={rideImage} alt="Ride Icon" width={50} height={50} />
