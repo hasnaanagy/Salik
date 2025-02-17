@@ -5,6 +5,7 @@ import {
   FormHelperText,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import { validateField } from "../validation/validation";  
 import { useDispatch, useSelector } from "react-redux";
@@ -26,8 +27,6 @@ export default function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
-    
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error }); 
   };
@@ -35,8 +34,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let formErrors = {};
-    
-    
+
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
@@ -45,8 +43,13 @@ export default function Login() {
     setErrors(formErrors);
 
     if (Object.keys(formErrors).length === 0) {
-      await dispatch(loginUser(formData));
-      navigate("/addTrip");
+      try {
+        await dispatch(loginUser(formData)).unwrap();
+        navigate("/addTrip");
+      } catch (err) {
+        const errorMessage = err?.message;
+        setErrors((prev) => ({ ...prev, general: errorMessage }));
+      }
     }
   };
 
@@ -80,7 +83,7 @@ export default function Login() {
           </FormControl>
         ))}
 
-        {error && <FormHelperText error>{error}</FormHelperText>}
+        {errors.general && <FormHelperText error>{errors.general}</FormHelperText>}
 
         <MainButton
           type="submit"
@@ -88,7 +91,11 @@ export default function Login() {
           disabled={loading}
           style={{ backgroundColor: "#FFB800", color: "black" }}
         >
-          {loading ? "Logging In..." : "Log In"}
+          {loading ? (
+            <CircularProgress size={24} style={{ color: "black" }} />
+          ) : (
+            "Log In"
+          )}
         </MainButton>
       </Box>
     </form>
