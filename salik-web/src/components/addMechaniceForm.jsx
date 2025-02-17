@@ -46,7 +46,35 @@ const AddMechanicForm = () => {
     dispatch(postMechanicData(data));
   };
 
+
   const [pickupCoords, setPickupCoords] = useState(null);
+
+    return (
+        <Container maxWidth="lg" style={{ padding: "50px" }}>
+            <Grid container spacing={4} alignItems="center">
+                {/* Form Section */}
+                <Grid item xs={12} md={6}>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom>
+                        Add Mechanic Service
+                    </Typography>
+                    {error && <Typography color="error">{error}</Typography>}
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Controller
+                            name="MechanicLocation"
+                            control={control}
+                            defaultValue=""  // Ensures controlled input from the start
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    label="Workshop Location"
+                                    fullWidth
+                                    margin="normal"
+                                    error={!!errors.MechanicLocation}
+                                    helperText={errors.MechanicLocation?.message}
+                                />
+                            )}
+                        />
+
 
   // Function to update the pickup location when a location is selected on the map
   const handleLocationSelect = (lat, lng, address) => {

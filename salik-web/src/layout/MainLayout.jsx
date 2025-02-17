@@ -4,6 +4,7 @@ import AuthPage from "../pages/AuthPage";
 import AddTrip from "../pages/AddTrip";
 import AddFuel from "../pages/addFuel";
 import AddMechanic from "../pages/addMechanic";
+import UploadLicence from "../pages/UploadLicence";
 import { SharedLayout } from "./SharedLayout";
 import Home from "../pages/Home";
 
@@ -18,9 +19,11 @@ export default function MainLayout() {
             <Route path="/addTrip" element={<AddTrip />} />
             <Route path="/addFuel" element={<AddFuel />} />
             <Route path="/addMechanic" element={<AddMechanic />} />
+               <Route path="/licence" element={<UploadLicence />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </>
+
   );
 }
