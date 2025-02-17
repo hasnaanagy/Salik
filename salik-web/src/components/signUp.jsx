@@ -52,8 +52,12 @@ export default function SignUp() {
 
     if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
-      await dispatch(signUpUser(dataToSubmit));
-      navigate('/login');
+      const { user } = await dispatch(signUpUser(dataToSubmit));
+
+      if (user) {
+        navigate('/login');
+
+      }
     }
   };
 
