@@ -25,11 +25,13 @@ const Signup = () => {
       return;
     }
 
+
     try {
       const data = await authService.registerUser(userData);
       alert(data.message);
     } catch (error) {
       alert(error); // عرض الرسالة القادمة من الـ API
+
     }
   };
 
