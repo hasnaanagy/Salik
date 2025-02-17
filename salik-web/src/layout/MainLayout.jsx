@@ -5,12 +5,14 @@ import LoginPage from "../pages/LoginPage"
 import AddTrip from "../pages/AddTrip";
 import AddFuel from "../pages/addFuel";
 import AddMechanic from "../pages/addMechanic";
+import Home from "../pages/Home";
 
 export default function MainLayout() {
   return (
     <Router>
       <Routes>
-      <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/addTrip" element={<AddTrip />} />
         <Route path="/addFuel" element={<AddFuel />} />
