@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchRideData } from "../../redux/slices/RideSlice";
 import {
   Box,
   Container,
@@ -7,7 +8,6 @@ import {
   Button,
   Typography,
   IconButton,
-  styled,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import MapComponent from "../Mapcomponent/Mapcomponent";
@@ -15,7 +15,11 @@ import rideImage from "../../../public/images/car.png";
 import fuelImage from "../../../public/images/gas-pump.png";
 import mechanicImage from "../../../public/images/technician.png";
 import { StyledTextField } from "../../custom/StyledTextField";
+
 export function RideSearch() {
+  const dispatch = useDispatch();
+  const { data: rideData, loading, error } = useSelector((state) => state.ride);
+
   const [formData, setFormData] = useState({
     pickup: "",
     dropoff: "",
@@ -23,46 +27,32 @@ export function RideSearch() {
     time: "Now",
   });
 
+  const [pickupCoords, setPickupCoords] = useState(null);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLocationSelect = (lat, lng, address) => {
+    setPickupCoords({ lat, lng });
+    setFormData((prev) => ({ ...prev, pickup: address }));
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "https://your-backend-api.com/pickup",
-        formData
-      );
-      console.log("Response:", response.data);
-      alert("Pickup confirmed!");
-    } catch (error) {
-      console.error("Error submitting pickup:", error);
-      alert("Failed to confirm pickup.");
-    }
+    dispatch(fetchRideData(formData));
   };
 
   return (
     <Container sx={{ mt: 5, pb: 5, mb: 4 }}>
       <Grid container spacing={4} alignItems="center">
-        {/* Form Section */}
         <Grid item xs={10} md={5}>
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            mb={3}
-            textAlign={{ xs: "center", md: "left" }}
-          >
+          <Typography variant="h4" fontWeight="bold" mb={3} textAlign="left">
             Go Anywhere With SALIK
           </Typography>
 
           {/* Service Icons */}
-          <Box
-            display="flex"
-            justifyContent={{ xs: "center", md: "start" }}
-            gap={3}
-            mb={4}
-          >
+          <Box display="flex" gap={3} mb={4}>
             <IconButton
               component={Link}
               to="/"
@@ -92,7 +82,7 @@ export function RideSearch() {
           </Box>
 
           {/* Form Fields */}
-          <form onSubmit={handleSubmit} style={{ textAlign: "center" }}>
+          <form onSubmit={handleSubmit}>
             <StyledTextField
               name="pickup"
               placeholder="Pickup Location"
@@ -132,7 +122,7 @@ export function RideSearch() {
               variant="contained"
               sx={{
                 backgroundColor: "#ffb800",
-                width: { xs: "100%", md: "40%" },
+                width: "50%",
                 mt: 3,
                 fontWeight: "bold",
                 color: "black",
@@ -140,19 +130,36 @@ export function RideSearch() {
                 py: 1.5,
               }}
             >
-              Confirm Pickup
+              Search
             </Button>
           </form>
+
+          {loading && <p>Loading...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {rideData && (
+            <Box
+              mt={3}
+              p={2}
+              sx={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
+            >
+              <Typography variant="h6" fontWeight="bold">
+                Ride Available
+              </Typography>
+              <pre>{JSON.stringify(rideData, null, 2)}</pre>
+            </Box>
+          )}
         </Grid>
 
-        {/* Map Section */}
         <Grid
           item
           xs={10}
           md={6}
           sx={{ height: "400px", ml: { xs: 0, md: 10 } }}
         >
-          <MapComponent />
+          <MapComponent
+            onLocationSelect={handleLocationSelect}
+            pickupCoords={pickupCoords}
+          />
         </Grid>
       </Grid>
     </Container>
