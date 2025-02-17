@@ -34,16 +34,17 @@ const AddMechanicForm = () => {
                     {error && <Typography color="error">{error}</Typography>}
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <Controller
-                            name="Workshop location"
+                            name="MechanicLocation"
                             control={control}
+                            defaultValue=""  // Ensures controlled input from the start
                             render={({ field }) => (
                                 <TextField
                                     {...field}
                                     label="Workshop Location"
                                     fullWidth
                                     margin="normal"
-                                    error={!!errors.mechanicLocation}
-                                    helperText={errors.mechanicLocation?.message}
+                                    error={!!errors.MechanicLocation}
+                                    helperText={errors.MechanicLocation?.message}
                                 />
                             )}
                         />
