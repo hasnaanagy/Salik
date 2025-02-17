@@ -1,107 +1,88 @@
-import React, { useState } from 'react';
-import { FormControl, Box, FormHelperText, InputAdornment, IconButton } from '@mui/material';
-import { validateField } from '../validation/validation';  // Import validateField
-import { useDispatch, useSelector } from 'react-redux';
-import { signUpUser } from '../redux/slices/authSlices';
-import { useNavigate } from 'react-router-dom';
-import { StyledOutlinedInput, StyledInputLabel } from '../custom/MainInput';
-import { MainButton } from '../custom/MainButton';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import styles from '../styles/styles.module.css';
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import authService from "./authService";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-export default function SignUp() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    nationalId: '',
+const Signup = () => {
+  const [userData, setUserData] = useState({
+    phoneNumber: "",
+    nationalId: "",
+    password: "",
+    confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({}); 
-  const [showPassword, setShowPassword] = useState({ password: false, confirmPassword: false });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-   
-    const error = validateField(name, value, formData);
-    setErrors({ ...errors, [name]: error }); 
-  };
-
-  const handlePasswordToggle = (field) => {
-    setShowPassword({ ...showPassword, [field]: !showPassword[field] });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let formErrors = {};
 
-  
-    Object.keys(formData).forEach((field) => {
-      const error = validateField(field, formData[field], formData);
-      if (error) formErrors[field] = error;
-    });
-
-    setErrors(formErrors);
+    if (userData.password !== userData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
 
-    if (Object.keys(formErrors).length === 0) {
-      const { confirmPassword, ...dataToSubmit } = formData;
-      const { user } = await dispatch(signUpUser(dataToSubmit));
+    try {
+      const data = await authService.registerUser(userData);
+      alert(data.message);
+    } catch (error) {
+      alert(error); // عرض الرسالة القادمة من الـ API
 
-      if (user) {
-        navigate('/login');
-
-      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate autoComplete="off">
-      <Box className={styles.formBox}>
-        {['fullName', 'phone', 'password', 'confirmPassword', 'nationalId'].map((field) => (
-          <FormControl key={field} error={!!errors[field]}>
-            <StyledInputLabel htmlFor={field}>
-              {field.charAt(0).toUpperCase() + field.slice(1)}
-            </StyledInputLabel>
-            <StyledOutlinedInput
-              id={field}
-              name={field}
-              type={field.includes('password') && !showPassword[field] ? 'password' : 'text'}
-              value={formData[field]}
-              onChange={handleChange}
-              placeholder={`Enter your ${field}`}
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
-              endAdornment={
-                field.includes('password') && (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => handlePasswordToggle(field)} edge="end">
-                      {showPassword[field] ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }
-            />
-            {errors[field] && <FormHelperText>{errors[field]}</FormHelperText>}
-          </FormControl>
-        ))}
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={userData.phoneNumber}
+        onChange={(e) => setUserData({ ...userData, phoneNumber: e.target.value })}
+        placeholder="Phone Number"
+      />
+      <input
+        type="text"
+        value={userData.nationalId}
+        onChange={(e) => setUserData({ ...userData, nationalId: e.target.value })}
+        placeholder="National ID"
+      />
 
-        {error && <FormHelperText error>{error}</FormHelperText>}
+      {/* حقل كلمة المرور */}
+      <div className="passwordContainer">
+        <input
+          type={showPassword ? "text" : "password"}
+          value={userData.password}
+          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+          placeholder="Password"
+        />
+        <FontAwesomeIcon
+          icon={showPassword ? faEyeSlash : faEye}
+          onClick={() => setShowPassword(!showPassword)}
+          className="eyeIcon"
+        />
+      </div>
 
-        <MainButton
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          style={{ backgroundColor: '#FFB800', color: 'black' }}
-        >
-          {loading ? 'Signing Up...' : 'Sign Up'}
-        </MainButton>
-      </Box>
+      {/* حقل تأكيد كلمة المرور */}
+      <div className="passwordContainer">
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          value={userData.confirmPassword}
+          onChange={(e) => setUserData({ ...userData, confirmPassword: e.target.value })}
+          placeholder="Confirm Password"
+        />
+        <FontAwesomeIcon
+          icon={showConfirmPassword ? faEyeSlash : faEye}
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="eyeIcon"
+        />
+      </div>
+
+      <button type="submit">Sign Up</button>
     </form>
   );
-}
+};
+
+export default Signup;
