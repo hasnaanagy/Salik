@@ -8,7 +8,7 @@ import UploadLicence from "../pages/UploadLicence";
 import { SharedLayout } from "./SharedLayout";
 import Home from "../pages/Home";
 import Login from "../pages/LoginPage";
-import SignupPage from "../pages/SignupPage";
+import SignUpPage from "../pages/SignupPage";
 
 export default function MainLayout() {
   return (

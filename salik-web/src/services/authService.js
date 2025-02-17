@@ -2,24 +2,29 @@ import axios from 'axios';
 
 const BASE_URL = 'http://localhost:5000/api/auth/';
 
-
-export const registerUser = async (userData) => {
+export async function registerUser(userData) {
   try {
-    const response = await axios.post(BASE_URL + "signup", userData);
+    const response = await axios.post(`${BASE_URL}signup`, userData, {
+      headers: { 'Content-Type': 'application/json' },
+    });
     return response.data;
   } catch (error) {
-  
-    throw error.response?.data?.message || "An error occurred. Please try again."; 
+    const errorMessage = error.response?.data?.message || error.message || "Unexpected error. Please try again.";
+    console.error('Error registering user:', errorMessage);
+    throw new Error(errorMessage);
   }
-};
-
-export default { registerUser };
-
+}
 
 export async function loginUserApi(userData) {
-  const response = await axios.post(`${BASE_URL}login`, userData, {
-    headers: { 'Content-Type': 'application/json' },
-  });
-  localStorage.setItem('token', response.data.token);
-  return response.data;
+  try {
+    console.log("Logging in user with data:", userData);
+    const response = await axios.post(`${BASE_URL}login`, userData, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    localStorage.setItem('token', response.data.token);
+    return response.data;
+  } catch (error) {
+    console.error('Error logging in user:', error.response?.data || error.message);
+    throw error;
+  }
 }
