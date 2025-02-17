@@ -1,10 +1,10 @@
 import React from "react";
-import { PickupForm } from "../components/PickupFormHome/PickupForm";
+import { RideSearch } from "../components/RideSearchHome/RideSearch";
 
 export default function Home() {
   return (
     <>
-      <PickupForm />
+      <RideSearch />
     </>
   );
 }
