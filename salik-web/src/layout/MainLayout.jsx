@@ -8,6 +8,7 @@ import { SharedLayout } from "./SharedLayout";
 import Home from "../pages/Home";
 import Login from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
+
 export default function MainLayout() {
   return (
     <>
@@ -16,7 +17,7 @@ export default function MainLayout() {
           <Route path="/" element={<SharedLayout />}>
             <Route index element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/addTrip" element={<AddTrip />} />
             <Route path="/addFuel" element={<AddFuel />} />
             <Route path="/addMechanic" element={<AddMechanic />} />
