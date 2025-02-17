@@ -1,13 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { registerUser, loginUserApi } from '../../services/authService';
 
- const signUpUser = createAsyncThunk('auth/signUpUser', async (userData) => {
-  return await registerUser(userData);
+
+
+
+export const signUpUser = createAsyncThunk('auth/signUpUser', async (userData, { rejectWithValue }) => {
+  try {
+    return await registerUser(userData);
+  } catch (error) {
+    console.error("Error in signUpUser:", error.response); // Log the full response
+    return rejectWithValue(error.response?.data?.message || "Registration failed.");
+  }
 });
 
-const loginUser = createAsyncThunk('auth/loginUser', async (userData) => {
-  return await loginUserApi(userData);
-});
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
+  async (userData, { rejectWithValue }) => {
+    try {
+      return await loginUserApi(userData);
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Login failed.");
+    }
+  }
+);
+
 
 const authSlice = createSlice({
   name: 'auth',
@@ -24,7 +40,7 @@ const authSlice = createSlice({
       })
       .addCase(signUpUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || "Registration failed.";
       })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -35,10 +51,9 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || "Login failed.";
       });
   },
 });
 
 export default authSlice.reducer;
-export { signUpUser, loginUser };
