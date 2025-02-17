@@ -24,8 +24,9 @@ const authSlice = createSlice({
       })
       .addCase(signUpUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.error?.message || "Registration failed";
       })
+      
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
       })
