@@ -2,7 +2,6 @@ import { styled } from "@mui/material";
 
 export const StyledTextField = styled("input")(({ theme }) => ({
   width: "100%",
-
   padding: "14px",
   marginBottom: "16px",
   borderRadius: "12px",

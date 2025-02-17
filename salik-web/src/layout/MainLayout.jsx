@@ -1,12 +1,13 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthPage from "../pages/AuthPage";
 import AddTrip from "../pages/AddTrip";
 import AddFuel from "../pages/addFuel";
 import AddMechanic from "../pages/addMechanic";
 import UploadLicence from "../pages/UploadLicence";
 import { SharedLayout } from "./SharedLayout";
 import Home from "../pages/Home";
+import Login from "../pages/LoginPage";
+import signUp from "../pages/SignupPage";
 
 export default function MainLayout() {
   return (
@@ -15,15 +16,15 @@ export default function MainLayout() {
         <Routes>
           <Route path="/" element={<SharedLayout />}>
             <Route index element={<Home />} />
-            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<signUp />} />
             <Route path="/addTrip" element={<AddTrip />} />
             <Route path="/addFuel" element={<AddFuel />} />
             <Route path="/addMechanic" element={<AddMechanic />} />
-               <Route path="/licence" element={<UploadLicence />} />
+            <Route path="/licence" element={<UploadLicence />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </>
-
   );
 }
