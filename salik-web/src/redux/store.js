@@ -4,6 +4,7 @@ import addServiceReducer from './slices/addServiceSlice';
 import addFuelReducer from './slices/addFeulSlice';
 import addMechanicReducer from './slices/addMechanicSlice';
 import imageReducer from './slices/imageSlice';
+import { reviewReducer } from './slices/reviewsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     fuelService: addFuelReducer,
     mechanicService: addMechanicReducer,
     images: imageReducer,
+    reviewsSlice:reviewReducer
   },
 });

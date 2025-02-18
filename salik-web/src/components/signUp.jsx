@@ -28,9 +28,9 @@ export default function SignUp() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-   
+    // Validate field
     const error = validateField(name, value, formData);
-    setErrors({ ...errors, [name]: error }); 
+    setErrors({ ...errors, [name]: error });
   };
 
   const handlePasswordToggle = (field) => {
@@ -41,7 +41,7 @@ export default function SignUp() {
     e.preventDefault();
     let formErrors = {};
 
-  
+    // Validate all fields before submission
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
@@ -49,14 +49,29 @@ export default function SignUp() {
 
     setErrors(formErrors);
 
-
+    // If there are no errors, submit the form
     if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
-      const { user } = await dispatch(signUpUser(dataToSubmit));
 
-      if (user) {
-        navigate('/login');
+      // Ensure password and confirmPassword match
+      if (formData.password !== formData.confirmPassword) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPassword: "Passwords do not match",
+        }));
+        return;
+      }
 
+      console.log("Data to submit: ", dataToSubmit);  // Debugging line
+
+      try {
+        const { user } = await dispatch(signUpUser(dataToSubmit));
+
+        if (user) {
+          navigate("/login");
+        }
+      } catch (err) {
+        console.error("Signup error: ", err);
       }
     }
   };
