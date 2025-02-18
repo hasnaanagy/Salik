@@ -2,7 +2,6 @@ const Ride = require("../models/Ride");
 const User = require("../models/User");
 
 // Create new ride
-// Create new ride
 exports.createRide = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
