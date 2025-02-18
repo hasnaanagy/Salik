@@ -25,7 +25,7 @@ const schema = yup.object().shape({
   workingDays: yup.array().min(1, "Select at least one working day"),
 });
 
-const AddMechanicForm = () => {
+const AddServiceForm = () => {
   const dispatch = useDispatch();
   const { loading, error } = useSelector(
     (state) => state.mechanicService || {}
@@ -96,19 +96,9 @@ const AddMechanicForm = () => {
         to: data.availableTo + " PM",
       },
     };
-
-    console.log("Transformed Data: ", transformedData);
-
     dispatch(postMechanicData(transformedData));
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log("Dispatching formData:", formData); // Debugging step
-  //   dispatch(fetchRideData(formData));
-  // };
-
-  // Clear server error on unmount
   useEffect(() => {
     return () => {
       dispatch(clearError());
@@ -135,7 +125,6 @@ const AddMechanicForm = () => {
               dangerouslySetInnerHTML={{ __html: error }}
             ></span>
           )}
-
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Workshop Location */}
             <Controller
@@ -173,9 +162,6 @@ const AddMechanicForm = () => {
                 >
                   <MenuItem value="mechanic">mechanic</MenuItem>
                   <MenuItem value="fuel">fuel</MenuItem>
-                  <MenuItem value="Transmission Repair">
-                    Transmission Repair
-                  </MenuItem>
                 </TextField>
               )}
             />
@@ -288,4 +274,4 @@ const AddMechanicForm = () => {
   );
 };
 
-export default AddMechanicForm;
+export default AddServiceForm;

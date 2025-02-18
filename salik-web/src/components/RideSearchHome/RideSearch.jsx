@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchRideData } from "../../redux/slices/RideSlice";
 import {
   Box,
   Container,
@@ -15,6 +14,7 @@ import rideImage from "../../../public/images/car.png";
 import fuelImage from "../../../public/images/gas-pump.png";
 import mechanicImage from "../../../public/images/technician.png";
 import { StyledTextField } from "../../custom/StyledTextField";
+import { fetchRideData } from "../../redux/slices/rideSlice";
 
 export function RideSearch() {
   const dispatch = useDispatch();
@@ -66,14 +66,14 @@ export function RideSearch() {
             </IconButton>
             <IconButton
               component={Link}
-              to="/addFuel"
+              to="addService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={fuelImage} alt="Fuel Icon" width={50} height={50} />
             </IconButton>
             <IconButton
               component={Link}
-              to="/addMechanic"
+              to="addService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img

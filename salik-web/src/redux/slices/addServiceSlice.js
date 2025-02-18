@@ -3,14 +3,29 @@ import api from "../../api/postService"; // Import the api instance
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
-  async (rideData, { rejectWithValue }) => {
+  async (
+    { carType, fromLocation, toLocation, totalSeats, price, date, time },
+    { rejectWithValue }
+  ) => {
     try {
-      console.log("Sending ride data:", rideData); // Debugging
-      const response = await api.post("/rides", rideData, {
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4MTY1MjIsImV4cCI6MTczOTgyMDEyMn0.TE7ooilI4yJk4aQslKe01uEEeIVv5I9-vuQFB449TrA`,
+      const response = await api.post(
+        "/rides",
+        {
+          carType,
+          fromLocation,
+          toLocation,
+          totalSeats,
+          price,
+          date,
+          time,
         },
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4ODQ4MzgsImV4cCI6MTczOTg4ODQzOH0.g0hM-yyrfUOLXrQxD8AMRhRRORQaEzRpHX5V6id4jpY`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Error response:", error.response?.data); // Debugging
