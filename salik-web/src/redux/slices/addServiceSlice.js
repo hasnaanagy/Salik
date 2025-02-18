@@ -3,9 +3,23 @@ import api from "../../api/postService"; // Import the api instance
 
 export const postRideData = createAsyncThunk(
     "rideService/postRideData",
-    async (rideData, { rejectWithValue }) => {
+    async ({ carType, fromLocation, toLocation, totalSeats, price, date, time }, { rejectWithValue }) => {
         try {
-            const response = await api.post("/rides", rideData); // Call the postRideData API endpoint
+            const response = await api.post("/rides",
+                {
+                    carType,
+                    fromLocation,
+                    toLocation,
+                    totalSeats,
+                    price,
+                    date,
+                    time,
+                }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4ODAyMTgsImV4cCI6MTczOTg4MzgxOH0.nE0nYNDzEQU01ibN-qqtR14TJRSjwHRcrfZy74pKe8Q`,
+                },
+            });
             return response.data;
         } catch (error) {
             return rejectWithValue(error || "Failed to add ride service");

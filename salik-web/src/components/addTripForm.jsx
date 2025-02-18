@@ -4,7 +4,6 @@ import {
   Grid,
   TextField,
   Button,
-  MenuItem,
   Typography,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,10 +14,10 @@ import { postRideData } from "../redux/slices/addServiceSlice";
 import MapComponent from "./Mapcomponent/Mapcomponent";
 
 const schema = yup.object().shape({
-  pickup: yup.string().required("Pickup location is required"),
-  dropoff: yup.string().required("Dropoff location is required"),
+  fromLocation: yup.string().required("Pickup location is required"),
+  toLocation: yup.string().required("Dropoff location is required"),
   carType: yup.string().required("Car type is required"),
-  seats: yup
+  totalSeats: yup
     .number()
     .typeError("Seats must be a number")
     .min(1, "Seats must be at least 1")
@@ -41,36 +40,38 @@ const AddTripForm = () => {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm({ resolver: yupResolver(schema) });
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      fromLocation: "",
+      toLocation: "",
+      carType: "",
+      totalSeats: "",
+      price: "",
+      date: "",
+      time: "",
+    },
+  });
 
   const [pickupCoords, setPickupCoords] = useState(null);
 
-  // Function to update the pickup location when a location is selected on the map
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setValue("pickup", address);
-  };
-
-  // Function to search an address manually
-  const handleAddressSearch = async (address) => {
-    try {
-      const response = await fetch(
-        `        https://nominatim.openstreetmap.org/search?format=json&q=${address}
-`
-      );
-      const data = await response.json();
-
-      if (data.length > 0) {
-        const { lat, lon } = data[0];
-        setPickupCoords({ lat: parseFloat(lat), lng: parseFloat(lon) });
-      }
-    } catch (error) {
-      console.error("Error fetching address coordinates:", error);
-    }
+    setValue("fromLocation", address);
   };
 
   const onSubmit = (data) => {
-    dispatch(postRideData(data));
+    const formattedData = {
+      carType: data.carType,
+      fromLocation: data.fromLocation,
+      toLocation: data.toLocation,
+      totalSeats: parseInt(data.totalSeats, 10), // Ensure it's a number
+      price: parseInt(data.price, 10), // Ensure it's a number
+      date: data.date,
+      time: data.time + " AM",
+    };
+
+    dispatch(postRideData(formattedData));
   };
 
   return (
@@ -80,47 +81,121 @@ const AddTripForm = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Go Anywhere With <span style={{ color: "#FFC107" }}>SALIK</span>
           </Typography>
-          {error && <Typography color="error">{error}</Typography>}
+          {error && (
+            <Typography color="error">
+              {typeof error === "string" ? error : error.message || "An error occurred"}
+            </Typography>
+          )}
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
-              name="pickup"
+              name="fromLocation"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Pickup location"
+                  label="Pickup Location"
                   fullWidth
                   margin="normal"
-                  error={!!errors.pickup}
-                  helperText={errors.pickup?.message}
-                  onBlur={() => handleAddressSearch(field.value)} // Convert to coordinates when user types
+                  error={!!errors.fromLocation}
+                  helperText={errors.fromLocation?.message}
                 />
               )}
             />
             <Controller
-              name="dropoff"
+              name="toLocation"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Dropoff location"
+                  label="Dropoff Location"
                   fullWidth
                   margin="normal"
-                  error={!!errors.dropoff}
-                  helperText={errors.dropoff?.message}
+                  error={!!errors.toLocation}
+                  helperText={errors.toLocation?.message}
                 />
               )}
             />
-
+            <Controller
+              name="carType"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Car Type"
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.carType}
+                  helperText={errors.carType?.message}
+                />
+              )}
+            />
+            <Controller
+              name="totalSeats"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Total Seats"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.totalSeats}
+                  helperText={errors.totalSeats?.message}
+                />
+              )}
+            />
+            <Controller
+              name="price"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Price"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.price}
+                  helperText={errors.price?.message}
+                />
+              )}
+            />
+            <Controller
+              name="date"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Date"
+                  type="date"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.date}
+                  helperText={errors.date?.message}
+                />
+              )}
+            />
+            <Controller
+              name="time"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Time"
+                  type="time"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.time}
+                  helperText={errors.time?.message}
+                />
+              )}
+            />
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#ffb800",
-                color: "black",
-              }}
+              style={{ marginTop: "20px", backgroundColor: "#ffb800", color: "black" }}
               disabled={loading}
             >
               {loading ? "Submitting..." : "Confirm Pickup"}
