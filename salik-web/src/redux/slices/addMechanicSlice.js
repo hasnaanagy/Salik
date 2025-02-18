@@ -3,27 +3,32 @@ import api from "../../api/postService"; // Importing the axios instance
 
 // Async action to post mechanic data
 export const postMechanicData = createAsyncThunk(
-  "mechanicService/postMechanicData",
+  "Service/postServiceData",
   async (
-    { serviceType, addressOnly, location, workingDays, workingHours },
+    { serviceType, location, addressOnly, workingDays, workingHours },
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.post("/service", {
-        params: {
+      const response = await api.post(
+        "/service",
+        {
           serviceType,
           location,
+          addressOnly,
           workingDays,
           workingHours,
-          addressOnly,
         },
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4NDMxODAsImV4cCI6MTczOTg0Njc4MH0.Alr_rjivFQAtnkOes4ec3jDz3ddibm-gLG-kmFq3E2M`,
-        },
-      });
-
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4ODQ4MzgsImV4cCI6MTczOTg4ODQzOH0.g0hM-yyrfUOLXrQxD8AMRhRRORQaEzRpHX5V6id4jpY`,
+          },
+        }
+      );
+      console.log("Response data:", response.data);
       return response.data;
     } catch (error) {
+      console.error("Error response:", error.message); // Debugging
       return rejectWithValue(
         error.response?.data?.message || "Failed to add mechanic service"
       );
