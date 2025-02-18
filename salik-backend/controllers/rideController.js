@@ -16,11 +16,20 @@ exports.createRide = async (req, res) => {
         .json({ message: "Only Providers can create rides." });
     }
 
+    const { carType, fromLocation, toLocation, totalSeats, price, date, time } =
+      req.body;
 
-    const { carType, fromLocation, toLocation, totalSeats, price, date, time } = req.body;
-
-    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !date) {
-      return res.status(400).json({ message: "All fields except 'time' are required." });
+    if (
+      !carType ||
+      !fromLocation ||
+      !toLocation ||
+      !totalSeats ||
+      !price ||
+      !date
+    ) {
+      return res
+        .status(400)
+        .json({ message: "All fields except 'time' are required." });
     }
 
     // Construct rideDateTime using the provided date and time
@@ -29,9 +38,10 @@ exports.createRide = async (req, res) => {
       return res.status(400).json({ message: "Invalid date or time format." });
     }
 
-
-    const existingRide = await Ride.findOne({ providerId: user._id, rideDateTime });
-
+    const existingRide = await Ride.findOne({
+      providerId: user._id,
+      rideDateTime,
+    });
     if (existingRide) {
       return res
         .status(400)
@@ -63,16 +73,19 @@ exports.createRide = async (req, res) => {
   }
 };
 
-
 // Search rides
 exports.searchRides = async (req, res) => {
   try {
     const { fromLocation, toLocation, date, time } = req.query;
 
     if (!fromLocation || !toLocation || !date) {
-      return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' and 'date' are required." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Both 'fromLocation' and 'toLocation' and 'date' are required.",
+        });
     }
-
 
     // Convert date & time into a full Date object
     let startDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`); // Default time: 00:00 UTC
@@ -105,8 +118,6 @@ exports.searchRides = async (req, res) => {
       .json({ message: "Error searching for rides", error: err.message });
   }
 };
-
-
 
 // Get all rides
 exports.getAllRides = async (req, res) => {
