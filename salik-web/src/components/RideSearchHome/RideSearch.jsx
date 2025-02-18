@@ -62,7 +62,7 @@ export function RideSearch() {
             </IconButton>
             <IconButton
               component={Link}
-              to="/fuel"
+              to="/addService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={fuelImage} alt="Fuel Icon" width={50} height={50} />
