@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
 import { toast } from "react-toastify";
 import styles from "../styles/styles.module.css";
 
@@ -29,6 +30,7 @@ export default function SignUp() {
   });
 
   const [errors, setErrors] = useState({});
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -45,6 +47,7 @@ export default function SignUp() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
+
     // Validate field
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error });
@@ -57,13 +60,16 @@ export default function SignUp() {
     e.preventDefault();
     let formErrors = {};
 
-
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
     });
 
-    setErrors(formErrors);
+    // Additional validation to check if passwords match
+    if (formData.password !== formData.confirmPassword) {
+      formErrors.confirmPassword = "Passwords do not match";
+    }
+
 
     // If there are no errors, submit the form
     if (Object.keys(formErrors).length === 0) {
@@ -95,6 +101,7 @@ export default function SignUp() {
   return (
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
       <Box className={styles.formBox}>
+
         {["fullName", "phone", "password", "confirmPassword", "nationalId"].map((field) => (
           <FormControl key={field} error={!!errors[field]}>
             <StyledInputLabel htmlFor={field}>
@@ -136,6 +143,7 @@ export default function SignUp() {
           disabled={loading}
           style={{ backgroundColor: "#FFB800", color: "black" }}
         >
+
           {loading ? <CircularProgress size={24} style={{ color: "black" }} /> : "Sign Up"}
         </MainButton>
       </Box>

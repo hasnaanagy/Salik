@@ -1,5 +1,25 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUserApi } from '../../services/authService';
+import {
+  createSlice,
+  createAsyncThunk,
+  isRejectedWithValue,
+} from "@reduxjs/toolkit";
+import { registerUser, loginUserApi } from "../../services/authService";
+import axios from "axios";
+const BASE_URL = "http://localhost:5000/api/";
+const signUpUser = createAsyncThunk(
+  "auth/signUpUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${BASE_URL}auth/signup`, userData);
+      console.log("response", response);
+      return response.data;
+    } catch (error) {
+      console.error("Error registering user:", error.response?.data || error);
+      throw error;
+    }
+  }
+);
+
 
 const signUpUser = createAsyncThunk('auth/signUpUser', async (userData) => {
   try {

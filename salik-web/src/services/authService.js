@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios from "axios";
+
 
 const BASE_URL = 'http://localhost:5000/api/auth/';
 
@@ -17,6 +18,7 @@ export async function registerUser(userData) {
 
 export async function loginUserApi(userData) {
   try {
+
     console.log("Logging in user with data:", userData);
     const response = await axios.post(`${BASE_URL}login`, userData, {
       headers: { 'Content-Type': 'application/json' },
