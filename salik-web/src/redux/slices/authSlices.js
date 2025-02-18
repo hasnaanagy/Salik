@@ -9,8 +9,12 @@ const signUpUser = createAsyncThunk('auth/signUpUser', async (userData) => {
   }
 });
 
-const loginUser = createAsyncThunk('auth/loginUser', async (userData) => {
-  return await loginUserApi(userData);
+export const loginUser = createAsyncThunk('auth/loginUser', async (userData, { rejectWithValue }) => {
+  try {
+    return await loginUserApi(userData);
+  } catch (error) {
+    return rejectWithValue(error.response.data.message || "Login failed.");
+  }
 });
 
 const authSlice = createSlice({
@@ -25,12 +29,15 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(signUpUser.pending, (state) => {
-        state.loading = true;
+      .addCase(signUpUser.pending, (state) => { state.loading = true; })
+      .addCase(signUpUser.fulfilled, (state, action) => { 
+        state.loading = false; 
+        state.user = action.payload; 
+        state.error = null; 
       })
-      .addCase(signUpUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
+      .addCase(signUpUser.rejected, (state, action) => { 
+        state.loading = false; 
+        state.error = action.payload; 
       })
       .addCase(signUpUser.rejected, (state, action) => {
         state.loading = false;
@@ -56,3 +63,4 @@ const authSlice = createSlice({
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
 export { signUpUser, loginUser };
+

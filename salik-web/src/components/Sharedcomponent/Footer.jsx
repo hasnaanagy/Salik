@@ -18,7 +18,6 @@ export function Footer() {
         color: "black",
         mt: "auto", // Push footer to the bottom
         py: 3, // Padding for better spacing
-        textAlign: "center",
       }}
     >
       <Container>
@@ -60,16 +59,16 @@ export function Footer() {
           <IconButton component={NavLink} to="/" color="inherit">
             <FaFacebookF />
           </IconButton>
-          <IconButton component={NavLink} to="/" color="inherit">
+          <IconButton component={NavLink} to="/" color="inherit" sx={{ mx: 5 }}>
             <FaXTwitter />
           </IconButton>
-          <IconButton component={NavLink} to="/" color="inherit">
+          <IconButton component={NavLink} to="/" color="inherit" sx={{ mx: 5 }}>
             <FaYoutube />
           </IconButton>
-          <IconButton component={NavLink} to="/" color="inherit">
+          <IconButton component={NavLink} to="/" color="inherit" sx={{ mx: 5 }}>
             <FaLinkedinIn />
           </IconButton>
-          <IconButton component={NavLink} to="/" color="inherit">
+          <IconButton component={NavLink} to="/" color="inherit" sx={{ mx: 5 }}>
             <FaInstagram />
           </IconButton>
         </Box>
@@ -80,12 +79,14 @@ export function Footer() {
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/512px-Google_Play_Store_badge_EN.svg.png"
             alt="Google Play"
             width="150"
+            height="50"
             style={{ margin: "0 10px" }}
           />
           <img
             src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
             alt="App Store"
             width="150"
+            height="50"
             style={{ margin: "0 10px" }}
           />
         </Box>

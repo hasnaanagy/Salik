@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FormControl,
   Box,
   FormHelperText,
   InputAdornment,
   IconButton,
+  Alert,
 } from "@mui/material";
 import { validateField } from "../validation/validation";  
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +20,7 @@ export default function Login() {
   const [formData, setFormData] = useState({ phone: "", password: "" });
   const [errors, setErrors] = useState({}); 
   const [showPassword, setShowPassword] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -26,7 +28,6 @@ export default function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
     
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error }); 
@@ -36,7 +37,7 @@ export default function Login() {
     e.preventDefault();
     let formErrors = {};
     
-    
+    // Validate fields before submitting
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
@@ -44,11 +45,27 @@ export default function Login() {
 
     setErrors(formErrors);
 
+    // If there are no validation errors
     if (Object.keys(formErrors).length === 0) {
-      await dispatch(loginUser(formData));
-      navigate("/addTrip");
+      try {
+        // Attempt to log in
+        await dispatch(loginUser(formData)).unwrap();
+        navigate("/addTrip");
+      } catch (error) {
+        // Handle login errors by showing alert
+        setAlertVisible(true);
+      }
     }
   };
+
+  useEffect(() => {
+    if (alertVisible) {
+      const timer = setTimeout(() => {
+        navigate("/signup");
+      }, 3000);
+      return () => clearTimeout(timer); // Cleanup timer on unmount
+    }
+  }, [alertVisible, navigate]);
 
   return (
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
@@ -80,7 +97,11 @@ export default function Login() {
           </FormControl>
         ))}
 
-        {error && <FormHelperText error>{error}</FormHelperText>}
+        {alertVisible && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            You do not have an account. Redirecting to signup...
+          </Alert>
+        )}
 
         <MainButton
           type="submit"

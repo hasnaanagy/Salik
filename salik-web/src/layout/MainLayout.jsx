@@ -1,4 +1,5 @@
 import React from "react";
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AddTrip from "../pages/AddTrip";
 import AddFuel from "../pages/addFuel";
@@ -10,8 +11,10 @@ import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 
+
 export default function MainLayout() {
   return (
+
     <>
       <BrowserRouter>
         <Routes>
@@ -28,5 +31,6 @@ export default function MainLayout() {
         </Routes>
       </BrowserRouter>
     </>
+
   );
 }

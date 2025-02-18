@@ -1,3 +1,4 @@
+ 
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlices';
 import addServiceReducer from './slices/addServiceSlice';
@@ -13,6 +14,7 @@ export const store = configureStore({
     fuelService: addFuelReducer,
     mechanicService: addMechanicReducer,
     images: imageReducer,
-    reviewsSlice:reviewReducer
+    reviewsSlice:reviewReducer,
+    ride: rideslice,
   },
 });
