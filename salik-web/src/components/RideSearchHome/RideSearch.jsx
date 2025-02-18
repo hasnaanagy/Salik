@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchRideData } from "../../redux/slices/RideSlice";
 import {
   Box,
   Container,
@@ -15,31 +14,36 @@ import rideImage from "../../../public/images/car.png";
 import fuelImage from "../../../public/images/gas-pump.png";
 import mechanicImage from "../../../public/images/technician.png";
 import { StyledTextField } from "../../custom/StyledTextField";
+import { fetchRideData } from "../../redux/slices/rideSlice";
 
 export function RideSearch() {
   const dispatch = useDispatch();
   const { data: rideData, loading, error } = useSelector((state) => state.ride);
 
   const [formData, setFormData] = useState({
-    pickup: "",
-    dropoff: "",
-    date: new Date().toISOString().split("T")[0],
-    time: "Now",
+    fromLocation: "",
+    toLocation: "",
+    date: "",
+    time: "",
   });
 
   const [pickupCoords, setPickupCoords] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({
+      ...prev, // Keep the existing values
+      [e.target.name]: e.target.value, // Update only the changed field
+    }));
   };
 
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setFormData((prev) => ({ ...prev, pickup: address }));
+    setFormData((prev) => ({ ...prev, fromLocation: address }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("Dispatching formData:", formData); // Debugging step
     dispatch(fetchRideData(formData));
   };
 
@@ -55,21 +59,21 @@ export function RideSearch() {
           <Box display="flex" gap={3} mb={4}>
             <IconButton
               component={Link}
-              to="/"
+              to="/addTrip"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={rideImage} alt="Ride Icon" width={50} height={50} />
             </IconButton>
             <IconButton
               component={Link}
-              to="/fuel"
+              to="addService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={fuelImage} alt="Fuel Icon" width={50} height={50} />
             </IconButton>
             <IconButton
               component={Link}
-              to="/mechanic"
+              to="addService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img
@@ -84,22 +88,23 @@ export function RideSearch() {
           {/* Form Fields */}
           <form onSubmit={handleSubmit}>
             <StyledTextField
-              name="pickup"
+              type="text"
+              name="fromLocation"
               placeholder="Pickup Location"
-              value={formData.pickup}
+              value={formData.fromLocation}
               onChange={handleChange}
               required
-              sx={{ mr: 2 }}
             />
             <StyledTextField
-              name="dropoff"
+              type="text"
+              name="toLocation"
               placeholder="Dropoff Location"
-              value={formData.dropoff}
+              value={formData.toLocation}
               onChange={handleChange}
               required
             />
-            <Grid container spacing={10}>
-              <Grid item xs={6}>
+            <Grid spacing={10} display={"flex"} gap={10}>
+              <Grid item xs={5}>
                 <StyledTextField
                   type="date"
                   name="date"
@@ -107,7 +112,7 @@ export function RideSearch() {
                   onChange={handleChange}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={5}>
                 <StyledTextField
                   type="time"
                   name="time"
@@ -133,25 +138,10 @@ export function RideSearch() {
               Search
             </Button>
           </form>
-
-          {loading && <p>Loading...</p>}
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {rideData && (
-            <Box
-              mt={3}
-              p={2}
-              sx={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
-            >
-              <Typography variant="h6" fontWeight="bold">
-                Ride Available
-              </Typography>
-              <pre>{JSON.stringify(rideData, null, 2)}</pre>
-            </Box>
-          )}
         </Grid>
 
         <Grid
-          item
+          itemrides
           xs={10}
           md={6}
           sx={{ height: "400px", ml: { xs: 0, md: 10 } }}
@@ -162,6 +152,18 @@ export function RideSearch() {
           />
         </Grid>
       </Grid>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {rideData &&
+        rideData.rides.map((ride) => (
+          <div key={ride._id}>
+            <p>{ride.fromLocation}</p>
+            <p>{ride.toLocation}</p>
+            <p>{ride.carType}</p>
+            <p>{ride.price}</p>
+            <p>{ride.rideDateTime}</p>
+          </div>
+        ))}
     </Container>
   );
 }
