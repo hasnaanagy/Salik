@@ -45,13 +45,18 @@ export default function SignUp() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
+    // Validate field
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error });
+  const handlePasswordToggle = (field) => {
+    setShowPassword({ ...showPassword, [field]: !showPassword[field] });
+
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let formErrors = {};
+
 
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
@@ -59,17 +64,30 @@ export default function SignUp() {
     });
 
     setErrors(formErrors);
-    setErrorMessage(null);
 
+    // If there are no errors, submit the form
     if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
 
+      // Ensure password and confirmPassword match
+      if (formData.password !== formData.confirmPassword) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPassword: "Passwords do not match",
+        }));
+        return;
+      }
+
+      console.log("Data to submit: ", dataToSubmit);  // Debugging line
+
       try {
-        await dispatch(signUpUser(dataToSubmit)).unwrap();
-        toast.success("Signup successful! Redirecting...");
-        setTimeout(() => navigate("/login"), 3000);
-      } catch (error) {
-        setErrorMessage(error?.message || "Registration failed. Please try again.");
+        const { user } = await dispatch(signUpUser(dataToSubmit));
+
+        if (user) {
+          navigate("/login");
+        }
+      } catch (err) {
+        console.error("Signup error: ", err);
       }
     }
   };

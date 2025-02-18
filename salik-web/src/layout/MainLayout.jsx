@@ -9,6 +9,8 @@ import { SharedLayout } from "./SharedLayout";
 import Home from "../pages/Home";
 import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
+import Reviews from "../pages/Reviews";
+
 
 export default function MainLayout() {
   return (
@@ -24,6 +26,7 @@ export default function MainLayout() {
             <Route path="/addFuel" element={<AddFuel />} />
             <Route path="/addMechanic" element={<AddMechanic />} />
             <Route path="/licence" element={<UploadLicence />} />
+            <Route path="/reviews" element={<Reviews />} />
           </Route>
         </Routes>
       </BrowserRouter>

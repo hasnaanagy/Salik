@@ -2,6 +2,7 @@ const Ride = require("../models/Ride");
 const User = require("../models/User");
 
 // Create new ride
+// Create new ride
 exports.createRide = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -13,18 +14,19 @@ exports.createRide = async (req, res) => {
       return res.status(403).json({ message: "Only Providers can create rides." });
     }
 
-    const { carType, fromLocation, toLocation, totalSeats, price, rideDateTime } = req.body;
+    const { carType, fromLocation, toLocation, totalSeats, price, date, time } = req.body;
 
-    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !rideDateTime) {
-      return res.status(400).json({ message: "All fields are required." });
+    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !date) {
+      return res.status(400).json({ message: "All fields except 'time' are required." });
     }
 
-    const formattedDateTime = new Date(rideDateTime);
-    if (isNaN(formattedDateTime.getTime())) {
-      return res.status(400).json({ message: "Invalid date-time format." });
+    // Construct rideDateTime using the provided date and time
+    const rideDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`); // Default time: 00:00
+    if (isNaN(rideDateTime.getTime())) {
+      return res.status(400).json({ message: "Invalid date or time format." });
     }
 
-    const existingRide = await Ride.findOne({ providerId: user._id, rideDateTime: formattedDateTime });
+    const existingRide = await Ride.findOne({ providerId: user._id, rideDateTime });
     if (existingRide) {
       return res.status(400).json({ message: "You already have a ride scheduled at this date and time." });
     }
@@ -36,7 +38,7 @@ exports.createRide = async (req, res) => {
       toLocation,
       totalSeats,
       price,
-      rideDateTime: formattedDateTime,
+      rideDateTime,
       bookedSeats: 0,
       status: "upcoming",
     });
@@ -48,29 +50,34 @@ exports.createRide = async (req, res) => {
   }
 };
 
+
 // Search rides
 exports.searchRides = async (req, res) => {
   try {
-    const { fromLocation, toLocation, rideDateTime } = req.query;
+    const { fromLocation, toLocation, date, time } = req.query;
 
-    if (!fromLocation || !toLocation) {
-      return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' are required." });
+    if (!fromLocation || !toLocation || !date) {
+      return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' and 'date' are required." });
     }
+
+    // Convert date & time into a full Date object
+    let startDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`); // Default time: 00:00 UTC
+    if (isNaN(startDateTime.getTime())) {
+      return res.status(400).json({ message: "Invalid date or time format." });
+    }
+
+    // Set the end of the day for filtering (if time is not provided, search for the entire day)
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setHours(23, 59, 59, 999);
 
     let query = {
       fromLocation: { $regex: new RegExp(fromLocation, "i") },
       toLocation: { $regex: new RegExp(toLocation, "i") },
+      rideDateTime: { $gte: startDateTime, $lte: endDateTime },
     };
 
-    if (rideDateTime) {
-      const formattedDateTime = new Date(rideDateTime);
-      if (isNaN(formattedDateTime.getTime())) {
-        return res.status(400).json({ message: "Invalid date-time format." });
-      }
-      query.rideDateTime = formattedDateTime;
-    }
-
     const rides = await Ride.find(query);
+
     if (rides.length === 0) {
       return res.status(404).json({ message: "No rides found matching your criteria." });
     }
@@ -80,6 +87,8 @@ exports.searchRides = async (req, res) => {
     res.status(500).json({ message: "Error searching for rides", error: err.message });
   }
 };
+
+
 
 // Get all rides
 exports.getAllRides = async (req, res) => {
