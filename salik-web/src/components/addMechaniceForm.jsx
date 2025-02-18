@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -6,32 +6,35 @@ import {
   Button,
   MenuItem,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice"; // Ensure path is correct
-import mechanicImage from "../../public/images/map.png"; // Update the image path as needed
+import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
 import MapComponent from "./Mapcomponent/Mapcomponent";
 
+// Validation schema
 const schema = yup.object().shape({
   mechanicLocation: yup.string().required("Workshop location is required"),
   mechanicType: yup.string().required("Mechanic type is required"),
   availableFrom: yup.string().required("Available from time is required"),
   availableTo: yup.string().required("Available to time is required"),
+  workingDays: yup.array().min(1, "Select at least one working day"),
 });
 
 const AddMechanicForm = () => {
   const dispatch = useDispatch();
-  const { loading = false, error = null } = useSelector(
+  const { loading, error } = useSelector(
     (state) => state.mechanicService || {}
   );
   const {
     control,
     handleSubmit,
-    setValue,
     formState: { errors },
+    setValue,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -39,49 +42,104 @@ const AddMechanicForm = () => {
       mechanicType: "",
       availableFrom: "",
       availableTo: "",
+      workingDays: [],
     },
   });
 
-  const onSubmit = (data) => {
-    dispatch(postMechanicData(data));
-  };
-
   const [pickupCoords, setPickupCoords] = useState(null);
-  // Function to update the pickup location when a location is selected on the map
+  const [locationError, setLocationError] = useState("");
+
+  // Handle location selection from the map
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setValue("Workshop location", address);
+    setValue("mechanicLocation", address);
+    setLocationError("");
   };
 
-  // Function to search an address manually
+  // Handle manual address search
   const handleAddressSearch = async (address) => {
     try {
       const response = await fetch(
-        `        https://nominatim.openstreetmap.org/search?format=json&q=${address}
-  `
+        `https://nominatim.openstreetmap.org/search?format=json&q=${address}`
       );
       const data = await response.json();
 
       if (data.length > 0) {
         const { lat, lon } = data[0];
         setPickupCoords({ lat: parseFloat(lat), lng: parseFloat(lon) });
+        setLocationError("");
+      } else {
+        setLocationError("Could not find location. Try again.");
       }
     } catch (error) {
-      console.error("Error fetching address coordinates:", error);
+      setLocationError("Failed to fetch coordinates.");
     }
   };
+
+  // Handle form submission
+  const onSubmit = (data) => {
+    if (!pickupCoords) {
+      setLocationError("Please select a location on the map.");
+      return;
+    }
+
+    const transformedData = {
+      serviceType: data.mechanicType,
+      location: {
+        type: "Point",
+        coordinates: [pickupCoords.lng, pickupCoords.lat],
+      },
+      addressOnly: data.mechanicLocation,
+      workingDays: data.workingDays,
+      workingHours: {
+        from: data.availableFrom + " AM",
+        to: data.availableTo + " PM",
+      },
+    };
+
+    console.log("Transformed Data: ", transformedData);
+
+    dispatch(postMechanicData(transformedData));
+  };
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   console.log("Dispatching formData:", formData); // Debugging step
+  //   dispatch(fetchRideData(formData));
+  // };
+
+  // Clear server error on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
   return (
     <Container maxWidth="lg" style={{ padding: "50px" }}>
       <Grid container spacing={4} alignItems="center">
-        {/* Form Section */}
         <Grid item xs={12} md={6}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Add Mechanic Service
           </Typography>
-          {error && <Typography color="error">{error}</Typography>}
+
+          {/* Server error as raw HTML (like mechanic form) */}
+          {error && (
+            <span
+              style={{
+                color: "red",
+                fontSize: "14px",
+                display: "block",
+                marginBottom: "10px",
+              }}
+              dangerouslySetInnerHTML={{ __html: error }}
+            ></span>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Workshop Location */}
             <Controller
-              name="Workshop location"
+              name="mechanicLocation"
               control={control}
               render={({ field }) => (
                 <TextField
@@ -91,11 +149,15 @@ const AddMechanicForm = () => {
                   margin="normal"
                   error={!!errors.mechanicLocation}
                   helperText={errors.mechanicLocation?.message}
-                  onBlur={() => handleAddressSearch(field.value)} // Convert to coordinates when user types
+                  onBlur={() => handleAddressSearch(field.value)}
                 />
               )}
             />
+            <span style={{ color: "red", fontSize: "14px" }}>
+              {locationError}
+            </span>
 
+            {/* Mechanic Type */}
             <Controller
               name="mechanicType"
               control={control}
@@ -109,8 +171,8 @@ const AddMechanicForm = () => {
                   error={!!errors.mechanicType}
                   helperText={errors.mechanicType?.message}
                 >
-                  <MenuItem value="Engine Repair">Engine Repair</MenuItem>
-                  <MenuItem value="Body Work">Body Work</MenuItem>
+                  <MenuItem value="mechanic">mechanic</MenuItem>
+                  <MenuItem value="fuel">fuel</MenuItem>
                   <MenuItem value="Transmission Repair">
                     Transmission Repair
                   </MenuItem>
@@ -118,6 +180,48 @@ const AddMechanicForm = () => {
               )}
             />
 
+            {/* Working Days */}
+            <Controller
+              name="workingDays"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <Typography variant="subtitle1">Working Days</Typography>
+                  {[
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday",
+                  ].map((day) => (
+                    <FormControlLabel
+                      key={day}
+                      control={
+                        <Checkbox
+                          checked={field.value.includes(day)}
+                          onChange={(e) => {
+                            const newValue = e.target.checked
+                              ? [...field.value, day]
+                              : field.value.filter((d) => d !== day);
+                            field.onChange(newValue);
+                          }}
+                        />
+                      }
+                      label={day}
+                    />
+                  ))}
+                  {errors.workingDays && (
+                    <Typography color="error">
+                      {errors.workingDays.message}
+                    </Typography>
+                  )}
+                </div>
+              )}
+            />
+
+            {/* Working Hours */}
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Controller
@@ -132,7 +236,6 @@ const AddMechanicForm = () => {
                       margin="normal"
                       error={!!errors.availableFrom}
                       helperText={errors.availableFrom?.message}
-                      InputLabelProps={{ shrink: true }}
                     />
                   )}
                 />
@@ -150,13 +253,13 @@ const AddMechanicForm = () => {
                       margin="normal"
                       error={!!errors.availableTo}
                       helperText={errors.availableTo?.message}
-                      InputLabelProps={{ shrink: true }}
                     />
                   )}
                 />
               </Grid>
             </Grid>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               variant="contained"
@@ -173,8 +276,8 @@ const AddMechanicForm = () => {
           </form>
         </Grid>
 
-        {/* Image Section */}
-        <Grid item xs={12} md={6} style={{ height: "400px" }}>
+        {/* Map Section */}
+        <Grid item xs={12} md={6}>
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}

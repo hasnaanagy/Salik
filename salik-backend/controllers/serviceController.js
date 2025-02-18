@@ -8,11 +8,21 @@ exports.createService = async (req, res) => {
     const { userId } = req;
 
     if (!serviceType || !workingDays || !workingHours) {
-      return res.status(400).json({ message: "Service type, working days, and working hours are required." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Service type, working days, and working hours are required.",
+        });
     }
 
     if (!location || (!location.coordinates && !location.description)) {
-      return res.status(400).json({ message: "At least one location format (coordinates or description) is required." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "At least one location format (coordinates or description) is required.",
+        });
     }
 
     let locationData = null;
@@ -26,7 +36,12 @@ exports.createService = async (req, res) => {
         typeof location.coordinates[0] !== "number" ||
         typeof location.coordinates[1] !== "number"
       ) {
-        return res.status(400).json({ message: "Invalid coordinates format. Expected [longitude, latitude]." });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Invalid coordinates format. Expected [longitude, latitude].",
+          });
       }
 
       locationData = {
@@ -43,7 +58,11 @@ exports.createService = async (req, res) => {
     // Ensure provider does not create duplicate services
     const existingService = await Service.findOne({ userId, serviceType });
     if (existingService) {
-      return res.status(400).json({ message: `You already have a ${serviceType} service. Delete the old one before creating a new one.` });
+      return res
+        .status(400)
+        .json({
+          message: `You already have a ${serviceType} service. Delete the old one before creating a new one.`,
+        });
     }
 
     // Create new service
@@ -57,13 +76,18 @@ exports.createService = async (req, res) => {
     });
 
     await newService.save();
-    res.status(201).json({ message: `${serviceType} service created successfully.`, service: newService });
-
+    res
+      .status(201)
+      .json({
+        message: `${serviceType} service created successfully.`,
+        service: newService,
+      });
   } catch (err) {
-    res.status(500).json({ message: "Error creating service", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error creating service", error: err.message });
   }
 };
-
 
 exports.updateService = async (req, res) => {
   try {
@@ -76,7 +100,9 @@ exports.updateService = async (req, res) => {
       return res.status(404).json({ message: "Service not found" });
     }
     if (service.userId.toString() !== userId) {
-      return res.status(403).json({ message: "You can only update your own services" });
+      return res
+        .status(403)
+        .json({ message: "You can only update your own services" });
     }
 
     if (location && location.coordinates) {
@@ -86,7 +112,12 @@ exports.updateService = async (req, res) => {
         typeof location.coordinates[0] !== "number" ||
         typeof location.coordinates[1] !== "number"
       ) {
-        return res.status(400).json({ message: "Invalid coordinates format. Expected [longitude, latitude]." });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Invalid coordinates format. Expected [longitude, latitude].",
+          });
       }
       service.location = {
         type: "Point",
@@ -105,12 +136,12 @@ exports.updateService = async (req, res) => {
 
     await service.save();
     res.status(200).json({ message: "Service updated successfully", service });
-
   } catch (err) {
-    res.status(500).json({ message: "Error updating service", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error updating service", error: err.message });
   }
 };
-
 
 // Delete a service
 exports.deleteService = async (req, res) => {
@@ -123,13 +154,17 @@ exports.deleteService = async (req, res) => {
       return res.status(404).json({ message: "Service not found" });
     }
     if (service.userId.toString() !== userId) {
-      return res.status(403).json({ message: "You can only delete your own services" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own services" });
     }
 
     await service.deleteOne();
     res.status(200).json({ message: "Service deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting service", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting service", error: err.message });
   }
 };
 
@@ -140,12 +175,18 @@ exports.getServicesByProvider = async (req, res) => {
 
     const services = await Service.find({ userId });
     if (services.length === 0) {
-      return res.status(404).json({ message: "No services found for this provider" });
+      return res
+        .status(404)
+        .json({ message: "No services found for this provider" });
     }
 
-    res.status(200).json({ message: "Services retrieved successfully", services });
+    res
+      .status(200)
+      .json({ message: "Services retrieved successfully", services });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching services", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching services", error: err.message });
   }
 };
 
@@ -186,6 +227,8 @@ exports.searchServices = async (req, res) => {
 
     res.status(200).json({ message: "Services found", services });
   } catch (err) {
-    res.status(500).json({ message: "Error searching for services", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error searching for services", error: err.message });
   }
 };

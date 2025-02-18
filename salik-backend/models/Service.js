@@ -17,7 +17,8 @@ const serviceSchema = new mongoose.Schema({
         validator: function (val) {
           return !val || val.length === 2;
         },
-        message: "Coordinates must have exactly 2 values: [longitude, latitude].",
+        message:
+          "Coordinates must have exactly 2 values: [longitude, latitude].",
       },
     },
   },

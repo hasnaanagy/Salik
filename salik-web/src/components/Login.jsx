@@ -6,7 +6,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { validateField } from "../validation/validation";  
+import { validateField } from "../validation/validation";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/slices/authSlices";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ import styles from "../styles/styles.module.css";
 
 export default function Login() {
   const [formData, setFormData] = useState({ phone: "", password: "" });
-  const [errors, setErrors] = useState({}); 
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
@@ -27,16 +27,14 @@ export default function Login() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    
     const error = validateField(name, value, formData);
-    setErrors({ ...errors, [name]: error }); 
+    setErrors({ ...errors, [name]: error });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let formErrors = {};
-    
-    
+
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
@@ -46,7 +44,7 @@ export default function Login() {
 
     if (Object.keys(formErrors).length === 0) {
       await dispatch(loginUser(formData));
-      navigate("/addTrip");
+      navigate("/");
     }
   };
 
@@ -61,7 +59,13 @@ export default function Login() {
             <StyledOutlinedInput
               id={field}
               name={field}
-              type={field === "password" ? (showPassword ? "text" : "password") : "text"}
+              type={
+                field === "password"
+                  ? showPassword
+                    ? "text"
+                    : "password"
+                  : "text"
+              }
               value={formData[field]}
               onChange={handleChange}
               placeholder={`Enter your ${field}`}
@@ -69,7 +73,10 @@ export default function Login() {
               endAdornment={
                 field === "password" && (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>

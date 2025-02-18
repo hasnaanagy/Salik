@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Container,
   Grid,
@@ -12,7 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
-import MapComponent from "./Mapcomponent/Mapcomponent";
+import mapImage from "../../public/images/map.png"; // Make sure this path is correct
 
 const schema = yup.object().shape({
   pickup: yup.string().required("Pickup location is required"),
@@ -39,42 +39,26 @@ const AddTripForm = () => {
   const {
     control,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm({ resolver: yupResolver(schema) });
-
-  const [pickupCoords, setPickupCoords] = useState(null);
-
-  // Function to update the pickup location when a location is selected on the map
-  const handleLocationSelect = (lat, lng, address) => {
-    setPickupCoords({ lat, lng });
-    setValue("pickup", address);
-  };
-
-  // Function to search an address manually
-  const handleAddressSearch = async (address) => {
-    try {
-      const response = await fetch(
-        `        https://nominatim.openstreetmap.org/search?format=json&q=${address}
-`
-      );
-      const data = await response.json();
-
-      if (data.length > 0) {
-        const { lat, lon } = data[0];
-        setPickupCoords({ lat: parseFloat(lat), lng: parseFloat(lon) });
-      }
-    } catch (error) {
-      console.error("Error fetching address coordinates:", error);
-    }
-  };
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      pickup: "",
+      dropoff: "",
+      carType: "",
+      seats: "",
+      price: "",
+      date: "",
+      time: "",
+    }, // Initialize all fields with default values
+  });
 
   const onSubmit = (data) => {
     dispatch(postRideData(data));
   };
 
   return (
-    <Container maxWidth="lg" style={{ padding: "50px", marginBottom: "50px" }}>
+    <Container maxWidth="lg" style={{ padding: "50px" }}>
       <Grid container spacing={4} alignItems="center">
         <Grid item xs={12} md={6}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -93,7 +77,6 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.pickup}
                   helperText={errors.pickup?.message}
-                  onBlur={() => handleAddressSearch(field.value)} // Convert to coordinates when user types
                 />
               )}
             />
@@ -111,7 +94,101 @@ const AddTripForm = () => {
                 />
               )}
             />
+            <Controller
+              name="carType"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  select
+                  {...field}
+                  value={field.value || ""} // Ensure value is always defined
+                  label="Car Type"
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.carType}
+                  helperText={errors.carType?.message}
+                >
+                  <MenuItem value="Bus">Bus</MenuItem>
+                  <MenuItem value="MicroBus">MicroBus</MenuItem>
+                  <MenuItem value="Verna">Verna</MenuItem>
+                </TextField>
+              )}
+            />
 
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Controller
+                  name="seats"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="number"
+                      label="Seats"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.seats}
+                      helperText={errors.seats?.message}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Controller
+                  name="price"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="number"
+                      label="Price"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.price}
+                      helperText={errors.price?.message}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Controller
+                  name="date"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="date"
+                      label="Date"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.date}
+                      helperText={errors.date?.message}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Controller
+                  name="time"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="time"
+                      label="Time"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.time}
+                      helperText={errors.time?.message}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
             <Button
               type="submit"
               variant="contained"
@@ -127,10 +204,11 @@ const AddTripForm = () => {
             </Button>
           </form>
         </Grid>
-        <Grid item xs={12} md={6} style={{ height: "400px" }}>
-          <MapComponent
-            onLocationSelect={handleLocationSelect}
-            pickupCoords={pickupCoords}
+        <Grid item xs={12} md={6}>
+          <img
+            src={mapImage}
+            alt="Map Placeholder"
+            style={{ width: "100%", height: "80vh", objectFit: "cover" }}
           />
         </Grid>
       </Grid>

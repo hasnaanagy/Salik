@@ -10,12 +10,28 @@ exports.createRide = async (req, res) => {
     }
 
     if (user.type !== "provider") {
-      return res.status(403).json({ message: "Only Providers can create rides." });
+      return res
+        .status(403)
+        .json({ message: "Only Providers can create rides." });
     }
 
-    const { carType, fromLocation, toLocation, totalSeats, price, rideDateTime } = req.body;
+    const {
+      carType,
+      fromLocation,
+      toLocation,
+      totalSeats,
+      price,
+      rideDateTime,
+    } = req.body;
 
-    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !rideDateTime) {
+    if (
+      !carType ||
+      !fromLocation ||
+      !toLocation ||
+      !totalSeats ||
+      !price ||
+      !rideDateTime
+    ) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -24,9 +40,16 @@ exports.createRide = async (req, res) => {
       return res.status(400).json({ message: "Invalid date-time format." });
     }
 
-    const existingRide = await Ride.findOne({ providerId: user._id, rideDateTime: formattedDateTime });
+    const existingRide = await Ride.findOne({
+      providerId: user._id,
+      rideDateTime: formattedDateTime,
+    });
     if (existingRide) {
-      return res.status(400).json({ message: "You already have a ride scheduled at this date and time." });
+      return res
+        .status(400)
+        .json({
+          message: "You already have a ride scheduled at this date and time.",
+        });
     }
 
     const newRide = new Ride({
@@ -42,9 +65,13 @@ exports.createRide = async (req, res) => {
     });
 
     await newRide.save();
-    res.status(201).json({ message: "Ride created successfully", ride: newRide });
+    res
+      .status(201)
+      .json({ message: "Ride created successfully", ride: newRide });
   } catch (err) {
-    res.status(500).json({ message: "Error creating ride", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error creating ride", error: err.message });
   }
 };
 
@@ -54,7 +81,11 @@ exports.searchRides = async (req, res) => {
     const { fromLocation, toLocation, rideDateTime } = req.query;
 
     if (!fromLocation || !toLocation) {
-      return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' are required." });
+      return res
+        .status(400)
+        .json({
+          message: "Both 'fromLocation' and 'toLocation' are required.",
+        });
     }
 
     let query = {
@@ -72,12 +103,16 @@ exports.searchRides = async (req, res) => {
 
     const rides = await Ride.find(query);
     if (rides.length === 0) {
-      return res.status(404).json({ message: "No rides found matching your criteria." });
+      return res
+        .status(404)
+        .json({ message: "No rides found matching your criteria." });
     }
 
     res.status(200).json({ message: "Rides retrieved successfully", rides });
   } catch (err) {
-    res.status(500).json({ message: "Error searching for rides", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error searching for rides", error: err.message });
   }
 };
 
@@ -94,7 +129,10 @@ exports.getAllRides = async (req, res) => {
 // Get a ride by ID
 exports.getRideById = async (req, res) => {
   try {
-    const ride = await Ride.findById(req.params.id).populate("providerId", "fullName profileImg phone");
+    const ride = await Ride.findById(req.params.id).populate(
+      "providerId",
+      "fullName profileImg phone"
+    );
 
     if (!ride) {
       return res.status(404).json({ message: "Ride not found" });
@@ -114,10 +152,19 @@ exports.updateRide = async (req, res) => {
     }
 
     if (ride.providerId.toString() !== req.userId) {
-      return res.status(403).json({ message: "You can only update your own rides" });
+      return res
+        .status(403)
+        .json({ message: "You can only update your own rides" });
     }
 
-    const { carType, fromLocation, toLocation, totalSeats, price, rideDateTime } = req.body;
+    const {
+      carType,
+      fromLocation,
+      toLocation,
+      totalSeats,
+      price,
+      rideDateTime,
+    } = req.body;
 
     if (rideDateTime) {
       const formattedDateTime = new Date(rideDateTime);
@@ -136,7 +183,9 @@ exports.updateRide = async (req, res) => {
     await ride.save();
     res.status(200).json({ message: "Ride updated successfully", ride });
   } catch (err) {
-    res.status(500).json({ message: "Error updating ride", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error updating ride", error: err.message });
   }
 };
 
@@ -149,13 +198,17 @@ exports.deleteRide = async (req, res) => {
     }
 
     if (ride.providerId.toString() !== req.userId) {
-      return res.status(403).json({ message: "You can only delete your own rides" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own rides" });
     }
 
     await Ride.deleteOne({ _id: ride._id });
     res.status(200).json({ message: "Ride deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting ride", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting ride", error: err.message });
   }
 };
 
@@ -164,10 +217,14 @@ exports.getRidesByUser = async (req, res) => {
   try {
     const rides = await Ride.find({ providerId: req.userId });
     if (rides.length === 0) {
-      return res.status(404).json({ message: "No rides found for this provider" });
+      return res
+        .status(404)
+        .json({ message: "No rides found for this provider" });
     }
     res.status(200).json({ message: "Rides retrieved successfully", rides });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching user's rides", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching user's rides", error: err.message });
   }
 };
