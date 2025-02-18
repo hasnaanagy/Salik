@@ -14,31 +14,31 @@ export default function SignUpPage() {
     <Container maxWidth="lg">
       <Grid container spacing={2} sx={{ minHeight: "100vh" }}>
       
+        {/* Left Side (Image) */}
         <Grid item xs={12} md={6}>
           <Box
             sx={{
               display: { xs: "none", md: "block" },
-              backgroundImage: "url(images/signPhoto.png)",
-              backgroundSize: "contain",
+              backgroundImage: "url(/images/signPhoto.png)",
+              backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
               height: "50%",
-              marginTop: "23%",
+              marginTop: "20%",
               marginRight: "15%",
             }}
           />
         </Grid>
 
-      
+        {/* Right Side (Form) */}
         <Grid item xs={12} md={6}>
-
-          
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               minHeight: "100vh",
+              padding: "0 20px",
             }}
           >
             <Typography
@@ -57,30 +57,22 @@ export default function SignUpPage() {
               <img
                 src="/images/logo.png"
                 alt="Brand Logo"
-                style={{
-                  width: "40px", 
-                  height: "40px", 
-                }}
+                style={{ width: "40px", height: "40px" }}
               />
               ALIK
             </Typography>
-            <Typography
-              variant="h5"
-              component="h4"
-              sx={{ textAlign: "center", fontWeight: "bold" }}
-            >
+            <Typography variant="h5" component="h4" sx={{ textAlign: "center", fontWeight: "bold" }}>
               Create Account
             </Typography>
             <Typography sx={{ marginBottom: 3, textAlign: "center" }}>
               We suggest using your default email address.
             </Typography>
 
-     
             <SignUp />
 
             <Typography sx={{ textAlign: "center", marginTop: 2 }}>
               Already have an account?{" "}
-              <a href="#" onClick={goToLogin} style={{ color: "#ffb800" }}>
+              <a href="#" onClick={goToLogin} style={{ color: "#ffb800"}}>
                 Log in
               </a>
             </Typography>

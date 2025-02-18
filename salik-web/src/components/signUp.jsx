@@ -5,14 +5,19 @@ import {
   FormHelperText,
   InputAdornment,
   IconButton,
+  CircularProgress,
+  Alert,
+  Typography,
 } from "@mui/material";
-import { validateField } from "../validation/validation"; // Import validateField
+import { validateField } from "../validation/validation";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "../redux/slices/authSlices";
 import { useNavigate } from "react-router-dom";
 import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+import { toast } from "react-toastify";
 import styles from "../styles/styles.module.css";
 
 export default function SignUp() {
@@ -25,32 +30,36 @@ export default function SignUp() {
   });
 
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState({
-    password: false,
-    confirmPassword: false,
-  });
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
+  const handlePasswordToggle = (field) => {
+    if (field === "password") setPasswordVisible((prev) => !prev);
+    if (field === "confirmPassword") setConfirmPasswordVisible((prev) => !prev);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Validate field as user types
+
+    // Validate field
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error });
-  };
-
   const handlePasswordToggle = (field) => {
     setShowPassword({ ...showPassword, [field]: !showPassword[field] });
+
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let formErrors = {};
 
-    // Perform validation for each field
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
       if (error) formErrors[field] = error;
@@ -61,20 +70,30 @@ export default function SignUp() {
       formErrors.confirmPassword = "Passwords do not match";
     }
 
-    setErrors(formErrors);
 
+    // If there are no errors, submit the form
     if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
 
-      // Add a log here to see the data being sent
-      console.log("Sending data to server:", dataToSubmit);
+      // Ensure password and confirmPassword match
+      if (formData.password !== formData.confirmPassword) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPassword: "Passwords do not match",
+        }));
+        return;
+      }
+
+      console.log("Data to submit: ", dataToSubmit);  // Debugging line
 
       try {
         const { user } = await dispatch(signUpUser(dataToSubmit));
 
-        navigate("/login");
-      } catch (error) {
-        console.error("Error registering user:", error);
+        if (user) {
+          navigate("/login");
+        }
+      } catch (err) {
+        console.error("Signup error: ", err);
       }
     }
   };
@@ -82,49 +101,41 @@ export default function SignUp() {
   return (
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
       <Box className={styles.formBox}>
-        {["fullName", "phone", "password", "confirmPassword", "nationalId"].map(
-          (field) => (
-            <FormControl key={field} error={!!errors[field]}>
-              <StyledInputLabel htmlFor={field}>
-                {field.charAt(0).toUpperCase() + field.slice(1)}
-              </StyledInputLabel>
-              <StyledOutlinedInput
-                id={field}
-                name={field}
-                type={
-                  field.includes("password") && !showPassword[field]
-                    ? "password"
-                    : "text"
-                }
-                value={formData[field]}
-                onChange={handleChange}
-                placeholder={`Enter your ${field}`}
-                label={field.charAt(0).toUpperCase() + field.slice(1)}
-                endAdornment={
-                  field.includes("password") && (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => handlePasswordToggle(field)}
-                        edge="end"
-                      >
-                        {showPassword[field] ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }
-              />
-              {errors[field] && (
-                <FormHelperText>{errors[field]}</FormHelperText>
-              )}
-            </FormControl>
-          )
-        )}
 
-        {error && <FormHelperText error>{error}</FormHelperText>}
+        {["fullName", "phone", "password", "confirmPassword", "nationalId"].map((field) => (
+          <FormControl key={field} error={!!errors[field]}>
+            <StyledInputLabel htmlFor={field}>
+              {field.charAt(0).toUpperCase() + field.slice(1)}
+            </StyledInputLabel>
+            <StyledOutlinedInput
+              id={field}
+              name={field}
+              type={field === "password" ? (passwordVisible ? "text" : "password") :
+                field === "confirmPassword" ? (confirmPasswordVisible ? "text" : "password") : "text"}
+              value={formData[field]}
+              onChange={handleChange}
+              placeholder={`Enter your ${field}`}
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              endAdornment={
+                (field === "password" || field === "confirmPassword") ? (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => handlePasswordToggle(field)} edge="end">
+                      {field === "password" ? (passwordVisible ? <VisibilityOff /> : <Visibility />) :
+                        (confirmPasswordVisible ? <VisibilityOff /> : <Visibility />)}
+                    </IconButton>
+                  </InputAdornment>
+                ) : null
+              }
+            />
+            {errors[field] && <FormHelperText>{errors[field]}</FormHelperText>}
+          </FormControl>
+        ))}
+
+        {errorMessage && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            <Typography variant="body2">{errorMessage}</Typography>
+          </Alert>
+        )}
 
         <MainButton
           type="submit"
@@ -132,7 +143,8 @@ export default function SignUp() {
           disabled={loading}
           style={{ backgroundColor: "#FFB800", color: "black" }}
         >
-          {loading ? "Signing Up..." : "Sign Up"}
+
+          {loading ? <CircularProgress size={24} style={{ color: "black" }} /> : "Sign Up"}
         </MainButton>
       </Box>
     </form>

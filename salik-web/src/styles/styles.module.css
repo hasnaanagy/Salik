@@ -3,4 +3,20 @@
     flex-direction: column;
     gap: 10px;
   }
+  .passwordContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
   
+  .passwordContainer input {
+    width: 100%;
+    padding-right: 40px;
+  }
+  
+  .eyeIcon {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    color: gray;
+  }
