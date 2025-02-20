@@ -2,7 +2,7 @@ import { Button } from "@mui/material";
 import styled from "styled-components";
 
 export const MainButton = styled(Button).attrs({ variant: "contained" })`
-  background-color: #ffb800;
+  background-color: #FFB800 !important; /* Ensure it's applied */
   color: black !important;
   font-weight: bold !important;
   border-radius: 8px;

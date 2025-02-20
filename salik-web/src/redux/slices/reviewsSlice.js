@@ -28,7 +28,7 @@ export const addReviewsAction = createAsyncThunk(
         );
         return response;
       } catch (e) {
-        console.log(e)
+        console.log(e.message)
         return rejectWithValue(e.message);
       }
     }
@@ -55,7 +55,7 @@ const reviewSlice=createSlice({
         });
         builder.addCase(addReviewsAction.fulfilled,(state,action)=>{
             state.isLoading=false;
-            state.reviews=action.payload;
+            state.reviews.push(action.payload.review)
         });
         builder.addCase(addReviewsAction.rejected,(state,action)=>{
             state.isLoading=false;

@@ -30,8 +30,10 @@ export const ProviderNotifications = () => {
           <p>
             <strong>Location:</strong> {req.location.lat}, {req.location.lng}
           </p>
+
         </div>
       ))}
     </div>
   );
 };
+
