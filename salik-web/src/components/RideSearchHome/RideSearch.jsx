@@ -17,7 +17,7 @@ export function RideSearch() {
   const dispatch = useDispatch();
   const { data: rideData, loading, error } = useSelector((state) => state.ride);
 
-  const [view, setView] = useState("search"); // "search", "results", "details"
+  const [view, setView] = useState("search");
   const [selectedRide, setSelectedRide] = useState(null);
   const [formData, setFormData] = useState({
     fromLocation: "",
