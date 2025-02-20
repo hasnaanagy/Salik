@@ -1,25 +1,24 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Box,
-  Container,
-  Grid,
-  Button,
-  Typography,
-  IconButton,
-} from "@mui/material";
-import { Link } from "react-router-dom";
-import MapComponent from "../Mapcomponent/Mapcomponent";
-import rideImage from "../../../public/images/car.png";
-import fuelImage from "../../../public/images/gas-pump.png";
-import mechanicImage from "../../../public/images/technician.png";
-import { StyledTextField } from "../../custom/StyledTextField";
+import { Button, Grid, Stack, Typography } from "@mui/material";
 import { fetchRideData } from "../../redux/slices/rideSlice";
+import { RideIcons } from "./RideIcons";
+import { RideForm } from "./RideForm";
+import { RideResults } from "../Searchresult/RideResults";
+import MapComponent from "../Mapcomponent/MapComponent";
+import RidePersonDetais from "../Searchresult/RidePersonDetais";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import { keyframes } from "@mui/system";
+import { RequestService } from "../RequestService";
 
 export function RideSearch() {
+  const [viewRequestForm, setViewRequestForm] = useState(false);
+  const [serviceType, setServiceType] = useState(null);
   const dispatch = useDispatch();
   const { data: rideData, loading, error } = useSelector((state) => state.ride);
 
+  const [view, setView] = useState("search"); // "search", "results", "details"
+  const [selectedRide, setSelectedRide] = useState(null);
   const [formData, setFormData] = useState({
     fromLocation: "",
     toLocation: "",
@@ -27,12 +26,34 @@ export function RideSearch() {
     time: "",
   });
 
+  const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+  const zoomIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
   const [pickupCoords, setPickupCoords] = useState(null);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
-      ...prev, // Keep the existing values
-      [e.target.name]: e.target.value, // Update only the changed field
+      ...prev,
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -43,108 +64,138 @@ export function RideSearch() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Dispatching formData:", formData); // Debugging step
+    setView("results");
     dispatch(fetchRideData(formData));
   };
 
+  const handleRideClick = (ride) => {
+    setSelectedRide(ride);
+    setView("details");
+  };
+
+  const handleBackToResults = () => {
+    setSelectedRide(null);
+    setView("results");
+  };
+
+  const handleBackToSearch = () => {
+    setSelectedRide(null);
+    setView("search");
+  };
+
   return (
-    <Container sx={{ mt: 5, pb: 5, mb: 4 }}>
-      <Grid container spacing={4} alignItems="center">
-        <Grid item xs={10} md={5}>
-          <Typography variant="h4" fontWeight="bold" mb={3} textAlign="left">
-            Go Anywhere With SALIK
-          </Typography>
+    <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
+      <Grid container spacing={4} justifyContent="center">
+        {/* Left Section (Ride Form & Navigation) */}
+        <Grid
+          item
+          xs={12}
+          sm={10}
+          md={4}
+          sx={{
+            textAlign: {
+              xs: "center",
+              md: "left",
+              border: "2px solid #d2d2d2",
+              padding: "10px",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          {view === "search" && (
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              mb={3}
+              textAlign={{ xs: "center", md: "left" }}
+              sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
+            >
+              Go Anywhere With <span style={{ color: "#FFB800" }}>SALIK</span>
+            </Typography>
+          )}
+          {(view === "results" || view === "details") && (
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              mb={3}
+              textAlign={{ xs: "center", md: "left" }}
+              sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
+            >
+              Get A Ride With <span style={{ color: "#FFB800" }}>SALIK</span>
+            </Typography>
+          )}
 
-          {/* Service Icons */}
-          <Box display="flex" gap={3} mb={4}>
-            <IconButton
-              component={Link}
-              to="/addTrip"
-              sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
-            >
-              <img src={rideImage} alt="Ride Icon" width={50} height={50} />
-            </IconButton>
-            <IconButton
-              component={Link}
-              to="addService"
-              sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
-            >
-              <img src={fuelImage} alt="Fuel Icon" width={50} height={50} />
-            </IconButton>
-            <IconButton
-              component={Link}
-              to="addService"
-              sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
-            >
-              <img
-                src={mechanicImage}
-                alt="Mechanic Icon"
-                width={50}
-                height={50}
-              />
-            </IconButton>
-          </Box>
-
-          {/* Form Fields */}
-          <form onSubmit={handleSubmit}>
-            <StyledTextField
-              type="text"
-              name="fromLocation"
-              placeholder="Pickup Location"
-              value={formData.fromLocation}
-              onChange={handleChange}
-              required
+          {view === "search" && (
+            <RideIcons
+              setServiceType={setServiceType}
+              setViewRequestForm={setViewRequestForm}
             />
-            <StyledTextField
-              type="text"
-              name="toLocation"
-              placeholder="Dropoff Location"
-              value={formData.toLocation}
-              onChange={handleChange}
-              required
-            />
-            <Grid spacing={10} display={"flex"} gap={10}>
-              <Grid item xs={5}>
-                <StyledTextField
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={5}>
-                <StyledTextField
-                  type="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleChange}
-                />
-              </Grid>
-            </Grid>
+          )}
 
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: "#ffb800",
-                width: "50%",
-                mt: 3,
-                fontWeight: "bold",
-                color: "black",
-                borderRadius: "12px",
-                py: 1.5,
-              }}
-            >
-              Search
-            </Button>
-          </form>
+          {!viewRequestForm && (
+            <RideForm
+              formData={formData}
+              handleChange={handleChange}
+              handleSubmit={handleSubmit}
+            />
+          )}
+          {viewRequestForm && <RequestService serviceType={serviceType} />}
         </Grid>
 
+        {/* Middle Section (Ride Results / Ride Details) - Hidden in "search" mode */}
+        {view !== "search" && (
+          <Grid item xs={12} sm={10} md={4}>
+            {view === "results" && (
+              <>
+                <Button
+                  onClick={handleBackToSearch}
+                  sx={{ mb: 2, float: "left", marginRight: "10px" }}
+                >
+                  <KeyboardBackspaceIcon
+                    fontSize="large"
+                    sx={{ mr: 1, color: "#FFB800" }}
+                  />
+                </Button>
+                <RideResults
+                  rideData={rideData}
+                  loading={loading}
+                  error={error}
+                  selectedRide={handleRideClick}
+                />
+              </>
+            )}
+
+            {view === "details" && (
+              <div style={{ marginRight: "50px" }}>
+                <Button
+                  onClick={handleBackToResults}
+                  sx={{ mb: 2, float: "left", marginRight: "10px" }}
+                >
+                  <KeyboardBackspaceIcon
+                    fontSize="large"
+                    sx={{ mr: 1, color: "#FFB800" }}
+                  />
+                </Button>
+                <RidePersonDetais ride={selectedRide} />
+              </div>
+            )}
+          </Grid>
+        )}
+
+        {/* Right Section (Map) - Expands in "search" mode */}
         <Grid
-          itemrides
-          xs={10}
-          md={6}
-          sx={{ height: "400px", ml: { xs: 0, md: 10 } }}
+          item
+          xs={12}
+          sm={10}
+          md={view === "search" ? 5 : 4} // Expands when in "search" mode
+          sx={{
+            height: "450px",
+            maxWidth: "800px", // Increases max width when search mode
+            mx: "auto",
+            animation: `${
+              view === "search" ? fadeIn : zoomIn
+            } 0.8s ease-in-out`, // تفعيل الأنيميشن حسب الوضع الحالي
+          }}
         >
           <MapComponent
             onLocationSelect={handleLocationSelect}
@@ -152,18 +203,6 @@ export function RideSearch() {
           />
         </Grid>
       </Grid>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {rideData &&
-        rideData.rides.map((ride) => (
-          <div key={ride._id}>
-            <p>{ride.fromLocation}</p>
-            <p>{ride.toLocation}</p>
-            <p>{ride.carType}</p>
-            <p>{ride.price}</p>
-            <p>{ride.rideDateTime}</p>
-          </div>
-        ))}
-    </Container>
+    </Stack>
   );
 }

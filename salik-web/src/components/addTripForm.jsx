@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
-import MapComponent from "./Mapcomponent/Mapcomponent";
+import MapComponent from "./Mapcomponent/MapComponent";
 
 const schema = yup.object().shape({
   fromLocation: yup.string().required("Pickup location is required"),
@@ -202,7 +202,12 @@ const AddTripForm = () => {
             </Button>
           </form>
         </Grid>
-        <Grid item xs={12} md={6} style={{ height: "400px" }}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          style={{ height: "400px", position: "relative" }}
+        >
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}

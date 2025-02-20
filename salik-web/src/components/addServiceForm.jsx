@@ -14,7 +14,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
-import MapComponent from "./Mapcomponent/Mapcomponent";
+import MapComponent from "./Mapcomponent/MapComponent";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -263,7 +263,12 @@ const AddServiceForm = () => {
         </Grid>
 
         {/* Map Section */}
-        <Grid item xs={12} md={6}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          style={{ height: "400px", position: "relative" }}
+        >
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
