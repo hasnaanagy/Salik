@@ -5,6 +5,7 @@ import addMechanicReducer from "./slices/addMechanicSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
 import rideslice from "./slices/rideSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,

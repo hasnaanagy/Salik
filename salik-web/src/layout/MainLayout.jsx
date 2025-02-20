@@ -8,7 +8,7 @@ import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
-import { ProviderNotifications } from "../components/ProviderNotifications";
+import { ProviderNotifications } from "../components/providerNotifications";
 
 export default function MainLayout() {
   return (
