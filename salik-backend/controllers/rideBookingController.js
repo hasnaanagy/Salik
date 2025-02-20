@@ -1,29 +1,52 @@
 const Ride = require("../models/Ride");
 const RideBooking = require("../models/RideBookings");
+const User = require("../models/User");
+
+// Book a Ride
 exports.bookRide = async (req, res) => {
     try {
-        const customerId = req.userId; // Extract from token
+        const customerId = req.user._id; // Extract from token
         const { rideId, bookedSeats } = req.body;
 
+        // Get the ride and user info
         const ride = await Ride.findById(rideId);
+        const user = await User.findById(customerId);
+
         if (!ride) {
             return res.status(404).json({ message: "Ride not found" });
         }
 
-        if (ride.bookedSeats + bookedSeats > ride.totalSeats) {
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Ensure only customers can book a ride
+        if (user.type !== "customer") {
+            return res.status(403).json({ message: "Only customers can book rides." });
+        }
+
+        // Prevent booking a past or canceled ride
+        if (ride.status === "cancelled" || ride.rideDateTime < new Date()) {
+            return res.status(400).json({ message: "Ride is not available for booking" });
+        }
+
+        // Prevent overbooking seats
+        if (ride.totalSeats - ride.bookedSeats < bookedSeats) {
             return res.status(400).json({ message: "Not enough seats available" });
         }
 
+        // Create new booking
         const newBooking = new RideBooking({
             customerId,
             rideId,
-            providerId: ride.providerId, // Get providerId from the Ride
+            providerId: ride.providerId,
             bookedSeats,
             status: "upcoming",
         });
 
         await newBooking.save();
 
+        // Update booked seats count
         ride.bookedSeats += bookedSeats;
         await ride.save();
 
@@ -34,49 +57,51 @@ exports.bookRide = async (req, res) => {
 };
 
 
-exports.getCustomerRides = async (req, res) => {
+// Get Rides for a User (Both Customer & Provider)
+exports.getUserRides = async (req, res) => {
     try {
-        const { customerId } = req.params;
+        const userId = req.user._id;
+        const now = new Date();
 
-        // Automatically update past rides when fetched
-        await Ride.updateMany(
-            { rideDateTime: { $lt: new Date() }, status: "upcoming" },
-            { $set: { status: "completed" } }
-        );
+        const upcomingRides = [];
+        const pastRides = [];
+        const cancelledRides = [];
 
-        const upcomingRides = await RideBooking.find({ customerId, status: "upcoming" }).populate("rideId");
-        const cancelledRides = await RideBooking.find({ customerId, status: "cancelled" }).populate("rideId");
-        const pastRides = await RideBooking.find({ customerId, status: "completed" }).populate("rideId");
+        const bookedRides = await RideBooking.find({ customerId: userId }).populate("rideId");
+        
+        bookedRides.forEach((booking) => {
+            if (!booking.rideId) return;
+            
+            const ride = booking.rideId;
+            const formattedBooking = {
+                _id: booking._id, // Booking ID
+                rideId: ride._id,
+                providerId: ride.providerId,
+                bookedSeats: booking.bookedSeats,
+                status: booking.status,
+                rideDateTime: ride.rideDateTime
+            };
 
-        res.status(200).json({ upcomingRides, cancelledRides, pastRides });
+            if (booking.status === "cancelled") {
+                cancelledRides.push(formattedBooking);
+            } else if (ride.rideDateTime < now) {
+                pastRides.push(formattedBooking);
+            } else {
+                upcomingRides.push(formattedBooking);
+            }
+        });
+
+        res.status(200).json({ upcomingRides, pastRides, cancelledRides });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching rides", error: error.message });
+        res.status(500).json({ message: "Error retrieving user rides", error: error.message });
     }
 };
 
-exports.getProviderRides = async (req, res) => {
-    try {
-        const { providerId } = req.params;
 
-        // Automatically update past rides when fetched
-        await Ride.updateMany(
-            { rideDateTime: { $lt: new Date() }, status: "upcoming" },
-            { $set: { status: "completed" } }
-        );
-
-        const upcomingRides = await Ride.find({ providerId, status: "upcoming" });
-        const cancelledRides = await Ride.find({ providerId, status: "cancelled" });
-        const pastRides = await Ride.find({ providerId, status: "completed" });
-
-        res.status(200).json({ upcomingRides, cancelledRides, pastRides });
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching rides", error: error.message });
-    }
-};
-
-
+// Cancel Ride Booking// Cancel Ride Booking (Customer)// Allow Customer to Cancel Their Booking
 exports.cancelRideBooking = async (req, res) => {
     try {
+        const customerId = req.user._id;
         const { bookingId } = req.params;
 
         const booking = await RideBooking.findById(bookingId);
@@ -84,12 +109,20 @@ exports.cancelRideBooking = async (req, res) => {
             return res.status(404).json({ message: "Booking not found" });
         }
 
+        if (booking.customerId.toString() !== customerId.toString()) {
+            return res.status(403).json({ message: "You can only cancel your own bookings" });
+        }
+
+        if (booking.status === "cancelled") {
+            return res.status(400).json({ message: "Booking is already cancelled" });
+        }
+
         booking.status = "cancelled";
         await booking.save();
 
         const ride = await Ride.findById(booking.rideId);
         if (ride) {
-            ride.bookedSeats -= booking.bookedSeats;
+            ride.bookedSeats = Math.max(0, ride.bookedSeats - booking.bookedSeats);
             await ride.save();
         }
 
