@@ -42,11 +42,9 @@ exports.createRide = async (req, res) => {
       rideDateTime,
     });
     if (existingRide) {
-      return res
-        .status(400)
-        .json({
-          message: "You already have a ride scheduled at this date and time.",
-        });
+      return res.status(400).json({
+        message: "You already have a ride scheduled at this date and time.",
+      });
     }
 
     const newRide = new Ride({
@@ -78,12 +76,10 @@ exports.searchRides = async (req, res) => {
     const { fromLocation, toLocation, date, time } = req.query;
 
     if (!fromLocation || !toLocation || !date) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Both 'fromLocation' and 'toLocation' and 'date' are required.",
-        });
+      return res.status(400).json({
+        message:
+          "Both 'fromLocation' and 'toLocation' and 'date' are required.",
+      });
     }
 
     // Convert date & time into a full Date object
@@ -101,8 +97,11 @@ exports.searchRides = async (req, res) => {
       toLocation: { $regex: new RegExp(toLocation, "i") },
       rideDateTime: { $gte: startDateTime, $lte: endDateTime },
     };
-
-    const rides = await Ride.find(query);
+    // Sort reviews by newest first
+    const rides = await Ride.find(query).populate(
+      "providerId",
+      "fullName profileImg phone nationalId"
+    );
 
     if (rides.length === 0) {
       return res
