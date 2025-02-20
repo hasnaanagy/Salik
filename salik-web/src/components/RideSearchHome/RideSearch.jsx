@@ -84,14 +84,14 @@ export function RideSearch() {
   };
 
   return (
-    <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
+    <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 3 } }}>
       <Grid container spacing={4} justifyContent="center">
         {/* Left Section (Ride Form & Navigation) */}
         <Grid
           item
           xs={12}
           sm={10}
-          md={4}
+          md={view === "search" ? 6 : 3}
           sx={{
             textAlign: {
               xs: "center",
