@@ -14,7 +14,9 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
-import MapComponent from "./Mapcomponent/Mapcomponent";
+
+import MapComponent from "./Mapcomponent/MapComponent";
+
 
 // Validation schema
 const schema = yup.object().shape({
@@ -27,7 +29,11 @@ const schema = yup.object().shape({
 
 const AddServiceForm = () => {
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.mechanicService || {});
+
+  const { loading, error } = useSelector(
+    (state) => state.mechanicService || {}
+  );
+
   const {
     control,
     handleSubmit,
@@ -85,7 +91,8 @@ const AddServiceForm = () => {
       serviceType: data.mechanicType,
       location: {
         type: "Point",
-        coordinates: [pickupCoords.lng, pickupCoords.lat]
+        coordinates: [pickupCoords.lng, pickupCoords.lat],
+
       },
       addressOnly: data.mechanicLocation,
       workingDays: data.workingDays,
@@ -140,7 +147,11 @@ const AddServiceForm = () => {
                 />
               )}
             />
-            <span style={{ color: "red", fontSize: "14px" }}>{locationError}</span>
+
+            <span style={{ color: "red", fontSize: "14px" }}>
+              {locationError}
+            </span>
+
 
             {/* Mechanic Type */}
             <Controller
@@ -169,27 +180,37 @@ const AddServiceForm = () => {
               render={({ field }) => (
                 <div>
                   <Typography variant="subtitle1">Working Days</Typography>
-                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(
-                    (day) => (
-                      <FormControlLabel
-                        key={day}
-                        control={
-                          <Checkbox
-                            checked={field.value.includes(day)}
-                            onChange={(e) => {
-                              const newValue = e.target.checked
-                                ? [...field.value, day]
-                                : field.value.filter((d) => d !== day);
-                              field.onChange(newValue);
-                            }}
-                          />
-                        }
-                        label={day}
-                      />
-                    )
-                  )}
+
+                  {[
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday",
+                  ].map((day) => (
+                    <FormControlLabel
+                      key={day}
+                      control={
+                        <Checkbox
+                          checked={field.value.includes(day)}
+                          onChange={(e) => {
+                            const newValue = e.target.checked
+                              ? [...field.value, day]
+                              : field.value.filter((d) => d !== day);
+                            field.onChange(newValue);
+                          }}
+                        />
+                      }
+                      label={day}
+                    />
+                  ))}
                   {errors.workingDays && (
-                    <Typography color="error">{errors.workingDays.message}</Typography>
+                    <Typography color="error">
+                      {errors.workingDays.message}
+                    </Typography>
+
                   )}
                 </div>
               )}
@@ -251,8 +272,17 @@ const AddServiceForm = () => {
         </Grid>
 
         {/* Map Section */}
-        <Grid item xs={12} md={6}>
-          <MapComponent onLocationSelect={handleLocationSelect} pickupCoords={pickupCoords} />
+        <Grid
+          item
+          xs={12}
+          md={6}
+          style={{ height: "400px", position: "relative" }}
+        >
+          <MapComponent
+            onLocationSelect={handleLocationSelect}
+            pickupCoords={pickupCoords}
+          />
+
         </Grid>
       </Grid>
     </Container>

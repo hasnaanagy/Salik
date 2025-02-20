@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid, Box, Typography, Container } from "@mui/material";
-import SignUp from "../components/signup";
+import SignUp from "../components/signUp";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUpPage() {

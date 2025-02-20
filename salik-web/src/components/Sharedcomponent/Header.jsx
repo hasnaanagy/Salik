@@ -15,7 +15,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../../../public/images/logonavbar.jpg"; // Adjust the path accordingly
 
 export function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Change to false to test
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Change to false to test
   const [anchorEl, setAnchorEl] = useState(null);
 
   // Handle Menu Open

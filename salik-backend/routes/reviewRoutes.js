@@ -8,12 +8,12 @@ const { verifyToken } = require("../middleware/authMiddleware"); // Middleware t
 const router = express.Router();
 
 // Route to add a review
-router.post("/add-review/:id", verifyToken, addReview);
+router.post("/:id", verifyToken, addReview);
 // Route to fetch reviews for a provider
 
-router.get("/provider/:providerId/reviews", getProviderReviews);
+router.get("/:providerId", getProviderReviews);
 
-router.put("/update-review/:id", verifyToken, updateReview);
+router.put("/:id", verifyToken, updateReview);
 
-router.delete("/delete-review/:id", verifyToken, deleteReview);
+router.delete("/:id", verifyToken, deleteReview);
 module.exports = router;
