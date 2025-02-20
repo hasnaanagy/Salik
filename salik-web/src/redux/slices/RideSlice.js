@@ -46,4 +46,4 @@ const rideSlice = createSlice({
 });
 
 export const { clearRideData } = rideSlice.actions;
-export default rideSlice.reducer;
+export const rideReducer = rideSlice.reducer;

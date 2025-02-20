@@ -17,7 +17,6 @@ const verifyToken = async (req, res, next) => {
         }
 
         req.user = user; // Attach full user object to request
-        console.log("Authenticated User:", req.user); // Debug log
 
         next();
     } catch (err) {

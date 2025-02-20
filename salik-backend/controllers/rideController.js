@@ -1,10 +1,11 @@
 const Ride = require("../models/Ride");
 const User = require("../models/User");
-
+const Booking = require("../models/RideBookings");
+// Create new ride
 // Create new ride
 exports.createRide = async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -19,8 +20,7 @@ exports.createRide = async (req, res) => {
       return res.status(400).json({ message: "All fields except 'time' are required." });
     }
 
-    // Construct rideDateTime using the provided date and time
-    const rideDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`); // Default time: 00:00
+    const rideDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`);
     if (isNaN(rideDateTime.getTime())) {
       return res.status(400).json({ message: "Invalid date or time format." });
     }
@@ -59,15 +59,27 @@ exports.searchRides = async (req, res) => {
       return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' and 'date' are required." });
     }
 
-    // Convert date & time into a full Date object
-    let startDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`); // Default time: 00:00 UTC
-    if (isNaN(startDateTime.getTime())) {
-      return res.status(400).json({ message: "Invalid date or time format." });
-    }
+    // Convert date into a full Date object
+    let startDateTime = new Date(`${date}T00:00:00.000Z`); // Start of the day
+    let endDateTime = new Date(`${date}T23:59:59.999Z`); // End of the day
 
-    // Set the end of the day for filtering (if time is not provided, search for the entire day)
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(23, 59, 59, 999);
+    if (time) {
+      let searchTime = new Date(`${date}T${time}:00.000Z`);
+      if (isNaN(searchTime.getTime())) {
+        return res.status(400).json({ message: "Invalid time format." });
+      }
+
+      // Define a time range (±30 minutes)
+      let timeRangeStart = new Date(searchTime);
+      timeRangeStart.setMinutes(timeRangeStart.getMinutes() - 30);
+
+      let timeRangeEnd = new Date(searchTime);
+      timeRangeEnd.setMinutes(timeRangeEnd.getMinutes() + 30);
+
+      // Ensure the search window does not exceed the day's limits
+      startDateTime = timeRangeStart < startDateTime ? startDateTime : timeRangeStart;
+      endDateTime = timeRangeEnd > endDateTime ? endDateTime : timeRangeEnd;
+    }
 
     let query = {
       fromLocation: { $regex: new RegExp(fromLocation, "i") },
@@ -86,8 +98,6 @@ exports.searchRides = async (req, res) => {
     res.status(500).json({ message: "Error searching for rides", error: err.message });
   }
 };
-
-
 
 // Get all rides
 exports.getAllRides = async (req, res) => {
@@ -113,6 +123,15 @@ exports.getRideById = async (req, res) => {
   }
 };
 
+
+const updateRideStatus = async () => {
+  const currentDate = new Date();
+  await Ride.updateMany(
+    { rideDateTime: { $lt: currentDate }, status: "upcoming" },
+    { $set: { status: "completed" } }
+  );
+};
+
 // Update ride details
 exports.updateRide = async (req, res) => {
   try {
@@ -121,8 +140,10 @@ exports.updateRide = async (req, res) => {
       return res.status(404).json({ message: "Ride not found" });
     }
 
-    if (ride.providerId.toString() !== req.userId) {
-      return res.status(403).json({ message: "You can only update your own rides" });
+    if (ride.providerId.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You can only update your own rides" });
     }
 
     const { carType, fromLocation, toLocation, totalSeats, price, rideDateTime } = req.body;
@@ -148,7 +169,29 @@ exports.updateRide = async (req, res) => {
   }
 };
 
-// Delete ride
+
+// Get rides by user with categorized results
+exports.getRidesByUser = async (req, res) => {
+  try {
+    await updateRideStatus();
+    const rides = await Ride.find({ providerId: req.user._id });
+
+    const upcomingRides = rides.filter((ride) => ride.status === "upcoming");
+    const completedRides = rides.filter((ride) => ride.status === "completed");
+    const canceledRides = rides.filter((ride) => ride.status === "canceled");
+
+    res.status(200).json({
+      message: "Rides retrieved successfully",
+      upcoming: upcomingRides,
+      completed: completedRides,
+      canceled: canceledRides,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching user's rides", error: err.message });
+  }
+};
+
+// Delete ride and cancel associated bookings
 exports.deleteRide = async (req, res) => {
   try {
     const ride = await Ride.findById(req.params.id);
@@ -156,26 +199,15 @@ exports.deleteRide = async (req, res) => {
       return res.status(404).json({ message: "Ride not found" });
     }
 
-    if (ride.providerId.toString() !== req.userId) {
+    if (ride.providerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You can only delete your own rides" });
     }
 
+    await Booking.updateMany({ rideId: ride._id }, { $set: { status: "canceled" } });
     await Ride.deleteOne({ _id: ride._id });
-    res.status(200).json({ message: "Ride deleted successfully" });
+
+    res.status(200).json({ message: "Ride deleted successfully, all bookings canceled" });
   } catch (err) {
     res.status(500).json({ message: "Error deleting ride", error: err.message });
-  }
-};
-
-// Get rides by user
-exports.getRidesByUser = async (req, res) => {
-  try {
-    const rides = await Ride.find({ providerId: req.userId });
-    if (rides.length === 0) {
-      return res.status(404).json({ message: "No rides found for this provider" });
-    }
-    res.status(200).json({ message: "Rides retrieved successfully", rides });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching user's rides", error: err.message });
   }
 };
