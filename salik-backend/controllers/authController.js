@@ -74,7 +74,7 @@ exports.login = async (req, res) => {
 // Switch Role Controller
 exports.switchRole = async (req, res) => {
     try {
-        const user = await User.findById(req.userId); // Get the authenticated user from token
+        const user = await User.findById(req.user._id); // Get the authenticated user from token
         if (!user) {
             return res.status(404).json({ status: 404, message: "User not found" });
         }

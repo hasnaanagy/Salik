@@ -15,8 +15,12 @@ import rideImage from "../../../public/images/car.png";
 import fuelImage from "../../../public/images/gas-pump.png";
 import mechanicImage from "../../../public/images/technician.png";
 import { StyledTextField } from "../../custom/StyledTextField";
+import { RequestService } from "../RequestService";
+import { MainButton } from "../../custom/MainButton";
 
 export function RideSearch() {
+  const [viewRequestForm, setViewRequestForm] = useState(false);
+  const [serviceType, setServiceType] = useState(null);
   const dispatch = useDispatch();
   const { data: rideData, loading, error } = useSelector((state) => state.ride);
 
@@ -54,22 +58,23 @@ export function RideSearch() {
           {/* Service Icons */}
           <Box display="flex" gap={3} mb={4}>
             <IconButton
-              component={Link}
-              to="/"
+             onClick={() => setViewRequestForm(false)}
+              // component={Link}
+              // to="/"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={rideImage} alt="Ride Icon" width={50} height={50} />
             </IconButton>
             <IconButton
-              component={Link}
-              to="/fuel"
+            onClick={() =>  {setViewRequestForm(true), setServiceType("Fuel")}}
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img src={fuelImage} alt="Fuel Icon" width={50} height={50} />
             </IconButton>
             <IconButton
-              component={Link}
-              to="/mechanic"
+              onClick={() => {setViewRequestForm(true), setServiceType("Mechanic")}}
+              // component={Link}
+              // to="/requestService"
               sx={{ backgroundColor: "#F3F3F3", p: 2, borderRadius: "12px" }}
             >
               <img
@@ -82,7 +87,8 @@ export function RideSearch() {
           </Box>
 
           {/* Form Fields */}
-          <form onSubmit={handleSubmit}>
+          {!viewRequestForm &&
+           <form onSubmit={handleSubmit}>
             <StyledTextField
               name="pickup"
               placeholder="Pickup Location"
@@ -117,22 +123,21 @@ export function RideSearch() {
               </Grid>
             </Grid>
 
-            <Button
+            <MainButton
               type="submit"
               variant="contained"
-              sx={{
-                backgroundColor: "#ffb800",
-                width: "50%",
-                mt: 3,
-                fontWeight: "bold",
-                color: "black",
-                borderRadius: "12px",
-                py: 1.5,
-              }}
+              color="primary"
+              sx={{ mt: 2 }}
             >
               Search
-            </Button>
+            </MainButton>
           </form>
+                  }
+
+                  {
+                    viewRequestForm &&
+                    <RequestService serviceType={serviceType}/>
+                  }
 
           {loading && <p>Loading...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}

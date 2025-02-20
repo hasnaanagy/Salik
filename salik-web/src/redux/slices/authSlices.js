@@ -1,66 +1,86 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUserApi } from '../../services/authService';
+// redux/slices/authSlice.js
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import apiService from "../../api/apiService";
 
-const signUpUser = createAsyncThunk('auth/signUpUser', async (userData) => {
-  try {
-    return await registerUser(userData);
-  } catch (err) {
-    throw new Error(err.response?.data?.message || err.message);
+// Signup action (same as you already have)
+export const signupUser = createAsyncThunk(
+  "auth/signupUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await apiService.create("auth/signup", userData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-});
+);
 
-export const loginUser = createAsyncThunk('auth/loginUser', async (userData, { rejectWithValue }) => {
-  try {
-    return await loginUserApi(userData);
-  } catch (error) {
-    return rejectWithValue(error.response.data.message || "Login failed.");
+// Login action
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
+  async (loginData, { rejectWithValue }) => {
+    try {
+      const response = await apiService.create("auth/login", loginData);
+      console.log("Login response:", response);
+      return response; // User data
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-});
+);
 
 const authSlice = createSlice({
-  name: 'auth',
-  initialState: { user: null, token: null, loading: false, error: null },
+  name: "auth",
+  initialState: {
+    user: null,
+    loading: false,
+    error: null,
+    token: localStorage.getItem("token") || null, // Load token from localStorage
+  },
   reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
     logout: (state) => {
-      state.user = null;
+      // Clear token on logout
+      localStorage.removeItem("authToken");
       state.token = null;
-      localStorage.removeItem("token"); // Remove token on logout
-    }
+      state.user = null;
+    },
   },
   extraReducers: (builder) => {
+    // Signup reducers (existing)
     builder
-      .addCase(signUpUser.pending, (state) => { state.loading = true; })
-      .addCase(signUpUser.fulfilled, (state, action) => { 
-        state.loading = false; 
-        state.user = action.payload; 
-        state.error = null; 
+      .addCase(signupUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(signUpUser.rejected, (state, action) => { 
-        state.loading = false; 
-        state.error = action.payload; 
-      })
-      .addCase(signUpUser.rejected, (state, action) => {
+      .addCase(signupUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
-        console.error("Error during signup: ", action.error);
+        state.user = action.payload;
       })
+      .addCase(signupUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // Login reducers
+    builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token; // Store token in state
-        localStorage.setItem("token", action.payload.token); // Save token in localStorage
+        localStorage.setItem("token", action.payload.token); // Save token to localStorage
+        state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { clearError, logout } = authSlice.actions;
 export default authSlice.reducer;
-export { signUpUser, loginUser };
-

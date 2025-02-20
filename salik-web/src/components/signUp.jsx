@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FormControl,
   Box,
@@ -7,19 +7,23 @@ import {
   IconButton,
   CircularProgress,
   Alert,
-  Typography,
 } from "@mui/material";
 import { validateField } from "../validation/validation";
-import { useDispatch, useSelector } from "react-redux";
-import { signUpUser } from "../redux/slices/authSlices";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { toast } from "react-toastify";
 import styles from "../styles/styles.module.css";
+import { clearError } from "../redux/slices/authSlices";
 
 export default function SignUp() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Get loading, user, and error from Redux store
+  const { loading, user, error } = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -30,11 +34,7 @@ export default function SignUp() {
 
   const [errors, setErrors] = useState({});
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
 
   const handlePasswordToggle = (field) => {
     if (field === "password") setPasswordVisible((prev) => !prev);
@@ -45,18 +45,13 @@ export default function SignUp() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Validate field
     const error = validateField(name, value, formData);
     setErrors({ ...errors, [name]: error });
-  const handlePasswordToggle = (field) => {
-    setShowPassword({ ...showPassword, [field]: !showPassword[field] });
-
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let formErrors = {};
-
 
     Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field], formData);
@@ -65,81 +60,107 @@ export default function SignUp() {
 
     setErrors(formErrors);
 
-    // If there are no errors, submit the form
     if (Object.keys(formErrors).length === 0) {
       const { confirmPassword, ...dataToSubmit } = formData;
 
-      // Ensure password and confirmPassword match
-      if (formData.password !== formData.confirmPassword) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          confirmPassword: "Passwords do not match",
-        }));
-        return;
-      }
-
-      console.log("Data to submit: ", dataToSubmit);  // Debugging line
-
-      try {
-        const { user } = await dispatch(signUpUser(dataToSubmit));
-
-        if (user) {
-          navigate("/login");
-        }
-      } catch (err) {
-        console.error("Signup error: ", err);
-      }
+      dispatch(signupUser(dataToSubmit));
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    }
+
+    if (error && error.toLowerCase().includes("already exists")) {
+      setTimeout(() => {
+        navigate("/login");
+
+        dispatch(clearError());
+      }, 2000);
+    }
+  }, [user, error, navigate, dispatch]);
 
   return (
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
       <Box className={styles.formBox}>
-        {["fullName", "phone", "password", "confirmPassword", "nationalId"].map((field) => (
-          <FormControl key={field} error={!!errors[field]}>
-            <StyledInputLabel htmlFor={field}>
-              {field.charAt(0).toUpperCase() + field.slice(1)}
-            </StyledInputLabel>
-            <StyledOutlinedInput
-              id={field}
-              name={field}
-              type={field === "password" ? (passwordVisible ? "text" : "password") :
-                field === "confirmPassword" ? (confirmPasswordVisible ? "text" : "password") : "text"}
-              value={formData[field]}
-              onChange={handleChange}
-              placeholder={`Enter your ${field}`}
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
-              endAdornment={
-                (field === "password" || field === "confirmPassword") ? (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => handlePasswordToggle(field)} edge="end">
-                      {field === "password" ? (passwordVisible ? <VisibilityOff /> : <Visibility />) :
-                        (confirmPasswordVisible ? <VisibilityOff /> : <Visibility />)}
-                    </IconButton>
-                  </InputAdornment>
-                ) : null
-              }
-            />
-            {errors[field] && <FormHelperText>{errors[field]}</FormHelperText>}
-          </FormControl>
-        ))}
-
-        {errorMessage && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            <Typography variant="body2">{errorMessage}</Typography>
-          </Alert>
+        {["fullName", "phone", "password", "confirmPassword", "nationalId"].map(
+          (field) => (
+            <FormControl key={field} error={!!errors[field]}>
+              <StyledInputLabel htmlFor={field}>
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </StyledInputLabel>
+              <StyledOutlinedInput
+                id={field}
+                name={field}
+                type={
+                  field === "password"
+                    ? passwordVisible
+                      ? "text"
+                      : "password"
+                    : field === "confirmPassword"
+                    ? confirmPasswordVisible
+                      ? "text"
+                      : "password"
+                    : "text"
+                }
+                value={formData[field]}
+                onChange={handleChange}
+                placeholder={`Enter your ${field}`}
+                label={field.charAt(0).toUpperCase() + field.slice(1)}
+                endAdornment={
+                  field === "password" || field === "confirmPassword" ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => handlePasswordToggle(field)}
+                        edge="end"
+                      >
+                        {field === "password" ? (
+                          passwordVisible ? (
+                            <Visibility />
+                          ) : (
+                            <VisibilityOff />
+                          )
+                        ) : confirmPasswordVisible ? (
+                          <Visibility />
+                        ) : (
+                          <VisibilityOff />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null
+                }
+              />
+              {errors[field] && (
+                <FormHelperText>{errors[field]}</FormHelperText>
+              )}
+            </FormControl>
+          )
         )}
 
+        {/* Submit Button */}
         <MainButton
           type="submit"
           variant="contained"
-          disabled={loading}
           style={{ backgroundColor: "#FFB800", color: "black" }}
+          disabled={loading}
         >
-          {loading ? <CircularProgress size={24} style={{ color: "black" }} /> : "Sign Up"}
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
         </MainButton>
       </Box>
+
+      {error && (
+        <Alert severity="error" style={{ marginTop: 20 }}>
+          {error}
+        </Alert>
+      )}
+      {user && (
+        <Alert severity="success" style={{ marginTop: 20 }}>
+          ✅ User Registered Successfully!
+        </Alert>
+      )}
     </form>
   );
-}
 }

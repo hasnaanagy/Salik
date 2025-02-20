@@ -10,6 +10,7 @@ import Home from "../pages/Home";
 import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
+import { ProviderNotifications } from "../components/providerNotifications";
 
 
 export default function MainLayout() {
@@ -27,6 +28,7 @@ export default function MainLayout() {
             <Route path="/addMechanic" element={<AddMechanic />} />
             <Route path="/licence" element={<UploadLicence />} />
             <Route path="/reviews" element={<Reviews />} />
+            <Route path="/providerNotifications" element={<ProviderNotifications />} />
           </Route>
         </Routes>
       </BrowserRouter>
