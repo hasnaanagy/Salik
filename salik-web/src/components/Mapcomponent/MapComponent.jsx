@@ -9,6 +9,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@mui/material";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
 
 function LocationMarker({ position, setPosition, onLocationSelect }) {
   const map = useMap();
@@ -86,11 +87,11 @@ export default function MapComponent({ onLocationSelect, pickupCoords }) {
   };
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <MapContainer
         center={position || [30.0444, 31.2357]} // القاهرة كموقع افتراضي
         zoom={12}
-        style={{ height: "400px", width: "100%" }}
+        style={{ height: "400px", width: "100%", position: "absolute" }}
         whenCreated={setMap}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -104,12 +105,20 @@ export default function MapComponent({ onLocationSelect, pickupCoords }) {
         variant="contained"
         onClick={getCurrentLocation}
         style={{
-          marginTop: "10px",
+          position: "absolute",
           backgroundColor: "#ffb800",
           color: "black",
+          zIndex: 1000,
+          right: "10px",
+          top: "10px",
+          borderRadius: "10%",
+          width: "50px",
+          height: "50px",
         }}
       >
-        Set My Location
+        <MyLocationIcon
+          style={{ fontSize: "30px", backgroundColor: "transparent" }}
+        />
       </Button>
          
     </div>
