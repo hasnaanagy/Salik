@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+
 import { Container, Grid, TextField, Button, Typography } from "@mui/material";
+
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -62,7 +64,9 @@ const AddTripForm = () => {
       totalSeats: parseInt(data.totalSeats, 10), // Ensure it's a number
       price: parseInt(data.price, 10), // Ensure it's a number
       date: data.date,
+
       time: data.time,
+
     };
 
     dispatch(postRideData(formattedData));
@@ -77,9 +81,11 @@ const AddTripForm = () => {
           </Typography>
           {error && (
             <Typography color="error">
+
               {typeof error === "string"
                 ? error
                 : error.message || "An error occurred"}
+
             </Typography>
           )}
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -191,11 +197,7 @@ const AddTripForm = () => {
               type="submit"
               variant="contained"
               fullWidth
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#ffb800",
-                color: "black",
-              }}
+              style={{ marginTop: "20px", backgroundColor: "#ffb800", color: "black" }}
               disabled={loading}
             >
               {loading ? "Submitting..." : "Confirm Pickup"}

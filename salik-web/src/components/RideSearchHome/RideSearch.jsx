@@ -85,6 +85,7 @@ export function RideSearch() {
   };
 
   return (
+
     <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
       <Grid container spacing={4} justifyContent="center">
         {/* Left Section (Ride Form & Navigation) */}
@@ -110,6 +111,7 @@ export function RideSearch() {
               mb={3}
               textAlign={{ xs: "center", md: "left" }}
               sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
+
             >
               Go Anywhere With <span style={{ color: "#FFB800" }}>SALIK</span>
             </Typography>
