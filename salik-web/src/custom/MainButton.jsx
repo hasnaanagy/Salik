@@ -11,8 +11,7 @@ export const MainButton = styled(Button).attrs({ variant: "contained" })`
   width: 40%;
   height: 40px;
   line-height: 40px;
-
   &:hover {
-    background-color: #FFB800;
+    background-color: #ffb800;
   }
 `;

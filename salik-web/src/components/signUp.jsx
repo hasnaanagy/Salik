@@ -11,11 +11,11 @@ import {
 import { validateField } from "../validation/validation";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { signupUser, clearError } from "../redux/slices/authSlice"; // Import clearError
 import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { clearError, signupUser } from "../redux/slices/authSlice";
 
 export default function SignUp() {
   const dispatch = useDispatch();

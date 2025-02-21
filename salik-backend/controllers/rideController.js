@@ -16,11 +16,20 @@ exports.createRide = async (req, res) => {
         .json({ message: "Only Providers can create rides." });
     }
 
+    const { carType, fromLocation, toLocation, totalSeats, price, date, time } =
+      req.body;
 
-    const { carType, fromLocation, toLocation, totalSeats, price, date, time } = req.body;
-
-    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !date) {
-      return res.status(400).json({ message: "All fields except 'time' are required." });
+    if (
+      !carType ||
+      !fromLocation ||
+      !toLocation ||
+      !totalSeats ||
+      !price ||
+      !date
+    ) {
+      return res
+        .status(400)
+        .json({ message: "All fields except 'time' are required." });
     }
 
     const rideDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`);
@@ -28,15 +37,14 @@ exports.createRide = async (req, res) => {
       return res.status(400).json({ message: "Invalid date or time format." });
     }
 
-
-    const existingRide = await Ride.findOne({ providerId: user._id, rideDateTime });
-
+    const existingRide = await Ride.findOne({
+      providerId: user._id,
+      rideDateTime,
+    });
     if (existingRide) {
-      return res
-        .status(400)
-        .json({
-          message: "You already have a ride scheduled at this date and time.",
-        });
+      return res.status(400).json({
+        message: "You already have a ride scheduled at this date and time.",
+      });
     }
 
     const newRide = new Ride({
@@ -62,16 +70,17 @@ exports.createRide = async (req, res) => {
   }
 };
 
-
 // Search rides
 exports.searchRides = async (req, res) => {
   try {
     const { fromLocation, toLocation, date, time } = req.query;
 
     if (!fromLocation || !toLocation || !date) {
-      return res.status(400).json({ message: "Both 'fromLocation' and 'toLocation' and 'date' are required." });
+      return res.status(400).json({
+        message:
+          "Both 'fromLocation' and 'toLocation' and 'date' are required.",
+      });
     }
-
 
     // Convert date into a full Date object
     let startDateTime = new Date(`${date}T00:00:00.000Z`); // Start of the day
@@ -99,8 +108,11 @@ exports.searchRides = async (req, res) => {
       toLocation: { $regex: new RegExp(toLocation, "i") },
       rideDateTime: { $gte: startDateTime, $lte: endDateTime },
     };
-
-    const rides = await Ride.find(query);
+    // Sort reviews by newest first
+    const rides = await Ride.find(query).populate(
+      "providerId",
+      "fullName profileImg phone nationalId"
+    );
 
     if (rides.length === 0) {
       return res
@@ -244,3 +256,5 @@ exports.deleteRide = async (req, res) => {
       .json({ message: "Error deleting ride", error: err.message });
   }
 };
+
+

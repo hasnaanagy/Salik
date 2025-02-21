@@ -14,7 +14,9 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
-import MapComponent from "./Mapcomponent/Mapcomponent";
+
+import MapComponent from "./Mapcomponent/MapComponent";
+
 
 // Validation schema
 const schema = yup.object().shape({
@@ -27,9 +29,11 @@ const schema = yup.object().shape({
 
 const AddServiceForm = () => {
   const dispatch = useDispatch();
+
   const { loading, error } = useSelector(
     (state) => state.mechanicService || {}
   );
+
   const {
     control,
     handleSubmit,
@@ -88,6 +92,7 @@ const AddServiceForm = () => {
       location: {
         type: "Point",
         coordinates: [pickupCoords.lng, pickupCoords.lat],
+
       },
       addressOnly: data.mechanicLocation,
       workingDays: data.workingDays,
@@ -142,9 +147,11 @@ const AddServiceForm = () => {
                 />
               )}
             />
+
             <span style={{ color: "red", fontSize: "14px" }}>
               {locationError}
             </span>
+
 
             {/* Mechanic Type */}
             <Controller
@@ -173,6 +180,7 @@ const AddServiceForm = () => {
               render={({ field }) => (
                 <div>
                   <Typography variant="subtitle1">Working Days</Typography>
+
                   {[
                     "Monday",
                     "Tuesday",
@@ -202,6 +210,7 @@ const AddServiceForm = () => {
                     <Typography color="error">
                       {errors.workingDays.message}
                     </Typography>
+
                   )}
                 </div>
               )}
@@ -263,11 +272,17 @@ const AddServiceForm = () => {
         </Grid>
 
         {/* Map Section */}
-        <Grid item xs={12} md={6}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          style={{ height: "400px", position: "relative" }}
+        >
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
           />
+
         </Grid>
       </Grid>
     </Container>

@@ -1,4 +1,3 @@
-
 import { Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
@@ -20,13 +19,21 @@ export const ProviderNotifications = () => {
   }, []);
   return (
     <div>
-      <Typography variant="h4" gutterBottom>New Service Requests</Typography>
+      <Typography variant="h4" gutterBottom>
+        New Service Requests
+      </Typography>
       {requests.map((req, index) => (
         <div key={index}>
-          <p><strong>Problem:</strong> {req.problem}</p>
-          <p><strong>Location:</strong> {req.location.lat}, {req.location.lng}</p>
+          <p>
+            <strong>Problem:</strong> {req.problem}
+          </p>
+          <p>
+            <strong>Location:</strong> {req.location.lat}, {req.location.lng}
+          </p>
+
         </div>
       ))}
     </div>
   );
 };
+
