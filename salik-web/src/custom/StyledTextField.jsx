@@ -8,5 +8,4 @@ export const StyledTextField = styled("input")(({ theme }) => ({
   border: "1px solid #ccc",
   backgroundColor: "#F3F3F3",
   fontSize: "16px",
-  outline: "none",
 }));

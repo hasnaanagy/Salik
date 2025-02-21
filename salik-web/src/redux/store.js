@@ -3,8 +3,8 @@ import addServiceReducer from "./slices/addServiceSlice";
 import addMechanicReducer from "./slices/addMechanicSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
-import { authReducer } from "./slices/authSlices";
 import { rideReducer } from "./slices/RideSlice";
+import { authReducer } from "./slices/authSlice";
 
 export const store = configureStore({
   reducer: {

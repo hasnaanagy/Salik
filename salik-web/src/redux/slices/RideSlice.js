@@ -1,16 +1,30 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const BASE_URL = "http://localhost:5000/api";
+
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
-  async (formData, { rejectWithValue }) => {
+  async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
+    console.log("Fetching ride data for:", {
+      fromLocation,
+      toLocation,
+      date,
+      time,
+    });
+
     try {
-      const response = await axios.get("", {
-        params: formData,
+      const response = await axios.get(`${BASE_URL}/rides/search`, {
+        params: { fromLocation, toLocation, date, time },
       });
+
+      console.log("Ride data received:", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue("Failed to fetch ride data");
+      console.error("Error fetching ride data:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch ride data"
+      );
     }
   }
 );

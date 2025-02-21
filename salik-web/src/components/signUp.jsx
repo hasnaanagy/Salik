@@ -15,7 +15,7 @@ import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { clearError, signupUser } from "../redux/slices/authSlices";
+import { clearError, signupUser } from "../redux/slices/authSlice";
 
 export default function SignUp() {
   const dispatch = useDispatch();
@@ -164,3 +164,4 @@ export default function SignUp() {
     </form>
   );
 }
+
