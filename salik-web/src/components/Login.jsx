@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import {
   FormControl,
   Box,
@@ -17,8 +15,7 @@ import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { validateField } from "../validation/validation"; // Add this import statement
-import { clearError, loginUser } from "../redux/slices/authSlices";
+import { clearError } from "../redux/slices/authSlices";
 export default function Login() {
   const [formData, setFormData] = useState({ phone: "", password: "" });
   const [errors, setErrors] = useState({}); 

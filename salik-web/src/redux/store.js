@@ -10,7 +10,6 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     addService: addServiceReducer,
-    fuelService: addFuelReducer,
     mechanicService: addMechanicReducer,
     images: imageReducer,
     reviewsSlice:reviewReducer,
