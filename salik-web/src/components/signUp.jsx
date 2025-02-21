@@ -101,10 +101,10 @@ export default function SignUp() {
                       ? "text"
                       : "password"
                     : field === "confirmPassword"
-                    ? confirmPasswordVisible
-                      ? "text"
-                      : "password"
-                    : "text"
+                      ? confirmPasswordVisible
+                        ? "text"
+                        : "password"
+                      : "text"
                 }
                 value={formData[field]}
                 onChange={handleChange}

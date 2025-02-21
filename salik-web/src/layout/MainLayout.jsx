@@ -9,6 +9,7 @@ import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
 import { ProviderNotifications } from "../components/providerNotifications";
+import Activity from "../pages/Activity";
 
 export default function MainLayout() {
   return (
@@ -23,6 +24,7 @@ export default function MainLayout() {
             <Route path="/addService" element={<AddService />} />
             <Route path="/licence" element={<UploadLicence />} />
             <Route path="/reviews" element={<Reviews />} />
+            <Route path="/activities" element={<Activity />} />
             <Route
               path="/providerNotifications"
               element={<ProviderNotifications />}

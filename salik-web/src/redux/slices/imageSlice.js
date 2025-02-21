@@ -1,11 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import uploadService from "../../api/uploadLicenceService";
+import { uploadImageApi } from "../../api/uploadLicenceService";
 
+// Async thunk for uploading images
 export const uploadImage = createAsyncThunk(
-    "images/uploadImage",
-    async ({ file, type }) => {
-        const response = await uploadService.uploadImage(file);
-        return { type, url: response.url };
+    "image/upload",
+    async ({ file, type }, { rejectWithValue }) => {
+        try {
+            const response = await uploadImageApi(file, type);
+            return { type, url: response.url }; // Save image URL with type
+        } catch (error) {
+            return rejectWithValue(error);
+        }
     }
 );
 
@@ -14,12 +19,28 @@ const imageSlice = createSlice({
     initialState: {
         profilePhoto: null,
         licensePhoto: null,
+        loading: false,
+        error: null,
     },
     reducers: {},
     extraReducers: (builder) => {
-        builder.addCase(uploadImage.fulfilled, (state, action) => {
-            state[action.payload.type] = action.payload.url;
-        });
+        builder
+            .addCase(uploadImage.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(uploadImage.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload.type === "profilePhoto") {
+                    state.profilePhoto = action.payload.url;
+                } else {
+                    state.licensePhoto = action.payload.url;
+                }
+            })
+            .addCase(uploadImage.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     },
 });
 

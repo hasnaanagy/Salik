@@ -5,7 +5,9 @@ const User = require("../models/User");
 exports.createService = async (req, res) => {
   try {
     const { serviceType, location, workingDays, workingHours } = req.body;
+
     const  userId  = req.user._id;
+
 
     if (!serviceType || !workingDays || !workingHours) {
       return res
@@ -93,7 +95,9 @@ exports.updateService = async (req, res) => {
   try {
     const { serviceId } = req.params;
     const { location, workingDays, workingHours } = req.body;
+
     const userId  = req.user._id;
+
 
     const service = await Service.findById(serviceId);
     if (!service) {
@@ -147,6 +151,7 @@ exports.updateService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     const { serviceId } = req.params;
+
     const userId  = req.user._id;
 
     const service = await Service.findById(serviceId);
@@ -171,7 +176,9 @@ exports.deleteService = async (req, res) => {
 // Get all services of a provider
 exports.getServicesByProvider = async (req, res) => {
   try {
+
     const userId  = req.user._id;
+
 
     const services = await Service.find({ userId });
     if (services.length === 0) {
