@@ -4,8 +4,8 @@ import addServiceReducer from "./slices/addServiceSlice";
 import addMechanicReducer from "./slices/addMechanicSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
-import { authReducer } from "./slices/authSlices";
-import { rideReducer } from "./slices/RideSlice";
+import { rideReducer } from "./slices/rideSlice";
+import { bookingReducer } from "./slices/bookingSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +13,8 @@ export const store = configureStore({
     addService: addServiceReducer,
     mechanicService: addMechanicReducer,
     images: imageReducer,
-    reviewsSlice:reviewReducer,
+    reviewsSlice: reviewReducer,
     ride: rideReducer,
+    booking: bookingReducer,
   },
 });

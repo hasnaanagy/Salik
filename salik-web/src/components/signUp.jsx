@@ -16,7 +16,6 @@ import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { clearError, signupUser } from "../redux/slices/authSlices";
 
 export default function SignUp() {
   const dispatch = useDispatch();

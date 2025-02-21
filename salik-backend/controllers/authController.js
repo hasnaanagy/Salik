@@ -7,24 +7,20 @@ exports.signup = async (req, res) => {
   const { fullName, phone, password, nationalId } = req.body;
 
   if (!fullName || !phone || !password || !nationalId) {
-    return res
-      .status(400)
-      .json({
-        status: 400,
-        message: "Please provide all the required fields!",
-      });
+    return res.status(400).json({
+      status: 400,
+      message: "Please provide all the required fields!",
+    });
   }
 
   try {
     // Check if the user already exists by phone number or nationalId
     const userExists = await User.findOne({ $or: [{ phone }, { nationalId }] });
     if (userExists) {
-      return res
-        .status(400)
-        .json({
-          status: 400,
-          message: "User with this phone number or national ID already exists!",
-        });
+      return res.status(400).json({
+        status: 400,
+        message: "User with this phone number or national ID already exists!",
+      });
     }
 
     // Hash password before saving
@@ -57,12 +53,10 @@ exports.login = async (req, res) => {
   const { phone, password } = req.body;
 
   if (!phone || !password) {
-    return res
-      .status(400)
-      .json({
-        status: 400,
-        message: "Please provide both phone number and password!",
-      });
+    return res.status(400).json({
+      status: 400,
+      message: "Please provide both phone number and password!",
+    });
   }
 
   try {
@@ -116,12 +110,71 @@ exports.switchRole = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({
+      status: 500,
+      message: "Error switching role",
+      error: err.message,
+    });
+  }
+};
+
+// Get User Controller
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id); // Get the authenticated user from token
+    console.log(user);
+
+    if (!user) {
+      return res.status(404).json({ status: 404, message: "User not found" });
+    }
     res
-      .status(500)
-      .json({
-        status: 500,
-        message: "Error switching role",
-        error: err.message,
+      .status(200)
+      .json({ status: 200, message: "User retrieved successfully", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: 500,
+      message: "Error fetching user",
+      error: err.message,
+    });
+  }
+};
+
+// Update User Controller
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user_id); // Get the authenticated user from token
+    if (!user) {
+      return res.status(404).json({ status: 404, message: "User not found" });
+    }
+    if (user._id.toString() !== req.userId) {
+      return res.status(403).json({
+        status: 403,
+        message: "Unauthorized: You can only update your own profile",
       });
+    }
+    // Update user details
+    user.fullName = req.body.fullName || user.fullName;
+    user.phone = req.body.phone || user.phone;
+    user.password = req.body.password || user.password;
+    user.nationalId = req.body.nationalId || user.nationalId;
+    user.profileImg = req.body.profileImg || user.profileImg;
+    user.licenseImage = req.body.licenseImage || user.licenseImage;
+    user.nationalIdImage = req.body.nationalIdImage || user.nationalIdImage;
+
+    await user.save();
+
+    res.status(200).json({
+      status: 200,
+      message: "User updated successfully",
+      updatedUser: user,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: 500,
+      message: "Error updating user",
+      error: err.message, // Include the error message in the response
+    });
   }
 };
