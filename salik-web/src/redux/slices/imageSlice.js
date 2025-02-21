@@ -1,43 +1,55 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { uploadImageApi } from "../../api/uploadLicenceService";
+import apiService from "../../api/apiService";
 
 // Async thunk for uploading images
-export const uploadImage = createAsyncThunk(
+export const uploadImages = createAsyncThunk(
     "image/upload",
-    async ({ file, type }, { rejectWithValue }) => {
+    async ({ nationalIdImage, licenseImage }, { rejectWithValue }) => {
         try {
-            const response = await uploadImageApi(file, type);
-            return { type, url: response.url }; // Save image URL with type
+            const formData = new FormData();
+
+            if (nationalIdImage) {
+                formData.append("nationalIdImage", nationalIdImage);
+            }
+            if (licenseImage) {
+                formData.append("licenseImage", licenseImage);
+            }
+
+            const response = await apiService.patch("auth", formData);
+            
+            return {
+                nationalIdImage: response.data.updatedUser.nationalIdImage,
+                licenseImage: response.data.updatedUser.licenseImage,
+            };
         } catch (error) {
-            return rejectWithValue(error);
+            return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
+
 const imageSlice = createSlice({
     name: "images",
     initialState: {
-        profilePhoto: null,
-        licensePhoto: null,
+        nationalIdImage: null,
+        licenseImage: null,
         loading: false,
         error: null,
     },
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(uploadImage.pending, (state) => {
+            .addCase(uploadImages.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(uploadImage.fulfilled, (state, action) => {
+            .addCase(uploadImages.fulfilled, (state, action) => {
                 state.loading = false;
-                if (action.payload.type === "profilePhoto") {
-                    state.profilePhoto = action.payload.url;
-                } else {
-                    state.licensePhoto = action.payload.url;
-                }
+                state.nationalIdImage = action.payload.nationalIdImage || state.nationalIdImage;
+                state.licenseImage = action.payload.licenseImage || state.licenseImage;
             })
-            .addCase(uploadImage.rejected, (state, action) => {
+            .addCase(uploadImages.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

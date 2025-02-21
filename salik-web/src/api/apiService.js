@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use(
 );
 
 const apiService = {
-  patch: async (endpoint, id, data) => {
+  patch: async (endpoint, data) => {
     const response = await axiosInstance.patch(`/${endpoint}`, data);
     return response.data;
   },

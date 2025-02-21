@@ -6,6 +6,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const http = require("http");
 const socketIo = require("socket.io");
+const path = require("path");
 
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
@@ -13,7 +14,7 @@ const rideRoutes = require("./routes/rideRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const rideBookingsRoutes = require("./routes/rideBookingRoutes");
-const requestRoutes = require("./routes/requestRoutes"); // Do not call it as a function here
+const requestRoutes = require("./routes/requestRoutes"); // Ensure requestRoutes is a function
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,10 @@ const connectedProviders = new Map(); // Store provider sockets
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve static files (for uploaded images)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -32,7 +37,7 @@ app.use("/api/rides", rideRoutes);
 app.use("/api/service", serviceRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/rideBooking", rideBookingsRoutes);
-app.use("/api/request", requestRoutes(io)); // Ensure requestRoutes is a function in requestRoutes.js
+app.use("/api/request", requestRoutes(io)); // Ensure requestRoutes is a function
 
 // WebSocket Handling
 io.on("connection", (socket) => {
@@ -55,6 +60,16 @@ io.on("connection", (socket) => {
         });
     });
 
+    // Handle provider selection by the customer
+    socket.on("confirm-provider", ({ customerId, providerId, requestId }) => {
+        console.log(`Customer ${customerId} confirmed Provider ${providerId} for Request ${requestId}`);
+
+        // Notify the selected provider
+        if (connectedProviders.has(providerId)) {
+            connectedProviders.get(providerId).emit("request-confirmed", { requestId, customerId });
+        }
+    });
+
     socket.on("disconnect", () => {
         console.log("A provider disconnected:", socket.id);
         
@@ -68,6 +83,6 @@ io.on("connection", (socket) => {
 });
 
 // Start Server
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 module.exports = { io, connectedProviders };

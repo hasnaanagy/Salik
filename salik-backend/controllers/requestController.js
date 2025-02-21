@@ -1,6 +1,6 @@
 const ServiceRequest = require("../models/RequestService");
 const Service = require("../models/Service"); // Providers are stored in Service model
-const User = require("../models/User"); // Assuming providers are stored in User model
+const User = require("../models/User");
 
 const requestController = (io) => {
     /**
@@ -27,46 +27,34 @@ const requestController = (io) => {
                 location,
                 problemDescription,
                 status: "pending",
-                notifiedProviders: [], // Store providers
+                notifiedProviders: [],
             });
     
             await newRequest.save();
     
-            // Find nearby providers who offer the requested service
             const nearbyProviders = await Service.find({
                 serviceType,
                 location: {
                     $near: {
                         $geometry: location,
-                        $maxDistance: 5000, // 5 km radius
+                        $maxDistance: 5000,
                     },
                 },
             }).populate("userId");
     
-            if (!nearbyProviders.length) {
-                return res.status(200).json({
-                    message: "Request created successfully, but no nearby providers found.",
-                    request: newRequest,
-                });
-            }
-    
-            const notifiedProviderIds = [];
-    
-            for (const provider of nearbyProviders) {
-                if (provider.userId) {
-                    const providerId = provider.userId._id;
+            if (nearbyProviders.length) {
+                const notifiedProviderIds = nearbyProviders.map(provider => provider.userId?._id).filter(Boolean);
+                
+                for (const providerId of notifiedProviderIds) {
                     io.to(providerId.toString()).emit("newServiceRequest", newRequest);
-                    notifiedProviderIds.push(providerId);
-    
-                    // Update provider's document to store this request
                     await User.findByIdAndUpdate(providerId, {
                         $push: { notifiedRequests: newRequest._id },
                     });
                 }
+                
+                newRequest.notifiedProviders = notifiedProviderIds;
+                await newRequest.save();
             }
-    
-            newRequest.notifiedProviders = notifiedProviderIds;
-            await newRequest.save();
     
             res.status(201).json({ message: "Request created successfully", request: newRequest });
         } catch (error) {
@@ -75,11 +63,10 @@ const requestController = (io) => {
         }
     };
     
-    
     /**
-     * @desc Provider accepts a service request
-     * @route POST /api/requests/accept
-     * @access Provider only
+     * @desc Update service request status (accept, confirm, complete)
+     * @route POST /api/requests/update
+     * @access Customer & Provider
      */
     const updateRequestStatus = async (req, res) => {
         try {
@@ -121,46 +108,44 @@ const requestController = (io) => {
      * @access Customer & Provider
      */
     const getRequests = async (req, res) => {
-    try {
-        let requests;
-        
-        if (req.user.type === "customer") {
-            requests = await ServiceRequest.find({ customerId: req.user._id })
-                .populate("confirmedProvider", "fullName phone profileImg")
-                .populate("acceptedProviders", "fullName phone profileImg");
-
-        } else if (req.user.type === "provider") {
-            requests = await ServiceRequest.find({
-                $or: [
-                    { notifiedProviders: req.user._id },
-                    { acceptedProviders: req.user._id },
-                    { confirmedProvider: req.user._id }
-                ]
-            })
-            .populate("customerId", "fullName phone profileImg")
-            .populate("confirmedProvider", "fullName phone profileImg");
-        } else {
-            return res.status(403).json({ message: "Invalid user type" });
+        try {
+            let requests;
+            
+            if (req.user.type === "customer") {
+                requests = await ServiceRequest.find({ customerId: req.user._id })
+                    .populate("confirmedProvider", "fullName phone profileImg")
+                    .populate("acceptedProviders", "fullName phone profileImg");
+            } else if (req.user.type === "provider") {
+                requests = await ServiceRequest.find({
+                    $or: [
+                        { notifiedProviders: req.user._id },
+                        { acceptedProviders: req.user._id },
+                        { confirmedProvider: req.user._id }
+                    ]
+                })
+                .populate("customerId", "fullName phone profileImg")
+                .populate("confirmedProvider", "fullName phone profileImg");
+            } else {
+                return res.status(403).json({ message: "Invalid user type" });
+            }
+    
+            const groupedRequests = {
+                pending: [],
+                accepted: [],
+                confirmed: [],
+                completed: [],
+            };
+    
+            requests.forEach((request) => {
+                groupedRequests[request.status].push(request);
+            });
+    
+            res.status(200).json({ requests: groupedRequests });
+        } catch (error) {
+            console.error("[GET REQUESTS] Server error:", error);
+            res.status(500).json({ message: "Server error", error: error.message });
         }
-
-        const groupedRequests = {
-            pending: [],
-            accepted: [],
-            confirmed: [],
-            completed: [],
-        };
-
-        requests.forEach((request) => {
-            groupedRequests[request.status].push(request);
-        });
-
-        res.status(200).json({ requests: groupedRequests });
-    } catch (error) {
-        console.error("[GET REQUESTS] Server error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
+    };
     
     return {
         createRequest,

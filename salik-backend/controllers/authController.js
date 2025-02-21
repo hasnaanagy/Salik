@@ -1,6 +1,29 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
 const User = require("../models/User");
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save files in the "uploads" folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+// File filter
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images are allowed"), false);
+  }
+};
+
+// Initialize upload middleware
+const upload = multer({ storage, fileFilter });
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -37,14 +60,10 @@ exports.signup = async (req, res) => {
     // Save user to DB
     await newUser.save();
 
-    res
-      .status(201)
-      .json({ status: 201, message: "User registered successfully!" });
+    res.status(201).json({ status: 201, message: "User registered successfully!" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ status: 500, message: "Server error, please try again" });
+    res.status(500).json({ status: 500, message: "Server error, please try again" });
   }
 };
 
@@ -62,16 +81,12 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({ phone });
     if (!user) {
-      return res
-        .status(400)
-        .json({ status: 400, message: "Invalid phone number or password" });
+      return res.status(400).json({ status: 400, message: "Invalid phone number or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ status: 400, message: "Invalid phone number or password" });
+      return res.status(400).json({ status: 400, message: "Invalid phone number or password" });
     }
 
     // Create and sign JWT token with user info (including type/role)
@@ -84,18 +99,14 @@ exports.login = async (req, res) => {
     res.status(200).json({ status: 200, message: "Login successful", token });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ status: 500, message: "Server error, please try again" });
+    res.status(500).json({ status: 500, message: "Server error, please try again" });
   }
 };
 
 // Switch Role Controller
 exports.switchRole = async (req, res) => {
   try {
-
-
-    const user = await User.findById(req.user._id); // Get the authenticated user from token
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
@@ -124,63 +135,57 @@ exports.switchRole = async (req, res) => {
 // Get User Controller
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id); // Get the authenticated user from token
-    console.log(user);
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
-    res
-      .status(200)
-      .json({ status: 200, message: "User retrieved successfully", user });
+    res.status(200).json({ status: 200, message: "User retrieved successfully", user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: 500,
-      message: "Error fetching user",
-      error: err.message,
-    });
+    res.status(500).json({ status: 500, message: "Error fetching user", error: err.message });
   }
 };
 
-// Update User Controller
+// Update User Controller with Image Upload
+const path = require("path");
+
 exports.updateUser = async (req, res) => {
   try {
+      const userId = req.user.id; // Get user ID from token
+      const updatedData = { ...req.body }; // Copy request body
 
+      console.log("Received files:", req.files);
+      console.log("Received body:", req.body);
 
-    const user = await User.findById(req.user._id); // Get the authenticated user from token
-    if (!user) {
-      return res.status(404).json({ status: 404, message: "User not found" });
-    }
-    if (user._id.toString() !== req.user._id.toString()) {
+      // Check and assign uploaded files
+      if (req.files) {
+          if (req.files.profileImg) {
+              updatedData.profileImg = `/uploads/${req.files.profileImg[0].filename}`;
+          }
+          if (req.files.nationalIdImage) {
+              updatedData.nationalIdImage = `/uploads/${req.files.nationalIdImage[0].filename}`;
+          }
+          if (req.files.licenseImage) {
+              updatedData.licenseImage = `/uploads/${req.files.licenseImage[0].filename}`;
+          }
+      }
 
-      return res.status(403).json({
-        status: 403,
-        message: "Unauthorized: You can only update your own profile",
+      // Update the user in the database
+      const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+
+      if (!updatedUser) {
+          return res.status(404).json({ status: 404, message: "User not found" });
+      }
+
+      res.status(200).json({
+          status: 200,
+          message: "User updated successfully",
+          updatedUser,
       });
-    }
-    // Update user details
-    user.fullName = req.body.fullName || user.fullName;
-    user.phone = req.body.phone || user.phone;
-    user.password = req.body.password || user.password;
-    user.nationalId = req.body.nationalId || user.nationalId;
-    user.profileImg = req.body.profileImg || user.profileImg;
-    user.licenseImage = req.body.licenseImage || user.licenseImage;
-    user.nationalIdImage = req.body.nationalIdImage || user.nationalIdImage;
 
-    await user.save();
-
-    res.status(200).json({
-      status: 200,
-      message: "User updated successfully",
-      updatedUser: user,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      status: 500,
-      message: "Error updating user",
-      error: err.message, // Include the error message in the response
-    });
+  } catch (error) {
+      console.error("Update User Error:", error);
+      res.status(500).json({ status: 500, message: "Internal Server Error" });
   }
 };

@@ -1,26 +1,33 @@
-import React from "react";
-import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ProfilePhotoUpload from "./ProfilePhotoUpload";
-import LicensePhotoUpload from "./LicensePhotoUpload";
+import { useSelector, useDispatch } from "react-redux";
+import { uploadImages } from "../redux/slices/imageSlice";
+import ImageUpload from "./ImageUpload";
 
 const LicenceForm = () => {
+    const dispatch = useDispatch();
+    const [nationalIdImage, setNationalIdImage] = useState(null);
+    const [licenseImage, setLicenseImage] = useState(null);
+
+    const handleUpload = () => {
+        dispatch(uploadImages({ nationalIdImage, licenseImage }));
+    };
+
     return (
-        <Box className="container" sx={{ maxWidth: 400, margin: "auto", mt: 4 }}>
-            <Typography variant="h5" fontWeight="bold">
-                Welcome, Mohamed
-            </Typography>
+        <Box sx={{ maxWidth: 400, margin: "auto", mt: 4 }}>
+            <Typography variant="h5" fontWeight="bold">Welcome, Mohamed</Typography>
             <Typography variant="body2" color="gray" mb={2}>
                 Here's what you need to do to set up your account.
             </Typography>
 
-            {/* Profile Photo Upload */}
-            <Accordion defaultExpanded>
+            {/* National ID Upload */}
+            <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography fontWeight="bold">Profile Photo</Typography>
+                    <Typography fontWeight="bold">National ID</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <ProfilePhotoUpload />
+                    <ImageUpload type="nationalIdImage" label="National ID" setImage={setNationalIdImage} />
                 </AccordionDetails>
             </Accordion>
 
@@ -30,15 +37,21 @@ const LicenceForm = () => {
                     <Typography fontWeight="bold">Driving License</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <LicensePhotoUpload />
+                    <ImageUpload type="licenseImage" label="License Photo" setImage={setLicenseImage} />
                 </AccordionDetails>
             </Accordion>
 
-            {/* Terms & Conditions */}
-            <Typography variant="body2" color="gray" mt={2}>
-                <strong>Term and Conditions</strong>
-            </Typography>
-            <Typography variant="body2" color="green">completed</Typography>
+            {/* Upload Button */}
+            <Button 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                sx={{ mt: 2 }} 
+                onClick={handleUpload}
+                disabled={!nationalIdImage || !licenseImage} // Ensure both images are selected
+            >
+                Upload Images
+            </Button>
         </Box>
     );
 };
