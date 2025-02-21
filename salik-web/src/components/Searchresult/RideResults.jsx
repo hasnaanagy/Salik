@@ -77,7 +77,7 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
             </Typography>
 
             {rides
-              // .filter((ride) => ride.totalSeats - ride.bookedSeats > 0)
+              .filter((ride) => ride.totalSeats - ride.bookedSeats > 0)
               .map((ride) => (
                 <Stack
                   key={ride._id}
