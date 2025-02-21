@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Grid, Stack, Typography } from "@mui/material";
-import { fetchRideData } from "../../redux/slices/rideSlice";
 import { RideIcons } from "./RideIcons";
 import { RideForm } from "./RideForm";
 import { RideResults } from "../Searchresult/RideResults";
@@ -11,14 +10,13 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { keyframes } from "@mui/system";
 import { RequestService } from "../RequestService";
 
-
 export function RideSearch() {
   const [viewRequestForm, setViewRequestForm] = useState(false);
   const [serviceType, setServiceType] = useState(null);
   const dispatch = useDispatch();
   const { data: rideData, loading, error } = useSelector((state) => state.ride);
 
-  const [view, setView] = useState("search"); // "search", "results", "details"
+  const [view, setView] = useState("search");
   const [selectedRide, setSelectedRide] = useState(null);
   const [formData, setFormData] = useState({
     fromLocation: "",
@@ -93,7 +91,7 @@ export function RideSearch() {
           item
           xs={12}
           sm={10}
-          md={4}
+          md={view === "search" ? 6 : 3}
           sx={{
             textAlign: {
               xs: "center",
@@ -111,7 +109,6 @@ export function RideSearch() {
               mb={3}
               textAlign={{ xs: "center", md: "left" }}
               sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
-
             >
               Go Anywhere With <span style={{ color: "#FFB800" }}>SALIK</span>
             </Typography>
@@ -143,6 +140,7 @@ export function RideSearch() {
             />
           )}
           {viewRequestForm && <RequestService serviceType={serviceType} />}
+
         </Grid>
 
         {/* Middle Section (Ride Results / Ride Details) - Hidden in "search" mode */}
