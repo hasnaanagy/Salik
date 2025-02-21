@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,24 +8,52 @@ import {
   Menu,
   MenuItem,
   Box,
+  Badge,
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import MenuIcon from "@mui/icons-material/Menu";
-import logo from "../../../public/images/logonavbar.jpg"; // Adjust the path accordingly
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import logo from "../../../public/images/logonavbar.jpg"; // Adjust the path
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000"); // Replace with your backend URL
 
 export function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Change to false to test
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notifAnchorEl, setNotifAnchorEl] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
-  // Handle Menu Open
+  useEffect(() => {
+    // Listen for real-time notifications
+    socket.on("new-service-request", (data) => {
+      setNotifications((prev) => [
+        ...prev,
+        `New ${data.serviceType} request near you! 📍`,
+      ]);
+    });
+
+    return () => {
+      socket.off("new-service-request");
+    };
+  }, []);
+
+  // Handle Main Menu (Mobile)
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
-  // Handle Menu Close
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  // Handle Notification Menu
+  const handleNotifMenuOpen = (event) => {
+    setNotifAnchorEl(event.currentTarget);
+  };
+  const handleNotifMenuClose = () => {
+    setNotifAnchorEl(null);
+    setNotifications([]); // Clear notifications when opened
   };
 
   return (
@@ -41,21 +69,40 @@ export function Header() {
           <Button component={NavLink} to="/" sx={{ color: "black", mx: 2 }}>
             Home
           </Button>
-          <Button
-            component={NavLink}
-            to="/services"
-            sx={{ color: "black", mx: 2 }}
-          >
+          <Button component={NavLink} to="/services" sx={{ color: "black", mx: 2 }}>
             Services
           </Button>
-          <Button
-            component={NavLink}
-            to="/activities"
-            sx={{ color: "black", mx: 2 }}
-          >
+          <Button component={NavLink} to="/activities" sx={{ color: "black", mx: 2 }}>
             Activities
           </Button>
+          <Button component={NavLink} to="/requests" sx={{ color: "black", mx: 2 }}>
+            Requests
+          </Button>
         </Box>
+
+        {/* Notifications Icon */}
+        <IconButton color="inherit" onClick={handleNotifMenuOpen}>
+          <Badge badgeContent={notifications.length} color="error">
+            <NotificationsIcon sx={{ color: "black" }} />
+          </Badge>
+        </IconButton>
+
+        {/* Notification Dropdown Menu */}
+        <Menu
+          anchorEl={notifAnchorEl}
+          open={Boolean(notifAnchorEl)}
+          onClose={handleNotifMenuClose}
+        >
+          {notifications.length === 0 ? (
+            <MenuItem onClick={handleNotifMenuClose}>No new notifications</MenuItem>
+          ) : (
+            notifications.slice(-5).map((notif, index) => (
+              <MenuItem key={index} onClick={handleNotifMenuClose}>
+                {notif}
+              </MenuItem>
+            ))
+          )}
+        </Menu>
 
         {/* Login / Logout */}
         <Button
@@ -90,18 +137,10 @@ export function Header() {
           <MenuItem component={NavLink} to="/" onClick={handleMenuClose}>
             Home
           </MenuItem>
-          <MenuItem
-            component={NavLink}
-            to="/services"
-            onClick={handleMenuClose}
-          >
+          <MenuItem component={NavLink} to="/services" onClick={handleMenuClose}>
             Services
           </MenuItem>
-          <MenuItem
-            component={NavLink}
-            to="/activities"
-            onClick={handleMenuClose}
-          >
+          <MenuItem component={NavLink} to="/activities" onClick={handleMenuClose}>
             Activities
           </MenuItem>
         </Menu>

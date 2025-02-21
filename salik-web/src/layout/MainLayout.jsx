@@ -9,6 +9,7 @@ import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
 import { ProviderNotifications } from "../components/providerNotifications";
+import ProviderRequests from "../components/ProviderRequests";
 
 export default function MainLayout() {
   return (
@@ -27,6 +28,7 @@ export default function MainLayout() {
               path="/providerNotifications"
               element={<ProviderNotifications />}
             />
+           <Route path="/requests" element={<ProviderRequests />} />
           </Route>
         </Routes>
       </BrowserRouter>

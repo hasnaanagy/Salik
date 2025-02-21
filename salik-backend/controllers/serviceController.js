@@ -153,7 +153,7 @@ exports.deleteService = async (req, res) => {
     if (!service) {
       return res.status(404).json({ message: "Service not found" });
     }
-    if (service.userId.toString() !== userId) {
+    if (service.userId.toString() !== userId.toString()) {
       return res
         .status(403)
         .json({ message: "You can only delete your own services" });

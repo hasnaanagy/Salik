@@ -6,6 +6,7 @@ import { reviewReducer } from "./slices/reviewsSlice";
 import { rideReducer } from "./slices/rideSlice";
 import { bookingReducer } from "./slices/bookingSlice";
 import { authReducer } from "./slices/authSlice";
+import { requestReducer } from "./slices/requestServiceSlice";
 
 export const store = configureStore({
   reducer: {
@@ -16,5 +17,6 @@ export const store = configureStore({
     reviewsSlice: reviewReducer,
     ride: rideReducer,
     booking: bookingReducer,
+    requestSlice:requestReducer
   },
 });
