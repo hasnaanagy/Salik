@@ -15,3 +15,4 @@ export const store = configureStore({
     ride: rideslice,
   },
 });
+export default store;

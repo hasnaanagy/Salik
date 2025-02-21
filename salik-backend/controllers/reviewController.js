@@ -13,7 +13,7 @@ exports.addReview = async (req, res) => {
     }
 
     // Check if the user adding the review is a customer
-    const customer = await User.findById(req.userId); // req.userId comes from token
+    const customer = await User.findById(req.user._id); // req.userId comes from token
     if (!customer || customer.type !== "customer") {
       return res
         .status(403)
@@ -22,7 +22,7 @@ exports.addReview = async (req, res) => {
 
     // Create a new review
     const newReview = new Review({
-      customerId: req.userId,
+      customerId: req.user._id,
       providerId,
       rating,
       comment,

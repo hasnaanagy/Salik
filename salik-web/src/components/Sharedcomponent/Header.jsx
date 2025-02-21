@@ -1,111 +1,134 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
-  Typography,
   Button,
   IconButton,
   Menu,
   MenuItem,
   Box,
+  Avatar,
+  Container,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import { NavLink, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import logo from "../../../public/images/logonavbar.jpg"; // Adjust the path accordingly
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import logo from "../../../public/images/logonavbar.jpg";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser, getUser, switchRole } from "../../redux/slices/authSlice";
 
 export function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Change to false to test
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
 
-  // Handle Menu Open
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(getUser()); // ✅ Fetch latest user data when component mounts
+  }, [dispatch]);
+  
+  
+
+  const navigate = useNavigate();
+
+  const handleEditProfile = () => navigate("/editProfile");
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate("/login");
   };
 
-  // Handle Menu Close
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handleSwitchRole = async () => {
+    await dispatch(switchRole());
+    handleUserMenuClose();
   };
+
+  const handleUserMenuOpen = (event) => setUserMenuAnchor(event.currentTarget);
+  const handleUserMenuClose = () => setUserMenuAnchor(null);
+
+  const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
+
+  const fullName = user?.fullName || "Guest";
+  const profileImg = user?.profileImg || "https://via.placeholder.com/150";
+  const currentRole = user?.role || "customer";
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#ffb800" }}>
-      <Toolbar>
-        {/* Logo */}
-        <NavLink to="/">
-          <img src={logo} alt="Logo" width="70" height="70" />
-        </NavLink>
+    <AppBar position="sticky" sx={{ backgroundColor: "#ffb800", width: "100%", boxShadow: 2 }}>
+      <Container maxWidth="lg">
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {/* Logo and Navigation Links (Left Side) */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {/* Logo */}
+            <NavLink to="/" style={{ margin: "4px" }}>
+              <img src={logo} alt="Logo" width="70" height="70" />
+            </NavLink>
 
-        {/* Desktop Navigation */}
-        <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, ml: 3 }}>
-          <Button component={NavLink} to="/" sx={{ color: "black", mx: 2 }}>
-            Home
-          </Button>
-          <Button
-            component={NavLink}
-            to="/services"
-            sx={{ color: "black", mx: 2 }}
+            {/* Desktop Navigation (Visible on Medium & Large Screens) */}
+            <Box sx={{ display: { xs: "none", md: "flex" }, ml: 2 }}>
+              {["Home", "Services", "Activities"].map((text) => (
+                <Button key={text} component={NavLink} to={`/${text.toLowerCase()}`} sx={{ color: "black", fontWeight: "bold", mx: 1 }}>
+                  {text}
+                </Button>
+              ))}
+            </Box>
+          </Box>
+
+          {/* User Profile */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {loading ? (
+              <span>Loading...</span>
+            ) : (
+              <Button onClick={handleUserMenuOpen} sx={{ color: "black", fontWeight: "bold", textTransform: "none" }}>
+                <Avatar src={profileImg} sx={{ width: 40, height: 40, mr: 1 }} />
+                {fullName} ({currentRole})
+              </Button>
+            )}
+
+            {/* User Dropdown Menu */}
+            <Menu anchorEl={userMenuAnchor} open={Boolean(userMenuAnchor)} onClose={handleUserMenuClose}>
+              <MenuItem onClick={handleEditProfile}>
+                <AccountCircleIcon sx={{ mr: 1 }} /> Manage Account
+              </MenuItem>
+              <MenuItem onClick={handleSwitchRole}>
+                <SyncAltIcon sx={{ mr: 1 }} /> Switch Role
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <ExitToAppIcon sx={{ mr: 1 }} /> Logout
+              </MenuItem>
+            </Menu>
+          </Box>
+
+          {/* Mobile Menu Button (Hamburger) */}
+          <IconButton
+            edge="end"
+            color="inherit"
+            sx={{ display: { xs: "block", md: "none" } }}
+            onClick={toggleMobileMenu}
           >
-            Services
-          </Button>
-          <Button
-            component={NavLink}
-            to="/activities"
-            sx={{ color: "black", mx: 2 }}
-          >
-            Activities
-          </Button>
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+      </Container>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer anchor="left" open={mobileOpen} onClose={toggleMobileMenu}>
+        <Box sx={{ width: 250 }} role="presentation" onClick={toggleMobileMenu}>
+          <List>
+            {["Home", "Services", "Activities"].map((text) => (
+              <ListItem button key={text} component={NavLink} to={`/${text.toLowerCase()}`}>
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
         </Box>
-
-        {/* Login / Logout */}
-        <Button
-          component={NavLink}
-          to={isLoggedIn ? "/signup" : "/login"}
-          sx={{ color: "black", fontWeight: "bold", mx: 2 }}
-        >
-          {isLoggedIn ? "SIGN OUT" : "SIGN IN"}
-          {isLoggedIn && (
-            <FaUserCircle style={{ marginLeft: "10px", fontSize: "1.5rem" }} />
-          )}
-        </Button>
-
-        {/* Mobile Menu */}
-        <IconButton
-          edge="end"
-          color="inherit"
-          aria-label="menu"
-          sx={{ display: { xs: "block", md: "none" } }}
-          onClick={handleMenuOpen}
-        >
-          <MenuIcon />
-        </IconButton>
-
-        {/* Dropdown Menu for Mobile */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          sx={{ display: { xs: "block", md: "none" } }}
-        >
-          <MenuItem component={NavLink} to="/" onClick={handleMenuClose}>
-            Home
-          </MenuItem>
-          <MenuItem
-            component={NavLink}
-            to="/services"
-            onClick={handleMenuClose}
-          >
-            Services
-          </MenuItem>
-          <MenuItem
-            component={NavLink}
-            to="/activities"
-            onClick={handleMenuClose}
-          >
-            Activities
-          </MenuItem>
-        </Menu>
-      </Toolbar>
+      </Drawer>
     </AppBar>
   );
 }

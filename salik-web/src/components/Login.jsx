@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, clearError } from "../redux/slices/authSlice"; // Import loginUser action
+// import { loginUser, clearError } from "../redux/slices/authSlice"; // Import loginUser action
 import { useNavigate } from "react-router-dom";
+
+import { loginUser } from "../redux/slices/authSlice";
+
 import {
   FormControl,
   Box,
@@ -18,10 +21,36 @@ import styles from "../styles/styles.module.css";
 import { validateField } from "../validation/validation"; // Add this import statement
 
 export default function Login() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  const { loading, user, error } = useSelector((state) => state.auth);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+  
+    const result = await dispatch(loginUser(formData));
+  
+    if (loginUser.fulfilled.match(result)) {
+      if (result.payload.token) {
+        // Show success message
+        setSuccessMessage("✅ Login successful!");
+        setErrors({ general: "" });
+        
+     
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      }
+    } else {
+      console.error("Login error:", result.payload);
+      setErrors({ general: result.payload || "Invalid credentials" });
+    }
+  };
+  
+  
+  
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -34,53 +63,25 @@ export default function Login() {
   const handlePasswordToggle = () => {
     setPasswordVisible((prev) => !prev);
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-    const error = validateField(name, value, formData);
-    setErrors({ ...errors, [name]: error });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let formErrors = {};
-
-    Object.keys(formData).forEach((field) => {
-      const error = validateField(field, formData[field], formData);
-      if (error) formErrors[field] = error;
+  
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      
+      const error = validateField(name, value, updatedFormData);
+      setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+      
+      return updatedFormData;
     });
-
-    setErrors(formErrors);
-
-    if (Object.keys(formErrors).length === 0) {
-      dispatch(loginUser(formData));
-    }
   };
+  
 
-  useEffect(() => {
-    if (user) {
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    }
+  
 
-    if (error) {
-      if (
-        error.toLowerCase().includes("does not exist") ||
-        error.toLowerCase().includes("incorrect")
-      ) {
-        setTimeout(() => {
-          navigate("/signup");
-          dispatch(clearError());
-        }, 4000);
-      }
-    }
-  }, [user, error, navigate, dispatch]);
 
   return (
-    <form onSubmit={handleSubmit} noValidate autoComplete="off">
+    <form  onSubmit={handleLogin} noValidate autoComplete="off">
       <Box className={styles.formBox}>
         {["phone", "password"].map((field) => (
           <FormControl key={field} error={!!errors[field]}>
@@ -125,17 +126,14 @@ export default function Login() {
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
         </MainButton>
       </Box>
+     {errors.general && <Alert severity="error">{errors.general}</Alert>}
 
-      {error && (
-        <Alert severity="error" style={{ marginTop: 20 }}>
-          {error}
-        </Alert>
-      )}
-      {user && (
-        <Alert severity="success" style={{ marginTop: 20 }}>
-          ✅ Login Successful!
-        </Alert>
-      )}
+      {successMessage && (
+  <Alert severity="success" style={{ marginTop: 20 }}>
+    {successMessage}
+  </Alert>
+)}
+
     </form>
   );
 }
