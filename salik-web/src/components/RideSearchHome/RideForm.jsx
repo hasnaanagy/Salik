@@ -3,6 +3,8 @@ import { StyledTextField } from "../../custom/StyledTextField";
 import { Button, Grid } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import SquareIcon from "@mui/icons-material/Square";
+import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 
 export function RideForm({ formData, handleChange, handleSubmit }) {
   return (
@@ -18,7 +20,7 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <MyLocationIcon />
+                <RadioButtonCheckedIcon style={{ color: "#FFB800" }} />
               </InputAdornment>
             ),
           }}
@@ -33,7 +35,7 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <MyLocationIcon />
+                <SquareIcon style={{ color: "#FFB800" }} />
               </InputAdornment>
             ),
           }}
