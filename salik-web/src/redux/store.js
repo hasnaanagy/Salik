@@ -7,6 +7,8 @@ import { activityReducer } from "./slices/activitySlice";
 import { rideReducer } from "./slices/rideSlice";
 import { bookingReducer } from "./slices/bookingSlice";
 import { authReducer } from "./slices/authSlice";
+import { requestReducer } from "./slices/requestServiceSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -17,6 +19,7 @@ export const store = configureStore({
     ride: rideReducer,
     activity: activityReducer,
     booking: bookingReducer,
+    requestSlice:requestReducer
   },
 });
 export default store;

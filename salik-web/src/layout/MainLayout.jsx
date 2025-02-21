@@ -14,6 +14,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import { ProviderNotifications } from "../components/providerNotifications";
 import Activity from "../pages/Activity";
+import ProviderRequests from "../components/ProviderRequests";
 
 export default function MainLayout() {
   return (
@@ -34,6 +35,7 @@ export default function MainLayout() {
               path="/providerNotifications"
               element={<ProviderNotifications />}
             />
+           <Route path="/requests" element={<ProviderRequests />} />
           </Route>
         </Routes>
       </BrowserRouter>

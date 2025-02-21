@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema({
     },
     profileImg: { type: String, default: "" },
     licenseImage: { type: String, default: "" },
-    nationalIdImage: { type: String, default: "" }
+    nationalIdImage: { type: String, default: "" },
+    notifiedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "ServiceRequest" }] // Store requests provider was notified about
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

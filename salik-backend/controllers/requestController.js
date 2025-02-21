@@ -1,5 +1,6 @@
 const ServiceRequest = require("../models/RequestService");
 const Service = require("../models/Service"); // Providers are stored in Service model
+const User = require("../models/User"); // Assuming providers are stored in User model
 
 const requestController = (io) => {
     /**
@@ -9,144 +10,162 @@ const requestController = (io) => {
      */
     const createRequest = async (req, res) => {
         try {
-            console.log("Request Body:", req.body);
+            console.log("[CREATE REQUEST] Request Body:", req.body);
             const { serviceType, location, problemDescription } = req.body;
-
-            // Ensure the user is a customer
+    
             if (req.user.type !== "customer") {
                 return res.status(403).json({ message: "Only customers can create requests" });
             }
-
+    
             if (!serviceType || !location || !problemDescription) {
                 return res.status(400).json({ message: "Missing required fields" });
             }
-
+    
             const newRequest = new ServiceRequest({
-                customerId:  req.user._id,
+                customerId: req.user._id,
                 serviceType,
                 location,
                 problemDescription,
+                status: "pending",
+                notifiedProviders: [], // Store providers
             });
-
+    
             await newRequest.save();
-
-            // Notify nearby providers using WebSocket
-            io.emit("newServiceRequest", newRequest);
-
+    
+            // Find nearby providers who offer the requested service
+            const nearbyProviders = await Service.find({
+                serviceType,
+                location: {
+                    $near: {
+                        $geometry: location,
+                        $maxDistance: 5000, // 5 km radius
+                    },
+                },
+            }).populate("userId");
+    
+            if (!nearbyProviders.length) {
+                return res.status(200).json({
+                    message: "Request created successfully, but no nearby providers found.",
+                    request: newRequest,
+                });
+            }
+    
+            const notifiedProviderIds = [];
+    
+            for (const provider of nearbyProviders) {
+                if (provider.userId) {
+                    const providerId = provider.userId._id;
+                    io.to(providerId.toString()).emit("newServiceRequest", newRequest);
+                    notifiedProviderIds.push(providerId);
+    
+                    // Update provider's document to store this request
+                    await User.findByIdAndUpdate(providerId, {
+                        $push: { notifiedRequests: newRequest._id },
+                    });
+                }
+            }
+    
+            newRequest.notifiedProviders = notifiedProviderIds;
+            await newRequest.save();
+    
             res.status(201).json({ message: "Request created successfully", request: newRequest });
         } catch (error) {
-            console.error("Server error:", error);
+            console.error("[CREATE REQUEST] Server error:", error);
             res.status(500).json({ message: "Server error", error: error.message });
         }
     };
-
-    /**
-     * @desc Get all requests of a logged-in customer
-     * @route GET /api/requests
-     * @access Customer only
-     */
-    const getUserRequests = async (req, res) => {
-        try {
-            const requests = await ServiceRequest.find({ customerId: req.user.id });
-            res.status(200).json(requests);
-        } catch (error) {
-            res.status(500).json({ message: "Server error", error: error.message });
-        }
-    };
-
+    
+    
     /**
      * @desc Provider accepts a service request
      * @route POST /api/requests/accept
      * @access Provider only
      */
-
-    const acceptRequest = async (req, res) => {
+    const updateRequestStatus = async (req, res) => {
         try {
-            const { requestId } = req.body;
-            const providerId = req.user._id;
-    
-            // Ensure only providers can accept requests
-            if (req.user.type !== "provider") {
-                return res.status(403).json({ message: "Only providers can accept requests" });
-            }
-    
+            const { requestId, action, providerId } = req.body;
             const request = await ServiceRequest.findById(requestId);
             if (!request) return res.status(404).json({ message: "Request not found" });
     
-            // Check if provider is already in acceptedProviders
-            if (request.acceptedProviders.includes(providerId)) {
-                return res.status(400).json({ message: "You have already accepted this request" });
-            }
+            if (action === "accept") {
+                if (req.user.type !== "provider") return res.status(403).json({ message: "Only providers can accept requests" });
+                if (!request.acceptedProviders.includes(req.user._id)) request.acceptedProviders.push(req.user._id);
+                if (request.status === "pending") request.status = "accepted";
     
-            // Add provider to acceptedProviders
-            request.acceptedProviders.push(providerId);
-            
-            // Change status to "waiting for confirmation" if it's still "pending"
-            if (request.status === "pending") {
-                request.status = "accepted";
+            } else if (action === "confirm") {
+                if (req.user.type !== "customer") return res.status(403).json({ message: "Only customers can confirm providers" });
+                if (!providerId || !request.acceptedProviders.includes(providerId)) return res.status(400).json({ message: "Invalid provider confirmation" });
+                request.confirmedProvider = providerId;
+                request.status = "confirmed";
+    
+            } else if (action === "complete") {
+                if (req.user.type !== "customer") return res.status(403).json({ message: "Only customers can complete requests" });
+                if (request.status !== "confirmed") return res.status(400).json({ message: "Request is not confirmed yet" });
+                request.status = "completed";
+            } else {
+                return res.status(400).json({ message: "Invalid action" });
             }
     
             await request.save();
+            res.status(200).json({ message: `Request ${action}d successfully`, request });
     
-            return res.status(200).json({ message: "Request accepted successfully", request });
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ message: "Server error", error: error.message });
-        }
-    };
-    
-    
-
-    /**
-     * @desc Confirm a provider for a request
-     * @route POST /api/requests/confirm
-     * @access Customer only
-     */
-    const confirmProvider = async (req, res) => {
-        try {
-            console.log("Confirm Provider Body:", req.body);
-            const { requestId, providerId } = req.body; // ✅ Extract providerId from request body
-    
-            // Ensure the user is a customer
-            if (req.user.type !== "customer") {
-                return res.status(403).json({ message: "Only customers can confirm providers" });
-            }
-    
-            if (!requestId || !providerId) {
-                return res.status(400).json({ message: "Request ID and Provider ID are required" });
-            }
-    
-            const request = await ServiceRequest.findById(requestId);
-            if (!request) {
-                return res.status(404).json({ message: "Request not found" });
-            }
-    
-            // Ensure provider is one of the accepted providers
-            if (!request.acceptedProviders.includes(providerId)) {
-                return res.status(403).json({ message: "Invalid provider confirmation" });
-            }
-    
-            // Update request status and assign provider
-            request.confirmedProvider = providerId;
-            request.status = "confirmed";
-            await request.save();
-    
-            // Notify the provider about confirmation
-            io.emit("providerConfirmed", { requestId, providerId });
-    
-            res.status(200).json({ message: "Provider confirmed", request });
-        } catch (error) {
-            console.error("Server error:", error);
+            console.error("[UPDATE REQUEST] Server error:", error);
             res.status(500).json({ message: "Server error", error: error.message });
         }
     };
     
+    /**
+     * @desc Get all requests for a logged-in customer or provider
+     * @route GET /api/requests
+     * @access Customer & Provider
+     */
+    const getRequests = async (req, res) => {
+    try {
+        let requests;
+        
+        if (req.user.type === "customer") {
+            requests = await ServiceRequest.find({ customerId: req.user._id })
+                .populate("confirmedProvider", "fullName phone profileImg")
+                .populate("acceptedProviders", "fullName phone profileImg");
 
+        } else if (req.user.type === "provider") {
+            requests = await ServiceRequest.find({
+                $or: [
+                    { notifiedProviders: req.user._id },
+                    { acceptedProviders: req.user._id },
+                    { confirmedProvider: req.user._id }
+                ]
+            })
+            .populate("customerId", "fullName phone profileImg")
+            .populate("confirmedProvider", "fullName phone profileImg");
+        } else {
+            return res.status(403).json({ message: "Invalid user type" });
+        }
+
+        const groupedRequests = {
+            pending: [],
+            accepted: [],
+            confirmed: [],
+            completed: [],
+        };
+
+        requests.forEach((request) => {
+            groupedRequests[request.status].push(request);
+        });
+
+        res.status(200).json({ requests: groupedRequests });
+    } catch (error) {
+        console.error("[GET REQUESTS] Server error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+    
     return {
         createRequest,
-        getUserRequests,
-        acceptRequest,
-        confirmProvider,
+        updateRequestStatus,
+        getRequests
     };
 };
 
