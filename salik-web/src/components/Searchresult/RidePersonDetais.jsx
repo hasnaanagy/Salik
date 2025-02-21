@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Card, CardContent, Typography, Button, Input } from "@mui/joy";
+import { Card, Typography, Button, Input } from "@mui/joy";
 import { Avatar, Box, Stack, useMediaQuery } from "@mui/material";
 import Badge, { badgeClasses } from "@mui/joy/Badge";
 import StarIcon from "@mui/icons-material/Star";
 import PersonIcon from "@mui/icons-material/Person";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { bookRide } from "../../redux/slices/bookingSlice"; // Ensure correct import path
 
 export default function RidePersonDetails({ ride }) {
   if (!ride) {
@@ -14,6 +16,14 @@ export default function RidePersonDetails({ ride }) {
 
   const [passengerCount, setPassengerCount] = useState(1);
   const isMobile = useMediaQuery("(max-width:600px)");
+  const dispatch = useDispatch();
+  const { isLoading, error, successMessage } = useSelector(
+    (state) => state.booking // Ensure the correct slice name
+  );
+
+  const handleBookRide = () => {
+    dispatch(bookRide({ rideId: ride._id, counterSeats: passengerCount }));
+  };
 
   return (
     <>
@@ -63,14 +73,8 @@ export default function RidePersonDetails({ ride }) {
                   },
                 },
                 "@keyframes ripple": {
-                  "0%": {
-                    transform: "scale(1)",
-                    opacity: 1,
-                  },
-                  "100%": {
-                    transform: "scale(2)",
-                    opacity: 0,
-                  },
+                  "0%": { transform: "scale(1)", opacity: 1 },
+                  "100%": { transform: "scale(2)", opacity: 0 },
                 },
               }}
             >
@@ -86,7 +90,7 @@ export default function RidePersonDetails({ ride }) {
               sx={{ fontSize: { xs: "16px", sm: "18px" } }}
             >
               {ride?.providerId?.fullName
-                .toLowerCase()
+                ?.toLowerCase()
                 .replace(/\b\w/g, (char) => char.toUpperCase()) ||
                 "Unknown Driver"}
             </Typography>
@@ -137,7 +141,9 @@ export default function RidePersonDetails({ ride }) {
           <Input
             type="number"
             value={passengerCount}
-            onChange={(e) => setPassengerCount(Number(e.target.value))}
+            onChange={(e) =>
+              setPassengerCount(Math.max(1, Number(e.target.value)))
+            }
             sx={{ width: 80, fontSize: { xs: "14px", sm: "16px" } }}
           />
           <Box sx={{ flexGrow: 1 }} />
@@ -156,7 +162,7 @@ export default function RidePersonDetails({ ride }) {
             Date: {ride?.rideDateTime?.split("T")[0]}
           </Typography>
           <Typography sx={{ fontSize: { xs: "14px", sm: "16px" } }}>
-            Time: {ride?.rideDateTime?.split("T")[1].slice(0, 5)}
+            Time: {ride?.rideDateTime?.split("T")[1]?.slice(0, 5)}
           </Typography>
         </Stack>
 
@@ -176,8 +182,10 @@ export default function RidePersonDetails({ ride }) {
               fontWeight: "bold",
               fontSize: { xs: "14px", sm: "16px" },
             }}
+            onClick={handleBookRide}
+            disabled={isLoading}
           >
-            Booking
+            {isLoading ? "Booking..." : "Book"}
           </Button>
           <Button
             sx={{
@@ -191,6 +199,18 @@ export default function RidePersonDetails({ ride }) {
             Call
           </Button>
         </Stack>
+
+        {/* Error & Success Messages */}
+        {error && (
+          <Typography color="error" mt={2}>
+            {error}
+          </Typography>
+        )}
+        {successMessage && (
+          <Typography color="success" mt={2}>
+            {successMessage}
+          </Typography>
+        )}
       </Card>
     </>
   );

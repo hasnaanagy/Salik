@@ -121,7 +121,7 @@ exports.switchRole = async (req, res) => {
 // Get User Controller
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.userId); // Get the authenticated user from token
+    const user = await User.findById(req.user._id); // Get the authenticated user from token
     console.log(user);
 
     if (!user) {
@@ -143,17 +143,15 @@ exports.getUserById = async (req, res) => {
 // Update User Controller
 exports.updateUser = async (req, res) => {
   try {
-    const user = await User.findById(req.userId); // Get the authenticated user from token
+    const user = await User.findById(req.user_id); // Get the authenticated user from token
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
     if (user._id.toString() !== req.userId) {
-      return res
-        .status(403)
-        .json({
-          status: 403,
-          message: "Unauthorized: You can only update your own profile",
-        });
+      return res.status(403).json({
+        status: 403,
+        message: "Unauthorized: You can only update your own profile",
+      });
     }
     // Update user details
     user.fullName = req.body.fullName || user.fullName;

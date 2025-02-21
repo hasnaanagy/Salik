@@ -16,7 +16,6 @@ import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
 import { validateField } from "../validation/validation"; // Add this import statement
-import { clearError, loginUser } from "../redux/slices/authSlices";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
