@@ -86,13 +86,11 @@ exports.searchRides = async (req, res) => {
     let startDateTime = new Date(`${date}T00:00:00.000Z`); // Start of the day
     let endDateTime = new Date(`${date}T23:59:59.999Z`); // End of the day
 
-
     if (time) {
       let searchTime = new Date(`${date}T${time}:00.000Z`);
       if (isNaN(searchTime.getTime())) {
         return res.status(400).json({ message: "Invalid time format." });
       }
-
 
       // Define a time range (±30 minutes)
       let timeRangeStart = new Date(searchTime);
@@ -102,7 +100,8 @@ exports.searchRides = async (req, res) => {
       timeRangeEnd.setMinutes(timeRangeEnd.getMinutes() + 30);
 
       // Ensure the search window does not exceed the day's limits
-      startDateTime = timeRangeStart < startDateTime ? startDateTime : timeRangeStart;
+      startDateTime =
+        timeRangeStart < startDateTime ? startDateTime : timeRangeStart;
       endDateTime = timeRangeEnd > endDateTime ? endDateTime : timeRangeEnd;
     }
 
@@ -158,7 +157,6 @@ exports.getRideById = async (req, res) => {
   }
 };
 
-
 const updateRideStatus = async () => {
   const currentDate = new Date();
   await Ride.updateMany(
@@ -174,7 +172,6 @@ exports.updateRide = async (req, res) => {
     if (!ride) {
       return res.status(404).json({ message: "Ride not found" });
     }
-
 
     if (ride.providerId.toString() !== req.user._id.toString()) {
       return res
@@ -214,7 +211,6 @@ exports.updateRide = async (req, res) => {
   }
 };
 
-
 // Get rides by user with categorized results
 exports.getRidesByUser = async (req, res) => {
   try {
@@ -232,7 +228,9 @@ exports.getRidesByUser = async (req, res) => {
       canceled: canceledRides,
     });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching user's rides", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching user's rides", error: err.message });
   }
 };
 
@@ -244,17 +242,21 @@ exports.deleteRide = async (req, res) => {
       return res.status(404).json({ message: "Ride not found" });
     }
 
-
     if (ride.providerId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You can only delete your own rides" });
-
-
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own rides" });
     }
 
-    await Booking.updateMany({ rideId: ride._id }, { $set: { status: "canceled" } });
+    await Booking.updateMany(
+      { rideId: ride._id },
+      { $set: { status: "canceled" } }
+    );
     await Ride.deleteOne({ _id: ride._id });
 
-    res.status(200).json({ message: "Ride deleted successfully, all bookings canceled" });
+    res
+      .status(200)
+      .json({ message: "Ride deleted successfully, all bookings canceled" });
   } catch (err) {
     res
       .status(500)

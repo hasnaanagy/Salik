@@ -3,7 +3,6 @@ import api from "../../api/postService"; // Importing the axios instance
 
 // Async action to post mechanic data
 export const postMechanicData = createAsyncThunk(
-
   "Service/postServiceData",
   async (
     { serviceType, location, addressOnly, workingDays, workingHours },
@@ -22,9 +21,8 @@ export const postMechanicData = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2IzNzY4ZjljNWJiODFiMzQyOGU4YWQiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3Mzk4ODQ4MzgsImV4cCI6MTczOTg4ODQzOH0.g0hM-yyrfUOLXrQxD8AMRhRRORQaEzRpHX5V6id4jpY`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-
         }
       );
       console.log("Response data:", response.data);

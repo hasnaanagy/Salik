@@ -14,7 +14,7 @@ const fetchUser = async () => {
         headers: { Authorization: `Bearer ${token}` },
     });
 
-    return response.data; // Assuming API returns { id, name, userType, profilePhoto, licensePhoto }
+    return response.data;
 };
 
 // Upload Image Function

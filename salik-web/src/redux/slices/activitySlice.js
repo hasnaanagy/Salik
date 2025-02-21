@@ -1,43 +1,86 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getRides } from "../../api/activity"; // Import the API function
+import apiService from "../../api/apiService";
 
-export const fetchRides = createAsyncThunk("rides/myrides", async (_, { rejectWithValue }) => {
+export const fetchBooking = createAsyncThunk("rides/fetchBooking", async () => {
+  try {
+    const response = await apiService.getAll("rideBooking");
+    console.log(response);
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "An error occurred while fetching rides.");
+  }
+});
+//=========================================================
+export const fetchProvidedRides = createAsyncThunk(
+  "rides/fetchProvidedRides",
+  async () => {
     try {
-        const data = await getRides(); // Get upcoming and completed rides
-        return {
-            upcoming: data.upcoming || [],
-            completed: data.completed || [],
-        };
+      const response = await apiService.getAll("rides/myrides");
+      return response;
     } catch (error) {
-        return rejectWithValue(error.message || "Failed to fetch rides");
+      throw new Error(
+        error.message || "An error occurred while fetching rides."
+      );
     }
+  }
+);
+//=========================================================
+export const cancelRideAction = createAsyncThunk(
+  "rides/cancelRide",
+  async (rideId, { rejectWithValue }) => {
+    try {
+      const response = await apiService.patch(`rideBooking/${rideId}`);
+      console.log(response);
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error canceling ride."
+      );
+    }
+  }
+);
+
+const activitySlice = createSlice({
+  name: "myrides",
+  initialState: {
+    upcoming: [],
+    completed: [],
+    canceled: [],
+    loading: false,
+    error: null,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBooking.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const { upcomingRides, completedRides, cancelledRides } =
+          action.payload || {};
+        state.upcoming = upcomingRides || [];
+        state.completed = completedRides || [];
+        state.canceled = cancelledRides || [];
+      })
+      .addCase(fetchBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchProvidedRides.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchProvidedRides.fulfilled, (state, action) => {
+        state.loading = false;
+        const { upcoming, completed, canceled } = action.payload || {};
+        state.upcoming = upcoming || [];
+        state.completed = completed || [];
+        state.canceled = canceled || [];
+      })
+      .addCase(fetchProvidedRides.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
 });
 
-const rideActivitySlice = createSlice({
-    name: "rides",
-    initialState: {
-        upcoming: [],
-        completed: [],
-        loading: false,
-        error: null,
-    },
-    reducers: {},
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchRides.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchRides.fulfilled, (state, action) => {
-                state.loading = false;
-                state.upcoming = action.payload.upcoming;
-                state.completed = action.payload.completed;
-            })
-            .addCase(fetchRides.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload || "Failed to fetch rides";
-            });
-    },
-});
-
-export default rideActivitySlice.reducer;
+export const activityReducer = activitySlice.reducer;

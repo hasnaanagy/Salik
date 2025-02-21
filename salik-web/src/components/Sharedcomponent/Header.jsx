@@ -24,10 +24,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser, switchRole } from "../../redux/slices/authSlice";
 
 export function Header() {
-
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
-
 
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
@@ -35,8 +33,6 @@ export function Header() {
   useEffect(() => {
     dispatch(getUser()); // ✅ Fetch latest user data when component mounts
   }, [dispatch]);
-  
-  
 
   const navigate = useNavigate();
 
@@ -62,9 +58,18 @@ export function Header() {
   const currentRole = user?.role || "customer";
 
   return (
-    <AppBar position="sticky" sx={{ backgroundColor: "#ffb800", width: "100%", boxShadow: 2 }}>
+    <AppBar
+      position="sticky"
+      sx={{ backgroundColor: "#ffb800", width: "100%", boxShadow: 2 }}
+    >
       <Container maxWidth="lg">
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           {/* Logo and Navigation Links (Left Side) */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {/* Logo */}
@@ -75,7 +80,12 @@ export function Header() {
             {/* Desktop Navigation (Visible on Medium & Large Screens) */}
             <Box sx={{ display: { xs: "none", md: "flex" }, ml: 2 }}>
               {["Home", "Services", "Activities"].map((text) => (
-                <Button key={text} component={NavLink} to={`/${text.toLowerCase()}`} sx={{ color: "black", fontWeight: "bold", mx: 1 }}>
+                <Button
+                  key={text}
+                  component={NavLink}
+                  to={`/${text.toLowerCase() || ""}`}
+                  sx={{ color: "black", fontWeight: "bold", mx: 1 }}
+                >
                   {text}
                 </Button>
               ))}
@@ -87,14 +97,28 @@ export function Header() {
             {loading ? (
               <span>Loading...</span>
             ) : (
-              <Button onClick={handleUserMenuOpen} sx={{ color: "black", fontWeight: "bold", textTransform: "none" }}>
-                <Avatar src={profileImg} sx={{ width: 40, height: 40, mr: 1 }} />
+              <Button
+                onClick={handleUserMenuOpen}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  textTransform: "none",
+                }}
+              >
+                <Avatar
+                  src={profileImg}
+                  sx={{ width: 40, height: 40, mr: 1 }}
+                />
                 {fullName} ({currentRole})
               </Button>
             )}
 
             {/* User Dropdown Menu */}
-            <Menu anchorEl={userMenuAnchor} open={Boolean(userMenuAnchor)} onClose={handleUserMenuClose}>
+            <Menu
+              anchorEl={userMenuAnchor}
+              open={Boolean(userMenuAnchor)}
+              onClose={handleUserMenuClose}
+            >
               <MenuItem onClick={handleEditProfile}>
                 <AccountCircleIcon sx={{ mr: 1 }} /> Manage Account
               </MenuItem>
@@ -124,7 +148,12 @@ export function Header() {
         <Box sx={{ width: 250 }} role="presentation" onClick={toggleMobileMenu}>
           <List>
             {["Home", "Services", "Activities"].map((text) => (
-              <ListItem button key={text} component={NavLink} to={`/${text.toLowerCase()}`}>
+              <ListItem
+                button
+                key={text}
+                component={NavLink}
+                to={`/${text.toLowerCase()}`}
+              >
                 <ListItemText primary={text} />
               </ListItem>
             ))}

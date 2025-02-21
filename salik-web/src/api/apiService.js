@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:5000/api";
 
-
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
@@ -20,6 +19,10 @@ axiosInstance.interceptors.request.use(
 );
 
 const apiService = {
+  patch: async (endpoint, id, data) => {
+    const response = await axiosInstance.patch(`/${endpoint}`, data);
+    return response.data;
+  },
   getAll: async (endpoint) => {
     const response = await axiosInstance.get(`/${endpoint}`);
     return response.data;
@@ -49,7 +52,7 @@ const apiService = {
   },
   updateWithFormData: async (endpoint, id, formData) => {
     const response = await axiosInstance.put(`/${endpoint}/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   },
@@ -59,7 +62,7 @@ const apiService = {
       console.log(pair[0], pair[1]);
     }
     const response = await axiosInstance.patch(`/${endpoint}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     console.log("🟢 Server response in apiService:", response);
     return response.data;
