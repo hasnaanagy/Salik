@@ -35,7 +35,7 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SquareIcon style={{ color: "#FFB800" }} />
+                <SquareIcon style={{ color: "#FFB800" }} fontSize="small" />
               </InputAdornment>
             ),
           }}
