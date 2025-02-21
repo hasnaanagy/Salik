@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Grid, Stack, Typography } from "@mui/material";
-import { fetchRideData } from "../../redux/slices/rideSlice";
 import { RideIcons } from "./RideIcons";
 import { RideForm } from "./RideForm";
 import { RideResults } from "../Searchresult/RideResults";
@@ -10,6 +9,8 @@ import RidePersonDetais from "../Searchresult/RidePersonDetais";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { keyframes } from "@mui/system";
 import { RequestService } from "../RequestService";
+import {fetchRideData} from "../../redux/slices/rideSlice"
+
 
 export function RideSearch() {
   const [viewRequestForm, setViewRequestForm] = useState(false);
@@ -84,6 +85,7 @@ export function RideSearch() {
   };
 
   return (
+
     <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
       <Grid container spacing={4} justifyContent="center">
         {/* Left Section (Ride Form & Navigation) */}
@@ -140,6 +142,7 @@ export function RideSearch() {
             />
           )}
           {viewRequestForm && <RequestService serviceType={serviceType} />}
+
         </Grid>
 
         {/* Middle Section (Ride Results / Ride Details) - Hidden in "search" mode */}

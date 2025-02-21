@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import AddTrip from "../pages/AddTrip";
 import UploadLicence from "../pages/UploadLicence";
 import { SharedLayout } from "./SharedLayout";
@@ -8,7 +8,14 @@ import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
+
+import EditProfile from "../pages/EditProfile";
+import { BrowserRouter } from "react-router-dom";
+
+
 import { ProviderNotifications } from "../components/providerNotifications";
+import Activity from "../pages/Activity";
+
 
 export default function MainLayout() {
   return (
@@ -23,10 +30,15 @@ export default function MainLayout() {
             <Route path="/addService" element={<AddService />} />
             <Route path="/licence" element={<UploadLicence />} />
             <Route path="/reviews" element={<Reviews />} />
+
+            <Route path="/editProfile" element={<EditProfile />} />
+
+            <Route path="/activities" element={<Activity />} />
             <Route
               path="/providerNotifications"
               element={<ProviderNotifications />}
             />
+
           </Route>
         </Routes>
       </BrowserRouter>

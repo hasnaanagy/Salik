@@ -8,21 +8,60 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { validateField } from "../validation/validation";
+import { validateField, validateForm } from "../validation/validation";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { signupUser, clearError } from "../redux/slices/authSlice"; // Import clearError
+import { signupUser } from "../redux/slices/authSlice";
+
 import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
 
 export default function SignUp() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  // Get loading, user, and error from Redux store
-  const { loading, user, error } = useSelector((state) => state.auth);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+  
+ 
+    const formErrors = validateForm(formData);
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+  
+    try {
+      const result = await dispatch(signupUser(formData)).unwrap();
+      console.log("Signup successful:", result);
+  
+
+      setSuccessMessage("Signup successful! ");
+      
+    
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+      
+    } catch (err) {
+      console.error("Signup error:", err);
+  
+      
+      setErrors({ general: err.message || "Signup failed. Please try again." });
+    }
+  };
+  
+  
+  
+  
+  
+  
+
+
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -32,9 +71,14 @@ export default function SignUp() {
     nationalId: "",
   });
 
+
+
+
+
+
   const [errors, setErrors] = useState({});
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const handlePasswordToggle = (field) => {
     if (field === "password") setPasswordVisible((prev) => !prev);
@@ -49,42 +93,11 @@ export default function SignUp() {
     setErrors({ ...errors, [name]: error });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let formErrors = {};
 
-    Object.keys(formData).forEach((field) => {
-      const error = validateField(field, formData[field], formData);
-      if (error) formErrors[field] = error;
-    });
-
-    setErrors(formErrors);
-
-    if (Object.keys(formErrors).length === 0) {
-      const { confirmPassword, ...dataToSubmit } = formData;
-
-      dispatch(signupUser(dataToSubmit));
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-    }
-
-    if (error && error.toLowerCase().includes("already exists")) {
-      setTimeout(() => {
-        navigate("/login");
-
-        dispatch(clearError());
-      }, 2000);
-    }
-  }, [user, error, navigate, dispatch]);
 
   return (
-    <form onSubmit={handleSubmit} noValidate autoComplete="off">
+    <form onSubmit={handleSignup} noValidate autoComplete="off">
+
       <Box className={styles.formBox}>
         {["fullName", "phone", "password", "confirmPassword", "nationalId"].map(
           (field) => (
@@ -101,10 +114,10 @@ export default function SignUp() {
                       ? "text"
                       : "password"
                     : field === "confirmPassword"
-                    ? confirmPasswordVisible
-                      ? "text"
-                      : "password"
-                    : "text"
+                      ? confirmPasswordVisible
+                        ? "text"
+                        : "password"
+                      : "text"
                 }
                 value={formData[field]}
                 onChange={handleChange}
@@ -140,7 +153,6 @@ export default function SignUp() {
           )
         )}
 
-        {/* Submit Button */}
         <MainButton
           type="submit"
           variant="contained"
@@ -156,11 +168,13 @@ export default function SignUp() {
           {error}
         </Alert>
       )}
-      {user && (
-        <Alert severity="success" style={{ marginTop: 20 }}>
-          ✅ User Registered Successfully!
-        </Alert>
-      )}
+      {successMessage && (
+  <Alert severity="success" style={{ marginTop: 20 }}>
+    {successMessage}
+  </Alert>
+)}
+
     </form>
   );
 }
+
