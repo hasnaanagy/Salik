@@ -19,3 +19,4 @@ export const store = configureStore({
     booking: bookingReducer,
   },
 });
+export default store;

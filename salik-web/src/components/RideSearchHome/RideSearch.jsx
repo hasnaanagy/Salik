@@ -9,6 +9,8 @@ import RidePersonDetais from "../Searchresult/RidePersonDetais";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { keyframes } from "@mui/system";
 import { RequestService } from "../RequestService";
+import {fetchRideData} from "../../redux/slices/rideSlice"
+
 
 export function RideSearch() {
   const [viewRequestForm, setViewRequestForm] = useState(false);
