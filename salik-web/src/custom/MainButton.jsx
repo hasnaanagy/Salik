@@ -1,18 +1,17 @@
+import { Button } from "@mui/material";
 import styled from "styled-components";
-import { Button } from '@mui/material';
 
-export const MainButton = styled(Button)`
-  background-color: #FFB800;
-  color: black;
-  font-weight: bold;
+export const MainButton = styled(Button).attrs({ variant: "contained" })`
+  background-color: #FFB800 !important; /* Ensure it's applied */
+  color: black !important;
+  font-weight: bold !important;
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
-  width: 100%;
+  width: 40%;
   height: 40px;
   line-height: 40px;
-
   &:hover {
-    background-color: #FFB800;
+    background-color: #ffb800;
   }
 `;

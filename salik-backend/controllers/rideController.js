@@ -86,11 +86,13 @@ exports.searchRides = async (req, res) => {
     let startDateTime = new Date(`${date}T00:00:00.000Z`); // Start of the day
     let endDateTime = new Date(`${date}T23:59:59.999Z`); // End of the day
 
+
     if (time) {
       let searchTime = new Date(`${date}T${time}:00.000Z`);
       if (isNaN(searchTime.getTime())) {
         return res.status(400).json({ message: "Invalid time format." });
       }
+
 
       // Define a time range (±30 minutes)
       let timeRangeStart = new Date(searchTime);
@@ -245,6 +247,8 @@ exports.deleteRide = async (req, res) => {
 
     if (ride.providerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You can only delete your own rides" });
+
+
     }
 
     await Booking.updateMany({ rideId: ride._id }, { $set: { status: "canceled" } });
@@ -257,4 +261,3 @@ exports.deleteRide = async (req, res) => {
       .json({ message: "Error deleting ride", error: err.message });
   }
 };
-

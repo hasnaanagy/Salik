@@ -19,7 +19,6 @@ import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
 import { validateField } from "../validation/validation"; // Add this import statement
-
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();

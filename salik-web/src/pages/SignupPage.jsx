@@ -1,7 +1,7 @@
 import React from "react";
 import { Grid, Box, Typography, Container } from "@mui/material";
-import SignUp from "../components/signup";
 import { useNavigate } from "react-router-dom";
+import SignUp from "../components/signUp";
 
 export default function SignUpPage() {
   const navigate = useNavigate();

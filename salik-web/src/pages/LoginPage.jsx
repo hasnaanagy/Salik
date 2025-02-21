@@ -1,7 +1,7 @@
 import React from "react";
 import { Grid, Box, Typography, Container } from "@mui/material";
-import Login from "../components/login";
 import { useNavigate } from "react-router-dom";
+import Login from "../components/Login";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ export default function LoginPage() {
   return (
     <Container maxWidth="lg">
       <Grid container spacing={2} sx={{ minHeight: "100vh" }}>
-        
         {/* Left Side Image */}
         <Grid item xs={12} md={6}>
           <Box
@@ -30,9 +29,7 @@ export default function LoginPage() {
           />
         </Grid>
 
-      
         <Grid item xs={12} md={6}>
-            
           <Box
             sx={{
               display: "flex",
@@ -41,29 +38,29 @@ export default function LoginPage() {
               minHeight: "100vh",
             }}
           >
-<Typography
-  variant="h5"
-  component="h1"
-  sx={{
-    marginBottom: 3,
-    textAlign: "center",
-    fontWeight: "bold",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 1, 
-  }}
->
-  <img
-    src="/images/logo.png"
-    alt="Brand Logo"
-    style={{
-      width: "40px", 
-      height: "40px", 
-    }}
-  />
-  ALIK
-</Typography>
+            <Typography
+              variant="h5"
+              component="h1"
+              sx={{
+                marginBottom: 3,
+                textAlign: "center",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+              }}
+            >
+              <img
+                src="/images/logo.png"
+                alt="Brand Logo"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                }}
+              />
+              ALIK
+            </Typography>
 
             <Typography
               variant="h5"

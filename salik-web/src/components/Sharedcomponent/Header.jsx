@@ -24,8 +24,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser, switchRole } from "../../redux/slices/authSlice";
 
 export function Header() {
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+
 
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
