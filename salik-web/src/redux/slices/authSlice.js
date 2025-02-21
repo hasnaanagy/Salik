@@ -45,12 +45,13 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk("auth/updateUser", async (formData, { rejectWithValue }) => {
   try {
-    const response = await api.put("/user/update", formData); // Adjust API call if needed
-    return response.data.updatedUser; // ✅ Ensure correct data is returned
+    const response = await apiService.patchWithFormData("auth/", formData); // ✅ Use PATCH request
+    return response.updatedUser; // Ensure correct data is returned
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
   }
 });
+
 
 
 export const switchRole = createAsyncThunk(
