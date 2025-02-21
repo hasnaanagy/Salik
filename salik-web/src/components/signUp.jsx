@@ -16,7 +16,6 @@ import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { clearError } from "../redux/slices/authSlices";
 
 export default function SignUp() {
   const dispatch = useDispatch();
@@ -102,10 +101,10 @@ export default function SignUp() {
                       ? "text"
                       : "password"
                     : field === "confirmPassword"
-                    ? confirmPasswordVisible
-                      ? "text"
-                      : "password"
-                    : "text"
+                      ? confirmPasswordVisible
+                        ? "text"
+                        : "password"
+                      : "text"
                 }
                 value={formData[field]}
                 onChange={handleChange}
