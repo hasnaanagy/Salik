@@ -5,6 +5,7 @@ import { MainButton } from "../custom/MainButton";
 import { useDispatch } from "react-redux";
 import { sendRequestAction } from "../redux/slices/requestServiceSlice";
 import io from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 const socket = io("http://localhost:5000"); // Replace with your backend URL
 
@@ -12,7 +13,7 @@ export const RequestService = ({ serviceType }) => {
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [problem, setProblem] = useState("");
     const dispatch = useDispatch();
-
+const navigate=useNavigate();
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -41,10 +42,7 @@ export const RequestService = ({ serviceType }) => {
         };
 
         await dispatch(sendRequestAction(requestData));
-
-        // Emit event to notify providers
-        socket.emit("customer-request", requestData);
-        console.log("Service request sent:", requestData);
+       navigate("/requests");
     };
 
     return (
