@@ -58,6 +58,7 @@ export function Header() {
   const profileImg = user?.profileImg || "https://via.placeholder.com/150";
   const currentRole = user?.type || "customer ";
 
+
   return (
     <AppBar
       position="sticky"

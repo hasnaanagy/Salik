@@ -20,7 +20,8 @@ axiosInstance.interceptors.request.use(
 
 const apiService = {
   patch: async (endpoint, data) => {
-    const response = await axiosInstance.patch(`/${endpoint}`, data);
+    const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await axiosInstance.patch(`/${endpoint}`, data, { headers });
     return response.data;
   },
   getAll: async (endpoint) => {
@@ -50,23 +51,15 @@ const apiService = {
     const response = await axiosInstance.delete(`/${endpoint}/${id}`);
     return response.data;
   },
+
   updateWithFormData: async (endpoint, id, formData) => {
     const response = await axiosInstance.put(`/${endpoint}/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   },
-  patchWithFormData: async (endpoint, formData) => {
-    console.log("🟢 Making PATCH request to:", `/${endpoint}`);
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-    const response = await axiosInstance.patch(`/${endpoint}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    console.log("🟢 Server response in apiService:", response);
-    return response.data;
-  },
+
+  
 };
 
 export default apiService;
