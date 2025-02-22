@@ -20,7 +20,11 @@ axiosInstance.interceptors.request.use(
 
 const apiService = {
   patch: async (endpoint, data) => {
-    const response = await axiosInstance.patch(`/${endpoint}`, data);
+    const headers =
+      data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await axiosInstance.patch(`/${endpoint}`, data, {
+      headers,
+    });
     return response.data;
   },
   getAll: async (endpoint) => {

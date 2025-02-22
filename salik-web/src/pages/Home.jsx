@@ -10,7 +10,11 @@ export default function Home() {
   console.log(user?.type); // Avoid crashing if user is undefined
 
   if (!user) {
-    return <p>Loading...</p>; // Handle cases where user is not yet available
+    return (
+      <>
+        <IntoScreen />
+      </>
+    ); // Handle cases where user is not yet available
   }
 
   return (
