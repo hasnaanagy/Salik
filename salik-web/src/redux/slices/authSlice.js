@@ -59,7 +59,11 @@ export const switchRole = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.update("auth/switch-role", {});
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> origin/master
       console.log("🔄 Full API Response:", response); // Debugging Log
 
       if (!response || !response.newRole) {
@@ -75,6 +79,7 @@ export const switchRole = createAsyncThunk(
     }
   }
 );
+
 
 
 

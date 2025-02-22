@@ -117,10 +117,9 @@ export default function Login() {
 
         {/* Submit Button */}
         <MainButton
-          type="submit"
-          variant="contained"
-          style={{ backgroundColor: "#FFB800", color: "black" }}
-          disabled={loading}
+                type="submit"
+                style={{ width:'100%'}}
+                disabled={loading}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
         </MainButton>
