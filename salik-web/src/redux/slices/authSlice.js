@@ -60,13 +60,15 @@ export const switchRole = createAsyncThunk(
   "auth/switchRole",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.update("auth/switch-role", {}); 
+      const response = await apiService.update("auth/switch-role", {});
       
       console.log("🔄 Full API Response:", response); // Debugging Log
 
       if (!response || !response.newRole) {
         throw new Error("Invalid API response format");
       }
+
+      localStorage.setItem("userRole", response.newRole); // ✅ Store role in localStorage
 
       return response; // ✅ Ensure the response is returned properly
     } catch (error) {
@@ -75,6 +77,7 @@ export const switchRole = createAsyncThunk(
     }
   }
 );
+
 
 
 

@@ -155,8 +155,7 @@ export default function SignUp() {
 
         <MainButton
           type="submit"
-          variant="contained"
-          style={{ backgroundColor: "#FFB800", color: "black" }}
+          style={{ width:'100%'}}
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
