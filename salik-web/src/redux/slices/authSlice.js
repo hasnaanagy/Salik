@@ -45,25 +45,30 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk("auth/updateUser", async (formData, { rejectWithValue }) => {
   try {
-    const response = await api.put("/user/update", formData); // Adjust API call if needed
-    return response.data.updatedUser; // ✅ Ensure correct data is returned
+    const response = await apiService.patch("auth/", formData); // ✅ Use PATCH request
+    console.log("🔄 API Response:", response); // Debugging Log
+    return response.updatedUser; // Ensure correct data is returned
+    
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
   }
 });
 
 
+
 export const switchRole = createAsyncThunk(
   "auth/switchRole",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.update("auth/switch-role", {}); 
+      const response = await apiService.update("auth/switch-role", {});
       
       console.log("🔄 Full API Response:", response); // Debugging Log
 
       if (!response || !response.newRole) {
         throw new Error("Invalid API response format");
       }
+
+      localStorage.setItem("userRole", response.newRole); // ✅ Store role in localStorage
 
       return response; // ✅ Ensure the response is returned properly
     } catch (error) {
@@ -72,6 +77,7 @@ export const switchRole = createAsyncThunk(
     }
   }
 );
+
 
 
 
@@ -156,9 +162,11 @@ const authSlice = createSlice({
 
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload; // ✅ Update Redux state with new user data
+        console.log("🔄 API Response:", action.payload); // Debugging Log
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.error = action.payload;
+        console.log("🔄 API Response:", action.payload); // Debugging Log
       })
   
   

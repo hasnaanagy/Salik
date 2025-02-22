@@ -108,6 +108,7 @@ export default function EditProfile() {
       })
       .catch((error) => {
         console.error("❌ Error updating profile:", error);
+
         setMessage({
           type: "error",
           text: error?.message || "Failed to update profile.",
