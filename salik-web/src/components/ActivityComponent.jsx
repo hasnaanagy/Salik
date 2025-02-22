@@ -1,26 +1,27 @@
 import React, { useEffect } from "react";
 import { Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchBooking,
-  fetchProvidedRides,
-} from "../redux/slices/activitySlice";
+import { fetchBooking, fetchProvidedRides } from "../redux/slices/activitySlice";
 import Cards from "./Card";
 
 const ActivityComponent = () => {
+  const userType = localStorage.getItem("userRole");
   const dispatch = useDispatch();
+
+  // Fetch rides based on user type
   useEffect(() => {
-    dispatch(fetchBooking());
-  }, [dispatch]);
+    if (userType === "customer") {
+      dispatch(fetchBooking());
+    } else {
+      dispatch(fetchProvidedRides());
+    }
+  }, [dispatch, userType]);
 
-  const {
-    upcoming = [],
-    completed = [],
-    canceled = [],
-    loading,
-    error,
-  } = useSelector((state) => state.activity || {});
+  // Access state.activity correctly
+  const { upcoming = [], completed = [], canceled = [], loading, error } =
+    useSelector((state) => state.activity);
 
+  // Loading and error states
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>{error}</Typography>;
 
@@ -35,6 +36,7 @@ const ActivityComponent = () => {
         ) : (
           <Typography>No upcoming rides</Typography>
         )}
+
         <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
           Past
         </Typography>
@@ -43,6 +45,7 @@ const ActivityComponent = () => {
         ) : (
           <Typography>No Past rides</Typography>
         )}
+
         <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
           Canceled
         </Typography>
