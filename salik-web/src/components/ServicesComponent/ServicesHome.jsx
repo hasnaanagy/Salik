@@ -1,4 +1,5 @@
 import { Box, Grid, Typography } from "@mui/material";
+import { Link } from "react-router-dom";
 import React from "react";
 
 export default function ServicesHome() {
@@ -16,80 +17,119 @@ export default function ServicesHome() {
 
       <Grid container spacing={3} justifyContent="center">
         {/* Ride Box */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Box
-            sx={{
-              backgroundColor: "#D9D9D9",
-              padding: "20px 50px",
-              borderRadius: "12px",
-              position: "relative",
-              height: "100%",
-            }}
+        <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
+          <Link
+            to="/addTrip"
+            style={{ textDecoration: "none", color: "inherit" }}
           >
-            <h2 style={{ fontSize: "30px" }}>Ride</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-              <p style={{ fontSize: "20px" }}>Share and request rides now!</p>
-              <img
-                src="/images/car.png"
-                alt="Ride"
-                width={100}
-                height={100}
-                style={{ position: "absolute", right: "20px", top: "15px" }}
-              />
-            </div>
-          </Box>
+            <Box
+              sx={{
+                backgroundColor: "#D9D9D9",
+                padding: "20px 50px",
+                borderRadius: "12px",
+                position: "relative",
+                height: "100%",
+                cursor: "pointer",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+                },
+              }}
+            >
+              <h2 style={{ fontSize: "30px" }}>Ride</h2>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "20px" }}
+              >
+                <p style={{ fontSize: "20px" }}>Share and request rides now!</p>
+                <img
+                  src="/images/car.png"
+                  alt="Ride"
+                  width={100}
+                  height={100}
+                  style={{ position: "absolute", right: "20px", top: "15px" }}
+                />
+              </div>
+            </Box>
+          </Link>
         </Grid>
 
         {/* Fuel Delivery Box */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Box
-            sx={{
-              backgroundColor: "#D9D9D9",
-              padding: "20px 50px",
-              borderRadius: "12px",
-              position: "relative",
-              height: "100%",
-            }}
+        <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
+          <Link
+            to="/addService"
+            style={{ textDecoration: "none", color: "inherit" }}
           >
-            <h2 style={{ fontSize: "30px" }}>Fuel Delivery</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-              <p style={{ fontSize: "20px" }}>
-                Bringing you closer, no matter the distance...
-              </p>
-              <img
-                src="/images/gas-pump.png"
-                alt="Fuel Delivery"
-                width={100}
-                height={100}
-                style={{ position: "absolute", right: "10px", top: "15px" }}
-              />
-            </div>
-          </Box>
+            <Box
+              sx={{
+                backgroundColor: "#D9D9D9",
+                padding: "20px 50px",
+                borderRadius: "12px",
+                position: "relative",
+                height: "100%",
+                cursor: "pointer",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+                },
+              }}
+            >
+              <h2 style={{ fontSize: "30px" }}>Fuel Delivery</h2>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "20px" }}
+              >
+                <p style={{ fontSize: "20px" }}>
+                  Bringing you closer, no matter the distance...
+                </p>
+                <img
+                  src="/images/gas-pump.png"
+                  alt="Fuel Delivery"
+                  width={100}
+                  height={100}
+                  style={{ position: "absolute", right: "10px", top: "15px" }}
+                />
+              </div>
+            </Box>
+          </Link>
         </Grid>
 
         {/* Mechanic Box */}
-        <Grid item xs={12} md={4}>
-          <Box
-            sx={{
-              backgroundColor: "#D9D9D9",
-              padding: "20px 50px",
-              borderRadius: "12px",
-              position: "relative",
-              height: "100%",
-            }}
+        <Grid item xs={12} md={4} sx={{ marginBottom: "70px" }}>
+          <Link
+            to="/addService"
+            style={{ textDecoration: "none", color: "inherit" }}
           >
-            <h2 style={{ fontSize: "30px" }}>Mechanic</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-              <p style={{ fontSize: "20px" }}>Send and get help anywhere!</p>
-              <img
-                src="/images/technician.png"
-                alt="Mechanic"
-                width={100}
-                height={100}
-                style={{ position: "absolute", right: "10px", top: "15px" }}
-              />
-            </div>
-          </Box>
+            <Box
+              sx={{
+                backgroundColor: "#D9D9D9",
+                padding: "20px 50px",
+                borderRadius: "12px",
+                position: "relative",
+                height: "100%",
+                cursor: "pointer",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+                },
+              }}
+            >
+              <h2 style={{ fontSize: "30px" }}>Mechanic</h2>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "20px" }}
+              >
+                <p style={{ fontSize: "20px" }}>Send and get help anywhere!</p>
+                <img
+                  src="/images/technician.png"
+                  alt="Mechanic"
+                  width={100}
+                  height={100}
+                  style={{ position: "absolute", right: "10px", top: "15px" }}
+                />
+              </div>
+            </Box>
+          </Link>
         </Grid>
       </Grid>
     </Box>

@@ -4,8 +4,7 @@ import React from "react";
 export function IntoScreen() {
   const sections = [
     {
-      image:
-        "../../../public/images/man-with-map-smartphone-renting-car-driver-using-car-sharing-app-phone-searching-vehicle-vector-illustration-transport-transportation-urban-traf.jpg",
+      image: "../../../public/images/road 2 (2).jpg",
       title: "Your All-in-One Place",
       description:
         "Car sharing, courier services, and roadside assistance—everything in one place!",
@@ -19,20 +18,19 @@ export function IntoScreen() {
       reverse: true,
     },
     {
-      image:
-        "../../../public/images/man-with-map-smartphone-renting-car-driver-using-car-sharing-app-phone-searching-vehicle-vector-illustration-transport-transportation-urban-traf.jpg",
+      image: "../../../public/images/maintanance 1 (1).jpg",
 
       title: "Emergency Help",
       description:
         " Roadside Assistance, Fuel delivery, towing, and mechanic support—whenever you need it.",
     },
     {
-      image:
-        "../../../public/images/man-with-map-smartphone-renting-car-driver-using-car-sharing-app-phone-searching-vehicle-vector-illustration-transport-transportation-urban-traf.jpg",
+      image: "../../../public/images/undraw_welcome_nk8k.png",
 
       title: "Join Salik!",
+      join: "How Do You Want to Join?",
       description:
-        "How Do You Want to Join? As a Customer – Book rides, send packages, or get roadside help.As a Provider – Offer rides, deliver packages, or provide assistance.",
+        "As a Customer – Book rides, send packages, or get roadside help.As a Provider – Offer rides, deliver packages, or provide assistance.",
       reverse: true,
     },
   ];
@@ -62,7 +60,7 @@ export function IntoScreen() {
                 alt={`section-${index}`}
                 style={{
                   width: "100%",
-                  maxWidth: "500px",
+                  maxWidth: "300px",
                   height: "auto",
                   borderRadius: "12px",
                 }}
@@ -89,6 +87,18 @@ export function IntoScreen() {
                 }}
               >
                 {section.title}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
+                  color: "#FFB800",
+                  textAlign: "center",
+                  mb: 2,
+                  fontWeight: "bold",
+                }}
+              >
+                {section.join}
               </Typography>
               <Typography
                 variant="body1"
