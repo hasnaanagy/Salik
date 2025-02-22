@@ -89,6 +89,11 @@ exports.getUserRides = async (req, res) => {
         bookedSeats: booking.bookedSeats,
         status: booking.status,
         rideDateTime: ride.rideDateTime,
+        fromLocation: ride.fromLocation,
+        toLocation: ride.toLocation,
+        carType: ride.carType,
+        totalSeats: ride.totalSeats,
+        price: ride.price,
       };
 
       if (booking.status === "cancelled") {

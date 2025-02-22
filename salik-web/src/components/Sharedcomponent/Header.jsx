@@ -74,8 +74,8 @@ export function Header() {
 
             {/* Desktop Navigation (Visible on Medium & Large Screens) */}
             <Box sx={{ display: { xs: "none", md: "flex" }, ml: 2 }}>
-              {["Home", "Services", "Activities"].map((text) => (
-                <Button key={text} component={NavLink} to={`/${text.toLowerCase()}`} sx={{ color: "black", fontWeight: "bold", mx: 1 }}>
+              {["Home", "Services", "Activities", "Requests"].map((text) => (
+                <Button key={text} component={NavLink} to={`${text==="Home" ? "/" : `/${text.toLowerCase()}`}`} sx={{ color: "black", fontWeight: "bold", mx: 1 }}>
                   {text}
                 </Button>
               ))}
@@ -84,15 +84,20 @@ export function Header() {
 
           {/* User Profile */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            {loading ? (
+          {loading ? (
               <span>Loading...</span>
             ) : (
-              <Button onClick={handleUserMenuOpen} sx={{ color: "black", fontWeight: "bold", textTransform: "none" }}>
-                <Avatar src={profileImg} sx={{ width: 40, height: 40, mr: 1 }} />
-                {fullName} ({currentRole})
-              </Button>
+              localStorage.getItem("token") !== null ?(
+                <Button onClick={handleUserMenuOpen} sx={{ color: "black", fontWeight: "bold", textTransform: "none" }}>
+                  <Avatar src={profileImg} sx={{ width: 40, height: 40, mr: 1 }} />
+                  {fullName} ({currentRole})
+                </Button>
+              ):(
+                <Button component={NavLink} to="/login" sx={{ color: "black", fontWeight: "bold", textTransform: "none" }}>
+                  Login 
+                </Button>
+              )
             )}
-
             {/* User Dropdown Menu */}
             <Menu anchorEl={userMenuAnchor} open={Boolean(userMenuAnchor)} onClose={handleUserMenuClose}>
               <MenuItem onClick={handleEditProfile}>
@@ -123,7 +128,7 @@ export function Header() {
       <Drawer anchor="left" open={mobileOpen} onClose={toggleMobileMenu}>
         <Box sx={{ width: 250 }} role="presentation" onClick={toggleMobileMenu}>
           <List>
-            {["Home", "Services", "Activities"].map((text) => (
+            {["Home", "Services", "Activities","Requests"].map((text) => (
               <ListItem button key={text} component={NavLink} to={`/${text.toLowerCase()}`}>
                 <ListItemText primary={text} />
               </ListItem>

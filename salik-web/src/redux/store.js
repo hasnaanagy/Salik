@@ -3,10 +3,12 @@ import addServiceReducer from "./slices/addServiceSlice";
 import addMechanicReducer from "./slices/addMechanicSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
-import rideActivitySlice from "./slices/activitySlice";
+import { activityReducer } from "./slices/activitySlice";
 import { rideReducer } from "./slices/rideSlice";
 import { bookingReducer } from "./slices/bookingSlice";
 import { authReducer } from "./slices/authSlice";
+import { requestReducer } from "./slices/requestServiceSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -14,9 +16,10 @@ export const store = configureStore({
     mechanicService: addMechanicReducer,
     images: imageReducer,
     reviewsSlice: reviewReducer,
-    activityRides: rideActivitySlice,
     ride: rideReducer,
+    activity: activityReducer,
     booking: bookingReducer,
+    requestSlice:requestReducer
   },
 });
 export default store;

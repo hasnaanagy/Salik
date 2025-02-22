@@ -94,6 +94,7 @@ exports.login = async (req, res) => {
 exports.switchRole = async (req, res) => {
   try {
 
+
     const user = await User.findById(req.user._id); // Get the authenticated user from token
 
     if (!user) {
@@ -145,6 +146,7 @@ exports.getUserById = async (req, res) => {
 // Update User Controller
 exports.updateUser = async (req, res) => {
   try {
+
 
     const user = await User.findById(req.user._id); // Get the authenticated user from token
     if (!user) {

@@ -45,8 +45,10 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk("auth/updateUser", async (formData, { rejectWithValue }) => {
   try {
-    const response = await apiService.patchWithFormData("auth/", formData); // ✅ Use PATCH request
+    const response = await apiService.patch("auth/", formData); // ✅ Use PATCH request
+    console.log("🔄 API Response:", response); // Debugging Log
     return response.updatedUser; // Ensure correct data is returned
+    
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
   }
@@ -157,9 +159,11 @@ const authSlice = createSlice({
 
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload; // ✅ Update Redux state with new user data
+        console.log("🔄 API Response:", action.payload); // Debugging Log
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.error = action.payload;
+        console.log("🔄 API Response:", action.payload); // Debugging Log
       })
   
   

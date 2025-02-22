@@ -73,7 +73,7 @@ export default function EditProfile() {
     const formData = new FormData();
     if (profile.fullName) formData.append("fullName", profile.fullName);
     if (profile.phone) formData.append("phone", profile.phone);
-    // if (profile.profileImg instanceof File) formData.append("profileImg", profile.profileImg);
+    if (profile.profileImg instanceof File) formData.append("profileImg", profile.profileImg);
 
     dispatch(updateUser(formData))
       .unwrap()

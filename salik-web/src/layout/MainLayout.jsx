@@ -12,10 +12,9 @@ import AddService from "../pages/AddService";
 import EditProfile from "../pages/EditProfile";
 import { BrowserRouter } from "react-router-dom";
 
-
 import { ProviderNotifications } from "../components/providerNotifications";
 import Activity from "../pages/Activity";
-
+import ProviderRequests from "../components/ProviderRequests";
 
 export default function MainLayout() {
   return (
@@ -30,15 +29,13 @@ export default function MainLayout() {
             <Route path="/addService" element={<AddService />} />
             <Route path="/licence" element={<UploadLicence />} />
             <Route path="/reviews" element={<Reviews />} />
-
             <Route path="/editProfile" element={<EditProfile />} />
-
             <Route path="/activities" element={<Activity />} />
             <Route
               path="/providerNotifications"
               element={<ProviderNotifications />}
             />
-
+           <Route path="/requests" element={<ProviderRequests />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,62 +1,59 @@
 import React, { useEffect } from "react";
-import { Grid, Typography, CircularProgress } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchRides } from "../redux/slices/activitySlice"; // Import the fetchRides action
-import Cards from "./Card"; // Assuming Cards component is used to render each ride
+import {
+  fetchBooking,
+  fetchProvidedRides,
+} from "../redux/slices/activitySlice";
+import Cards from "./Card";
 
 const ActivityComponent = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchBooking());
+  }, [dispatch]);
 
-    // Accessing the state from the Redux store
-    const { upcoming, completed, loading, error } = useSelector((state) => state.rides);
+  const {
+    upcoming = [],
+    completed = [],
+    canceled = [],
+    loading,
+    error,
+  } = useSelector((state) => state.activity || {});
 
-    useEffect(() => {
-        // Dispatch action to fetch rides data
-        dispatch(fetchRides());
-    }, [dispatch]);
+  if (loading) return <Typography>Loading...</Typography>;
+  if (error) return <Typography>{error}</Typography>;
 
-    // Loading state
-    if (loading) return <CircularProgress />;
-
-    // Error handling
-    if (error) return <Typography color="error">{error}</Typography>;
-
-    return (
-        <Grid container spacing={2} justifyContent={"center"}>
-            <Grid item xs={12} sm={10} md={8} lg={6}>
-                {/* Display upcoming rides */}
-                {upcoming.length > 0 && (
-                    <>
-                        <Typography variant="h4" sx={{ marginBottom: 2, fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}>
-                            Upcoming
-                        </Typography>
-                        {upcoming.map((ride) => (
-                            <Cards key={ride.id} ride={ride} />
-                        ))}
-                    </>
-                )}
-
-                {/* Display completed rides */}
-                {completed.length > 0 && (
-                    <>
-                        <Typography variant="h4" sx={{ marginBottom: 2, fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}>
-                            Past
-                        </Typography>
-                        {completed.map((ride) => (
-                            <Cards key={ride.id} ride={ride} />
-                        ))}
-                    </>
-                )}
-
-                {/* If there are no rides in either category */}
-                {upcoming.length === 0 && completed.length === 0 && (
-                    <Typography variant="h6" sx={{ textAlign: "center" }}>
-                        No rides available.
-                    </Typography>
-                )}
-            </Grid>
-        </Grid>
-    );
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={12} sm={10} md={8} lg={6}>
+        <Typography variant="h3" sx={{ marginBottom: 5 }}>
+          Upcoming
+        </Typography>
+        {upcoming.length > 0 ? (
+          upcoming.map((ride) => <Cards key={ride._id} ride={ride} />)
+        ) : (
+          <Typography>No upcoming rides</Typography>
+        )}
+        <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
+          Past
+        </Typography>
+        {completed.length > 0 ? (
+          completed.map((ride) => <Cards key={ride._id} ride={ride} />)
+        ) : (
+          <Typography>No Past rides</Typography>
+        )}
+        <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
+          Canceled
+        </Typography>
+        {canceled.length > 0 ? (
+          canceled.map((ride) => <Cards key={ride._id} ride={ride} />)
+        ) : (
+          <Typography>No Canceled rides</Typography>
+        )}
+      </Grid>
+    </Grid>
+  );
 };
 
 export default ActivityComponent;
