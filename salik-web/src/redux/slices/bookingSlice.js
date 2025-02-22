@@ -7,18 +7,10 @@ export const bookRide = createAsyncThunk(
   async ({ rideId, counterSeats }, { rejectWithValue }) => {
     console.log(rideId, counterSeats);
     try {
-      const response = await apiService.create(
-        `rideBooking`,
-        {
-          rideId,
-          bookedSeats: counterSeats,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await apiService.create(`rideBooking`, {
+        rideId,
+        bookedSeats: counterSeats,
+      });
       return response; // Return the API response
     } catch (e) {
       console.log(e);

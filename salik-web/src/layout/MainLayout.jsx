@@ -30,11 +30,8 @@ export default function MainLayout() {
             <Route path="/licence" element={<UploadLicence />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/editProfile" element={<EditProfile />} />
+            <Route path="/uploadLiscence" element={<UploadLicence />} />
             <Route path="/activities" element={<Activity />} />
-            <Route
-              path="/providerNotifications"
-              element={<ProviderNotifications />}
-            />
            <Route path="/requests" element={<ProviderRequests />} />
           </Route>
         </Routes>
