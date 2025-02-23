@@ -55,7 +55,10 @@ export function Header() {
   const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
 
   const fullName = user?.fullName || "Guest";
-  const profileImg = user?.profileImg || "https://via.placeholder.com/150";
+
+  const profileImg = user?.profileImg 
+  ? `http://localhost:5000${user.profileImg}`
+  : "https://via.placeholder.com/150";
   const currentRole = user?.type || "customer ";
 
 

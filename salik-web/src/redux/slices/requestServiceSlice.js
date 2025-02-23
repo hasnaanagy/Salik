@@ -38,6 +38,39 @@ export const getAllResquestsAction = createAsyncThunk(
       }
     }
   );
+  export const updateRequestStateAction = createAsyncThunk(
+    "requests/updateRequestStateAction",
+    async ({action,requestId}, { rejectWithValue }) => {
+      try {
+        const response = await apiService.patch(`request`, {
+          action,
+          requestId
+        });
+        console.log(response);
+        return response;
+      } catch (e) {
+        console.log(e);
+        return rejectWithValue(e.message);
+      }
+    }
+  );
+  export const confirmRequestAction = createAsyncThunk(
+    "requests/confirmRequestAction",
+    async ({requestId,action,providerId}, { rejectWithValue }) => {
+      try {
+        const response = await apiService.patch(`request`, {
+          requestId,
+          action,
+          providerId
+        });
+        console.log(response);
+        return response;
+      } catch (e) {
+        console.log(e);
+        return rejectWithValue(e.message);
+      }
+    }
+  );
 const requestSlice = createSlice({
   name: "requests",
   initialState,
@@ -64,6 +97,26 @@ const requestSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     });
+    builder.addCase(confirmRequestAction.pending, (state, action) => {
+      state.isLoading = true;
+    });
+    builder.addCase(confirmRequestAction.fulfilled, (state, action) => {
+      state.isLoading = false;
+    });
+    builder.addCase(confirmRequestAction.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    });
+    builder.addCase(updateRequestStateAction.pending, (state, action) => {
+        state.isLoading = true;
+      });
+      builder.addCase(updateRequestStateAction.fulfilled, (state, action) => {
+        state.isLoading = false;
+      });
+      builder.addCase(updateRequestStateAction.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
   },
 });
 

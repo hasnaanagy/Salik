@@ -20,8 +20,12 @@ axiosInstance.interceptors.request.use(
 
 const apiService = {
   patch: async (endpoint, data) => {
-    const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
-    const response = await axiosInstance.patch(`/${endpoint}`, data, { headers });
+    const headers =
+      data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await axiosInstance.patch(`/${endpoint}`, data, {
+      headers,
+    });
+
     return response.data;
   },
   getAll: async (endpoint) => {
@@ -39,11 +43,8 @@ const apiService = {
   update: async (endpoint, data) => {
     try {
       const response = await axiosInstance.put(`/${endpoint}`, data);
-      console.log("🔄 API PUT Response:", response);
-      console.log("✅ API Response Data:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ API Update Error:", error);
       throw error;
     }
   },
@@ -58,8 +59,6 @@ const apiService = {
     });
     return response.data;
   },
-
-
 };
 
 export default apiService;

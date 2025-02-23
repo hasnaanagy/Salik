@@ -8,7 +8,7 @@ exports.addReview = async (req, res) => {
   try {
     // Check if the provider exists and is of type "provider"
     const provider = await User.findById(providerId);
-    if (!provider || provider.type !== "provider") {
+    if (!provider) {
       return res.status(400).json({ message: "Invalid provider ID" });
     }
 
@@ -68,7 +68,7 @@ exports.updateReview = async (req, res) => {
     }
 
     // Ensure only the reviewer (customer) can update their review
-    if (review.customerId.toString() !== req.userId) {
+    if (review.customerId.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ message: "You can only update your own review" });
@@ -97,7 +97,7 @@ exports.deleteReview = async (req, res) => {
     }
 
     // Ensure only the reviewer (customer) can delete their review
-    if (review.customerId.toString() !== req.userId) {
+    if (review.customerId.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ message: "You can only delete your own review" });

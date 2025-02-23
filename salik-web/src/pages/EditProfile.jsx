@@ -90,7 +90,10 @@ export default function EditProfile() {
           return;
         }
 
-        setMessage({ type: "success", text: "✅ Profile updated successfully!" });
+        setMessage({
+          type: "success",
+          text: "✅ Profile updated successfully!",
+        });
 
         if (response.profileImg) {
           const imageUrl = `http://localhost:5000${response.profileImg}`;
@@ -105,39 +108,90 @@ export default function EditProfile() {
       })
       .catch((error) => {
         console.error("❌ Error updating profile:", error);
-        setMessage({ type: "error", text: error?.message || "Failed to update profile." });
+
+        setMessage({
+          type: "error",
+          text: error?.message || "Failed to update profile.",
+        });
       });
   };
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={4} sx={{ p: 4, mt: 4, borderRadius: 3, textAlign: "center" }}>
+      <Paper
+        elevation={4}
+        sx={{ p: 4, mt: 4, borderRadius: 3, textAlign: "center" }}
+      >
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Hi,{user?.fullName}
         </Typography>
         <Typography variant="body1" gutterBottom>
           Manage your info to make salik work better for you
-              </Typography>
+        </Typography>
         <Box position="relative" display="inline-block" sx={{ mb: 3 }}>
-          <Avatar src={profile.profilePreview} sx={{ width: 120, height: 120, mx: "auto" }} />
-          <IconButton component="label" sx={{ position: "absolute", bottom: 5, right: 5, bgcolor: "white", p: 0.7, borderRadius: "50%" }}>
+          <Avatar
+            src={profile.profilePreview}
+            sx={{ width: 120, height: 120, mx: "auto" }}
+          />
+          <IconButton
+            component="label"
+            sx={{
+              position: "absolute",
+              bottom: 5,
+              right: 5,
+              bgcolor: "white",
+              p: 0.7,
+              borderRadius: "50%",
+            }}
+          >
             <PhotoCameraIcon fontSize="small" />
-            <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleFileChange}
+            />
           </IconButton>
         </Box>
 
-        
-
-        <TextField fullWidth label="Full Name" name="fullName" value={profile.fullName} onChange={handleChange} sx={{ mb: 2 }} error={!!errors.fullName} helperText={errors.fullName} />
-        <TextField fullWidth label="Phone Number" name="phone" value={profile.phone} onChange={handleChange} sx={{ mb: 3 }} error={!!errors.phone} helperText={errors.phone} />
-        {message.text && <Box sx={{ mb: 2, color: message.type === "success" ? "green" : "red" }}><Typography>{message.text}</Typography></Box>}
+        <TextField
+          fullWidth
+          label="Full Name"
+          name="fullName"
+          value={profile.fullName}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          error={!!errors.fullName}
+          helperText={errors.fullName}
+        />
+        <TextField
+          fullWidth
+          label="Phone Number"
+          name="phone"
+          value={profile.phone}
+          onChange={handleChange}
+          sx={{ mb: 3 }}
+          error={!!errors.phone}
+          helperText={errors.phone}
+        />
+        {message.text && (
+          <Box
+            sx={{ mb: 2, color: message.type === "success" ? "green" : "red" }}
+          >
+            <Typography>{message.text}</Typography>
+          </Box>
+        )}
         <Box display="flex" justifyContent="space-between" gap={2}>
-        
-        
           <MainButton onClick={handleSave} disabled={loading}>
             {loading ? "Saving..." : "Save Changes"}
           </MainButton>
-          <Button variant="outlined" style={{color:'#FFB800', borderColor: '#FFB800'}} onClick={() => navigate("/")}>Cancel</Button>
+          <Button
+            variant="outlined"
+            style={{ color: "#FFB800", borderColor: "#FFB800" }}
+            onClick={() => navigate("/")}
+          >
+            Cancel
+          </Button>
         </Box>
       </Paper>
     </Container>

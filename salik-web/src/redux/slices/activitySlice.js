@@ -46,8 +46,10 @@ export const deleteRideAction = createAsyncThunk(
   "rides/deleteRide",
   async (rideId, { rejectWithValue }) => {
     try {
-      const response = await apiService.delete(`rides/${rideId}`); // Changed to DELETE request
-      return { rideId }; // Returning only the ID for removal from the state
+
+      const response = await apiService.delete(`rides`, rideId);
+      console.log(response)
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Error deleting ride."
@@ -139,15 +141,16 @@ const activitySlice = createSlice({
       })
       .addCase(deleteRideAction.fulfilled, (state, action) => {
         state.loading = false;
-        state.upcoming = state.upcoming.filter(
-          (ride) => ride.id !== action.payload.rideId
-        );
-        state.completed = state.completed.filter(
-          (ride) => ride.id !== action.payload.rideId
-        );
-        state.canceled = state.canceled.filter(
-          (ride) => ride.id !== action.payload.rideId
-        );
+
+        // state.upcoming = state.upcoming.filter(
+        //   (ride) => ride.id !== action.payload.rideId
+        // );
+        // state.completed = state.completed.filter(
+        //   (ride) => ride.id !== action.payload.rideId
+        // );
+        // state.canceled = state.canceled.filter(
+        //   (ride) => ride.id !== action.payload.rideId
+        // );
       })
       .addCase(deleteRideAction.rejected, (state, action) => {
         state.loading = false;

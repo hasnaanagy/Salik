@@ -8,13 +8,11 @@ import Login from "../pages/LoginPage";
 import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
-
 import EditProfile from "../pages/EditProfile";
 import { BrowserRouter } from "react-router-dom";
-
-import { ProviderNotifications } from "../components/providerNotifications";
 import Activity from "../pages/Activity";
-import ProviderRequests from "../components/ProviderRequests";
+import CustomerRequests from "../components/Requests";
+import Requests from "../components/Requests";
 
 export default function MainLayout() {
   return (
@@ -32,7 +30,7 @@ export default function MainLayout() {
             <Route path="/editProfile" element={<EditProfile />} />
             <Route path="/uploadLiscence" element={<UploadLicence />} />
             <Route path="/activities" element={<Activity />} />
-            <Route path="/requests" element={<ProviderRequests />} />
+            <Route path="/requests" element={<Requests />} />
           </Route>
         </Routes>
       </BrowserRouter>

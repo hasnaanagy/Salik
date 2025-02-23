@@ -3,7 +3,6 @@ import { Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBooking, fetchProvidedRides } from "../redux/slices/activitySlice";
 import Cards from "./Card";
-
 const ActivityComponent = () => {
   const userType = localStorage.getItem("userRole");
   const dispatch = useDispatch();
@@ -11,8 +10,10 @@ const ActivityComponent = () => {
   // Fetch rides based on user type
   useEffect(() => {
     if (userType === "customer") {
+      console.log("Fetching customer rides");
       dispatch(fetchBooking());
     } else {
+      console.log("Fetching provider rides");
       dispatch(fetchProvidedRides());
     }
   }, [dispatch, userType]);
