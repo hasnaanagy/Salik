@@ -4,6 +4,7 @@ import { Box, Button } from "@mui/material";
 import ReviewModal from "./ReviewsComponents/ReviewModal";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllReviewsAction } from "../redux/slices/reviewsSlice";
+import CircularProgress from '@mui/material/CircularProgress';
 
 export default function ReviewsComponent({ providerId }) {
   const dispatch = useDispatch();
@@ -11,15 +12,27 @@ export default function ReviewsComponent({ providerId }) {
     (state) => state.reviewsSlice
   );
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-
+  const [selectedReview, setSelectedReview] = useState(null);
+  
+  const handleOpen = (review ) => {
+    setSelectedReview(review);
+    setOpen(true);
+  };
+  
   useEffect(() => {
     dispatch(getAllReviewsAction(`${providerId}`));
   }, []);
-  return (
-    console.log(reviews),
-    (
-      <Box sx={{ margin: "30px 20px" }}>
+
+    if (isLoading) {
+      return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center",marginTop:"40px"}}>
+      <CircularProgress />;
+      </Box>
+    }
+    if(error){
+      return <div>{error}</div>
+    }
+    if(reviews){
+      return <Box sx={{ margin: "30px 20px" }}>
         <Box
           sx={{
             display: "grid",
@@ -32,7 +45,7 @@ export default function ReviewsComponent({ providerId }) {
               return (
                 <ReviewCard
                   key={review._id}
-                  setOpen={setOpen}
+                  handleOpen={handleOpen}
                   review={review}
                 />
               );
@@ -48,12 +61,12 @@ export default function ReviewsComponent({ providerId }) {
             marginTop: "20px",
             "&:hover": { backgroundColor: "#e0a700" },
           }}
-          onClick={handleOpen}
+          onClick={() => handleOpen(null)}
         >
           Add Review
         </Button>
-        <ReviewModal open={open} setOpen={setOpen} />
+        <ReviewModal open={open} setOpen={setOpen}  providerId={providerId} review={selectedReview}/>
       </Box>
-    )
-  );
+    }
+
 }

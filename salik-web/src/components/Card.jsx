@@ -1,25 +1,39 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { cancelRideAction, fetchBooking } from "../redux/slices/activitySlice";
+import {
+  cancelRideAction,
+  deleteRideAction,
+  fetchBooking,
+  fetchProvidedRides,
+} from "../redux/slices/activitySlice";
 import { MainButton } from "../custom/MainButton";
 import car from "/images/car.png"; // Correct path
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { IconButton, Tooltip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 const Cards = ({ ride }) => {
+  const{user}=useSelector((state)=>state.auth)
+  console.log("User type: ", user.type);
   const dispatch = useDispatch();
-  const [cancelled, setCancelled] = useState(false);
-  const { upcoming, completed, canceled } = useSelector(
-    (state) => state.activity
-  );
-
-  useEffect(() => {}, [upcoming, completed, canceled]);
+  const [cancelled, setCancelled] = useState(ride.status === "canceled");
+const navigate=useNavigate()
   const handleCancel = async () => {
-    await dispatch(cancelRideAction(ride._id))
-      .then(() => setCancelled(true))
-      .catch((err) => console.error("Error canceling ride:", err));
-    dispatch(fetchBooking());
+        await dispatch(cancelRideAction(ride._id));
+        setCancelled(true);
+        dispatch(fetchBooking());
   };
+const handleDelete = async () => {
+  await dispatch(deleteRideAction(ride._id));
+  dispatch(fetchProvidedRides());
+}
+  // const handleEdit = () => {
+  //   console.log("Edit ride:", ride._id);
+  //   // Add your edit logic here
+  // };
 
+  // Format ride date and time
   const rideDate = ride?.rideDateTime?.split("T")[0];
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
 
@@ -41,13 +55,10 @@ const Cards = ({ ride }) => {
           {rideDate} {rideTime}
         </Typography>
       </Box>
+
       {/* Ride Card */}
-      <Card
-        sx={{ width: 500, display: "flex", alignItems: "center", padding: 1 }}
-      >
-        <CardContent
-          sx={{ display: "flex", alignItems: "center", width: "100%" }}
-        >
+      <Card sx={{ width: 500, display: "flex", alignItems: "center", padding: 1 }}>
+        <CardContent sx={{ display: "flex", alignItems: "center", width: "100%" }}>
           {/* Car Icon */}
           <img src={car} style={{ width: 50, marginRight: 20 }} alt="Car" />
 
@@ -62,7 +73,7 @@ const Cards = ({ ride }) => {
           </Box>
 
           {/* Cancel Button */}
-          {ride.status === "upcoming" && (
+          {ride.status === "upcoming" && user.type === "customer" && (
             <MainButton
               variant="contained"
               disabled={cancelled}
@@ -80,10 +91,41 @@ const Cards = ({ ride }) => {
               {cancelled ? "Cancelled" : "Cancel"}
             </MainButton>
           )}
+
+          {/* Edit Button (for providers) */}
+          {ride.status === "upcoming" && user.type === "provider" && (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <IconButton 
+                    onClick={()=> navigate(`/addTrip`,{state:{rideId:ride._id}})}
+                    sx={{ 
+                        color: "#ffb800", // Blue color for edit
+                        transition: "0.3s",
+                        "&:hover": { color: "#0D47A1", transform: "scale(1.2)" }
+                    }}
+                >
+                    <Tooltip title="Edit">
+                        <EditIcon />
+                    </Tooltip>
+                </IconButton>
+
+                <IconButton 
+                    onClick={handleDelete} 
+                    sx={{ 
+                        color: "#F44336", // Red color for delete
+                        transition: "0.3s",
+                        "&:hover": { color: "#B71C1C", transform: "scale(1.2)" }
+                    }}
+                >
+                    <Tooltip title="Delete">
+                        <DeleteIcon />
+                    </Tooltip>
+                </IconButton>
+            </Box>
+          )}
         </CardContent>
       </Card>
     </Box>
   );
 };
 
-export default Cards;
+export default Cards;

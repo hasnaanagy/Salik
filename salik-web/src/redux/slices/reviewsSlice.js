@@ -22,10 +22,45 @@ export const addReviewsAction = createAsyncThunk(
   "reviews/addReviewsAction",
   async ({ providerId, rating, comment }, { rejectWithValue }) => {
     try {
+      console.log(providerId, rating, comment);
       const response = await apiService.create(`reviews/${providerId}`, {
         rating,
         comment,
       });
+      console.log(response);
+      return response;
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
+    }
+  }
+);
+
+export const deleteReviewAction = createAsyncThunk(
+  "reviews/deleteReviewAction",
+  async (reviewId, { rejectWithValue }) => {
+    console.log(reviewId);
+    try {
+      const response = await apiService.delete(`reviews`,reviewId);
+      console.log(response);
+      return response;
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
+    }
+  }
+);
+export const updateReviewAction = createAsyncThunk(
+  "reviews/updateReviewAction",
+  async ({reviewId,rating,comment}, { rejectWithValue }) => {
+    console.log(reviewId);
+    console.log(rating,comment);
+    try {
+      const response = await apiService.update(`reviews/${reviewId}`,{
+        rating,
+        comment
+      });
+      console.log(response);
       return response;
     } catch (e) {
       console.log(e);
