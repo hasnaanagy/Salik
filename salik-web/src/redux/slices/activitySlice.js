@@ -46,7 +46,8 @@ export const deleteRideAction = createAsyncThunk(
   "rides/deleteRide",
   async (rideId, { rejectWithValue }) => {
     try {
-      const response = await apiService.delete(`rides`,rideId); 
+
+      const response = await apiService.delete(`rides`, rideId);
       console.log(response)
       return response;
     } catch (error) {
@@ -62,7 +63,8 @@ export const editRideAction = createAsyncThunk(
   "rides/editRide",
   async ({ rideId, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await apiService.patch(`rides/${rideId}`, updatedData);
+      const { carType, fromLocation, toLocation, totalSeats, price, date, time } = updatedData
+      const response = await apiService.patch(`rides/${rideId}`, { carType, fromLocation, toLocation, totalSeats, price, date, time });
       return response;
     } catch (error) {
       return rejectWithValue(
@@ -140,15 +142,6 @@ const activitySlice = createSlice({
       })
       .addCase(deleteRideAction.fulfilled, (state, action) => {
         state.loading = false;
-        // state.upcoming = state.upcoming.filter(
-        //   (ride) => ride.id !== action.payload.rideId
-        // );
-        // state.completed = state.completed.filter(
-        //   (ride) => ride.id !== action.payload.rideId
-        // );
-        // state.canceled = state.canceled.filter(
-        //   (ride) => ride.id !== action.payload.rideId
-        // );
       })
       .addCase(deleteRideAction.rejected, (state, action) => {
         state.loading = false;

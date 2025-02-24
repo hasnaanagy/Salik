@@ -19,7 +19,7 @@ export const store = configureStore({
     ride: rideReducer,
     activity: activityReducer,
     booking: bookingReducer,
-    requestSlice:requestReducer
+    requestSlice: requestReducer
   },
 });
 export default store;

@@ -30,7 +30,7 @@ export default function MainLayout() {
             <Route path="/editProfile" element={<EditProfile />} />
             <Route path="/uploadLiscence" element={<UploadLicence />} />
             <Route path="/activities" element={<Activity />} />
-           <Route path="/requests" element={<Requests />} />
+            <Route path="/requests" element={<Requests />} />
           </Route>
         </Routes>
       </BrowserRouter>

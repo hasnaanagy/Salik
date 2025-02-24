@@ -48,20 +48,17 @@ export const updateUser = createAsyncThunk("auth/updateUser", async (formData, {
     const response = await apiService.patch("auth/", formData); // ✅ Use PATCH request
     console.log("🔄 API Response:", response); // Debugging Log
     return response.updatedUser; // Ensure correct data is returned
-    
+
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
   }
 });
-
-
 
 export const switchRole = createAsyncThunk(
   "auth/switchRole",
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.update("auth/switch-role", {});
-      
       console.log("🔄 Full API Response:", response); // Debugging Log
 
       if (!response || !response.newRole) {
@@ -114,7 +111,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(signupUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -129,13 +126,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.token = null;
         state.error = null;
       })
-      
+
       .addCase(getUser.pending, (state) => {
         state.loading = true;
       })
@@ -147,18 +144,18 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(switchRole.fulfilled, (state, action) => {
         console.log("🎭 Switched Role Data:", action.payload); // Debugging Log
-      
+
         if (action.payload?.newRole) {
           state.user = { ...state.user, role: action.payload.newRole }; // ✅ Ensure user role updates
         }
       })
-  
-    .addCase(switchRole.rejected, (state, action) => {
+
+      .addCase(switchRole.rejected, (state, action) => {
         state.error = action.payload;
-    })
+      })
 
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload; // ✅ Update Redux state with new user data
@@ -168,14 +165,14 @@ const authSlice = createSlice({
         state.error = action.payload;
         console.log("🔄 API Response:", action.payload); // Debugging Log
       })
-  
-  
-    
-      
-      
-      
+
+
+
+
+
+
   },
 });
 
-export const  authReducer = authSlice.reducer;
+export const authReducer = authSlice.reducer;
 

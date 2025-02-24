@@ -4,12 +4,7 @@ import apiService from "../../api/apiService";
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
   async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
-    console.log("Fetching ride data for:", {
-      fromLocation,
-      toLocation,
-      date,
-      time,
-    });
+    console.log("Fetching ride data for:", { fromLocation, toLocation, date, time });
 
     try {
       const response = await apiService.getAll(
@@ -50,12 +45,11 @@ export const updateRideAction = createAsyncThunk(
       console.log("Ride data received:", newRide);
       console.log("rideId", rideId);
       const response = await apiService.update(`rides/${rideId}`, newRide);
-      console.log("updated data received:", response);
       return response;
     } catch (error) {
-      console.error("Error fetching ride data:", error);
+      console.error("Error updating ride data:", error);
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch ride data"
+        error.response?.data?.message || "Failed to update ride data"
       );
     }
   }
