@@ -13,8 +13,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 // Function to format the date
 const formatDate = (dateString) => {
-  const options = { year: "numeric", month: "short", day: "numeric" };
-  return new Date(dateString).toLocaleDateString("en-US", options);
+  return new Date(dateString).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 };
 
 // Function to get icon based on vehicle type
@@ -88,6 +92,7 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                 >
                   {/* Circular Time Indicator */}
 
+                  {console.log(rides)}
                   <Typography
                     level="body-sm"
                     sx={{
@@ -107,7 +112,12 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                         mt: 0.5,
                       }}
                     />
-                    {ride.rideDateTime.split("T")[1].slice(0, 5)}
+                    {/* {ride.rideDateTime.split("T")[1].slice(0, 5)} */}
+                    {new Date(ride.rideDateTime).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false, // أو true إذا كنت تريد تنسيق AM/PM
+                    })}
                   </Typography>
 
                   <Link

@@ -1,8 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import apiService from "../../api/apiService";
-
-const BASE_URL = "http://localhost:5000/api";
 
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
@@ -15,12 +12,12 @@ export const fetchRideData = createAsyncThunk(
     });
 
     try {
-      const response = await axios.get(`${BASE_URL}/rides/search`, {
-        params: { fromLocation, toLocation, date, time },
-      });
+      const response = await apiService.getAll(
+        `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
+      );
 
-      console.log("Ride data received:", response.data);
-      return response.data;
+      console.log("Ride data received:", response);
+      return response;
     } catch (error) {
       console.error("Error fetching ride data:", error);
       return rejectWithValue(
@@ -32,9 +29,9 @@ export const fetchRideData = createAsyncThunk(
 
 export const getRideById = createAsyncThunk(
   "ride/getRideById",
-  async (rideId , { rejectWithValue }) => {
+  async (rideId, { rejectWithValue }) => {
     try {
-      const response = await apiService.getById("rides",rideId);
+      const response = await apiService.getById("rides", rideId);
       console.log("Ride data received:", response);
       return response;
     } catch (error) {
@@ -48,11 +45,11 @@ export const getRideById = createAsyncThunk(
 
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
-  async (rideId,newRide , { rejectWithValue }) => {
+  async (rideId, newRide, { rejectWithValue }) => {
     try {
       console.log("Ride data received:", newRide);
-      console.log("rideId",rideId)
-      const response = await apiService.update(`rides/${rideId}`,newRide);
+      console.log("rideId", rideId);
+      const response = await apiService.update(`rides/${rideId}`, newRide);
       console.log("updated data received:", response);
       return response;
     } catch (error) {

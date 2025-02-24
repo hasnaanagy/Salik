@@ -1,8 +1,22 @@
-import { Box, Grid, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
-import React from "react";
+import { Box, Grid, Typography, Snackbar, Alert } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 
 export default function ServicesHome() {
+  const token = localStorage.getItem("token"); // ✅ جلب التوكن
+  const navigate = useNavigate(); // ✅ استخدام التنقل
+  const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
+
+  const handleProtectedNavigation = (e, path) => {
+    if (!token) {
+      setSuccessMessage(true); // <-- إظهار رسالة النجاح
+
+      e.preventDefault(); // ✅ منع التنقل إذا لم يكن هناك توكن
+      setTimeout(() => {
+        navigate("/login"); // ✅ إعادة التوجيه إلى صفحة تسجيل الدخول
+      }, 5000);
+    }
+  };
   return (
     <Box sx={{ marginTop: "70px", px: 2, mb: 5 }}>
       <Typography
@@ -19,8 +33,9 @@ export default function ServicesHome() {
         {/* Ride Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to="/addTrip"
+            to={token ? "/addTrip" : "#"}
             style={{ textDecoration: "none", color: "inherit" }}
+            onClick={(e) => handleProtectedNavigation(e, "/addTrip")}
           >
             <Box
               sx={{
@@ -41,7 +56,9 @@ export default function ServicesHome() {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "20px" }}
               >
-                <p style={{ fontSize: "20px" }}>Share and request rides now!</p>
+                <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
+                  Share and request rides now!
+                </p>
                 <img
                   src="/images/car.png"
                   alt="Ride"
@@ -57,8 +74,9 @@ export default function ServicesHome() {
         {/* Fuel Delivery Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to="/addService"
             style={{ textDecoration: "none", color: "inherit" }}
+            to={token ? "/addService" : "#"}
+            onClick={(e) => handleProtectedNavigation(e, "/addService")}
           >
             <Box
               sx={{
@@ -79,7 +97,7 @@ export default function ServicesHome() {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "20px" }}
               >
-                <p style={{ fontSize: "20px" }}>
+                <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
                   Bringing you closer, no matter the distance...
                 </p>
                 <img
@@ -97,8 +115,9 @@ export default function ServicesHome() {
         {/* Mechanic Box */}
         <Grid item xs={12} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to="/addService"
             style={{ textDecoration: "none", color: "inherit" }}
+            to={token ? "/addService" : "#"}
+            onClick={(e) => handleProtectedNavigation(e, "/addService")}
           >
             <Box
               sx={{
@@ -119,7 +138,9 @@ export default function ServicesHome() {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "20px" }}
               >
-                <p style={{ fontSize: "20px" }}>Send and get help anywhere!</p>
+                <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
+                  Send and get help anywhere!
+                </p>
                 <img
                   src="/images/technician.png"
                   alt="Mechanic"
@@ -132,6 +153,21 @@ export default function ServicesHome() {
           </Link>
         </Grid>
       </Grid>
+      <Snackbar
+        open={successMessage}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMessage(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          🚀 Hold on! You need to log in first. Go ahead, log in, and come back!
+          😉
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
