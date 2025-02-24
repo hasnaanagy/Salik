@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-
 import {
   Container,
   Grid,
@@ -10,6 +8,7 @@ import {
   Alert,
 } from "@mui/material";
 
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,6 +16,9 @@ import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { useNavigate } from "react-router-dom";
+
+import { useLocation } from "react-router-dom";
+import { getRideById, updateRideAction } from "../redux/slices/rideSlice";
 
 const schema = yup.object().shape({
   fromLocation: yup.string().required("Pickup location is required"),
@@ -38,10 +40,14 @@ const schema = yup.object().shape({
 });
 
 const AddTripForm = () => {
+  const { ride } = useSelector((state) => state.ride) || {}; // Ensure ride is not undefined
+  const location = useLocation();
+  const rideId = location.state?.rideId;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { loading, error } = useSelector((state) => state.addService);
+
   const {
     control,
     handleSubmit,
@@ -68,15 +74,14 @@ const AddTripForm = () => {
     setValue("fromLocation", address);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const formattedData = {
       carType: data.carType,
       fromLocation: data.fromLocation,
       toLocation: data.toLocation,
-      totalSeats: parseInt(data.totalSeats, 10), // Ensure it's a number
-      price: parseInt(data.price, 10), // Ensure it's a number
+      totalSeats: parseInt(data.totalSeats, 10),
+      price: parseInt(data.price, 10),
       date: data.date,
-
       time: data.time,
     };
     if (data.fromLocation && data.toLocation) {
@@ -89,6 +94,24 @@ const AddTripForm = () => {
       console.error("Failed to post ride data");
     }
   };
+
+  useEffect(() => {
+    if (rideId) {
+      dispatch(getRideById(rideId));
+    }
+  }, [rideId, dispatch]);
+
+  useEffect(() => {
+    if (rideId && ride) {
+      setValue("fromLocation", ride?.fromLocation || "");
+      setValue("toLocation", ride?.toLocation || "");
+      setValue("carType", ride?.carType || "");
+      setValue("totalSeats", ride?.totalSeats || "");
+      setValue("price", ride?.price || "");
+      setValue("date", ride?.rideDateTime?.split("T")[0] || "");
+      setValue("time", ride?.rideDateTime?.split("T")[1]?.slice(0, 5) || "");
+    }
+  }, [ride, rideId, setValue]);
 
   return (
     <Container maxWidth="lg" style={{ padding: "50px", marginBottom: "50px" }}>

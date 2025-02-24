@@ -43,11 +43,8 @@ const apiService = {
   update: async (endpoint, data) => {
     try {
       const response = await axiosInstance.put(`/${endpoint}`, data);
-      console.log("🔄 API PUT Response:", response);
-      console.log("✅ API Response Data:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ API Update Error:", error);
       throw error;
     }
   },
