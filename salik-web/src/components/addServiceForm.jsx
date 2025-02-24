@@ -17,10 +17,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
 import { useNavigate } from "react-router-dom";
-
 import MapComponent from "./Mapcomponent/MapComponent";
 import { transformation } from "leaflet";
-import { useNavigate } from "react-router-dom";
 
 // Validation schema
 const schema = yup.object().shape({
