@@ -35,15 +35,23 @@ const Cards = ({ ride }) => {
     var location = data?.length > 13 ? `${data?.slice(0, 13)}...` : data;
     return location;
   }
+  const colors = ride.status === "upcoming" ? "#FFB800" : ride.status === "completed" ? "#4C585B" : "#F44336";
   return (
-    <Box display="flex" alignItems="center" gap={2} mb={2}>
+    <Box display="flex" alignItems="center" gap={2} mb={2}
+      sx={{
+        "&:hover": {
+          transform: "scale(1.05) translateX(20px)",
+          transition: "0.3s",
+        }
+      }}
+    >
       {/* Left side */}
       <Box display="flex" alignItems="center">
         <Box
           sx={{
             width: 12,
             height: 12,
-            bgcolor: { colors },
+            bgcolor: colors,
             borderRadius: "50%",
             marginRight: 1,
             boxShadow: 1,
