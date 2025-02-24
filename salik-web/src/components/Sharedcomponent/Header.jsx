@@ -41,6 +41,7 @@ export function Header() {
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate("/login");
+    localStorage.removeItem("userRole");
   };
 
   const handleSwitchRole = async () => {
@@ -56,11 +57,10 @@ export function Header() {
 
   const fullName = user?.fullName || "Guest";
 
-  const profileImg = user?.profileImg 
-  ? `http://localhost:5000${user.profileImg}`
-  : "https://via.placeholder.com/150";
+  const profileImg = user?.profileImg
+    ? `http://localhost:5000${user.profileImg}`
+    : "https://via.placeholder.com/150";
   const currentRole = user?.type || "customer ";
-
 
   return (
     <AppBar
