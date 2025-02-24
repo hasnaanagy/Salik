@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getRideById, updateRideAction } from "../redux/slices/rideSlice";
 
 const schema = yup.object().shape({
@@ -29,12 +29,12 @@ const schema = yup.object().shape({
 });
 
 const AddTripForm = () => {
-  const { ride } = useSelector((state) => state.ride) || {}; // Ensure ride is not undefined
+  const { ride } = useSelector((state) => state.ride) || {};
   const location = useLocation();
   const rideId = location.state?.rideId;
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.addService);
-
+  const navigate = useNavigate();
   const {
     control,
     handleSubmit,
@@ -70,16 +70,15 @@ const AddTripForm = () => {
       date: data.date,
       time: data.time,
     };
-    if(rideId){
-     await dispatch(updateRideAction(rideId,formattedData));
-     console.log("edit")
 
+    if (rideId) {
+      await dispatch(updateRideAction({ rideId, newRide: formattedData }));
+      console.log("edit");
+    } else {
+      console.log("add");
+      await dispatch(postRideData(formattedData));
     }
-    else{
-      console.log("add")
-    await  dispatch(postRideData(formattedData));
-    }
-    
+    navigate("/activities");
   };
 
   useEffect(() => {
@@ -124,6 +123,7 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.fromLocation}
                   helperText={errors.fromLocation?.message}
+                  disabled={!!rideId}
                 />
               )}
             />
@@ -138,6 +138,7 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.toLocation}
                   helperText={errors.toLocation?.message}
+                  disabled={!!rideId}
                 />
               )}
             />
@@ -152,6 +153,7 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.carType}
                   helperText={errors.carType?.message}
+                  disabled={!!rideId}
                 />
               )}
             />
@@ -198,6 +200,7 @@ const AddTripForm = () => {
                   InputLabelProps={{ shrink: true }}
                   error={!!errors.date}
                   helperText={errors.date?.message}
+                  disabled={!!rideId}
                 />
               )}
             />
@@ -214,6 +217,7 @@ const AddTripForm = () => {
                   InputLabelProps={{ shrink: true }}
                   error={!!errors.time}
                   helperText={errors.time?.message}
+                  disabled={!!rideId}
                 />
               )}
             />
