@@ -1,15 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyledTextField } from "../../custom/StyledTextField";
-import { Button, Grid } from "@mui/material";
+import { Button, Grid, Snackbar, Alert } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import SquareIcon from "@mui/icons-material/Square";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
+import { useNavigate } from "react-router-dom";
 
 export function RideForm({ formData, handleChange, handleSubmit }) {
+  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(false);
+  const token = localStorage.getItem("token");
+
+  const handleSubmitWithAuthCheck = (e) => {
+    e.preventDefault();
+
+    if (!token) {
+      setSuccessMessage(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 5000);
+      return; // Stop form submission
+    }
+
+    handleSubmit(e);
+  };
+
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitWithAuthCheck}>
         <StyledTextField
           variant="outlined"
           name="fromLocation"
@@ -76,6 +95,23 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
           Search
         </Button>
       </form>
+
+      {/* Snackbar for showing the login alert */}
+      <Snackbar
+        open={successMessage}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMessage(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          🚀 Hold on! You need to log in first. Go ahead, log in, and come back!
+          😉
+        </Alert>
+      </Snackbar>
     </>
   );
 }

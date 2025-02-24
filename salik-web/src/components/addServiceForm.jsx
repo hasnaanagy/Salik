@@ -8,6 +8,8 @@ import {
   Typography,
   FormControlLabel,
   Checkbox,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
@@ -15,9 +17,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
 import { useNavigate } from "react-router-dom";
-
 import MapComponent from "./Mapcomponent/MapComponent";
-
+import { transformation } from "leaflet";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -54,6 +55,7 @@ const AddServiceForm = () => {
 
   const [pickupCoords, setPickupCoords] = useState(null);
   const [locationError, setLocationError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
 
   // Handle location selection from the map
   const handleLocationSelect = (lat, lng, address) => {
@@ -94,7 +96,6 @@ const AddServiceForm = () => {
       location: {
         type: "Point",
         coordinates: [pickupCoords.lng, pickupCoords.lat],
-
       },
       addressOnly: data.mechanicLocation,
       workingDays: data.workingDays,
@@ -103,8 +104,17 @@ const AddServiceForm = () => {
         to: data.availableTo + " PM",
       },
     };
-    dispatch(postMechanicData(transformedData));
-    navigate("/requests");
+
+    if (transformation === undefined) {
+      console.log(" Please set all the fields");
+    } else {
+      dispatch(postMechanicData(transformedData));
+      setSuccessMessage(true); // <-- إظهار رسالة النجاح
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    }
   };
 
   useEffect(() => {
@@ -154,7 +164,6 @@ const AddServiceForm = () => {
             <span style={{ color: "red", fontSize: "14px" }}>
               {locationError}
             </span>
-
 
             {/* Mechanic Type */}
             <Controller
@@ -213,7 +222,6 @@ const AddServiceForm = () => {
                     <Typography color="error">
                       {errors.workingDays.message}
                     </Typography>
-
                   )}
                 </div>
               )}
@@ -285,9 +293,22 @@ const AddServiceForm = () => {
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
           />
-
         </Grid>
       </Grid>
+      <Snackbar
+        open={successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Service added successfully!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

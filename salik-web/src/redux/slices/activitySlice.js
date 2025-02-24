@@ -58,23 +58,6 @@ export const deleteRideAction = createAsyncThunk(
   }
 );
 
-// Update a ride
-export const editRideAction = createAsyncThunk(
-  "rides/editRide",
-  async ({ rideId, updatedData }, { rejectWithValue }) => {
-    try {
-      const { carType, fromLocation, toLocation, totalSeats, price, date, time } = updatedData
-      const response = await apiService.patch(`rides/${rideId}`, { carType, fromLocation, toLocation, totalSeats, price, date, time });
-      return response;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Error editing ride."
-      );
-    }
-  }
-);
-
-
 // Create slice
 const activitySlice = createSlice({
   name: "myrides",
@@ -144,22 +127,6 @@ const activitySlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteRideAction.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Editing a ride
-      .addCase(editRideAction.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(editRideAction.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedRide = action.payload;
-        state.upcoming = state.upcoming.map((ride) =>
-          ride._id === updatedRide._id ? updatedRide : ride
-        );
-      })
-      .addCase(editRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

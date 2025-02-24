@@ -19,7 +19,7 @@ export default function ServicesHome() {
         {/* Ride Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to="/addTrip"
+            to="/licence"
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <Box

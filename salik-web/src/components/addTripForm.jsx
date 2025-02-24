@@ -1,5 +1,14 @@
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+
 import React, { useEffect, useState } from "react";
-import { Container, Grid, TextField, Button, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -33,8 +42,9 @@ const AddTripForm = () => {
   const location = useLocation();
   const rideId = location.state?.rideId;
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.addService);
   const navigate = useNavigate();
+
+  const { loading, error } = useSelector((state) => state.addService);
   const {
     control,
     handleSubmit,
@@ -54,6 +64,7 @@ const AddTripForm = () => {
   });
 
   const [pickupCoords, setPickupCoords] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
 
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
@@ -70,15 +81,17 @@ const AddTripForm = () => {
       date: data.date,
       time: data.time,
     };
-
     if (rideId) {
-      await dispatch(updateRideAction({ rideId, newRide: formattedData }));
-      console.log("edit");
+      // Editing existing ride
+      dispatch(updateRideAction({ rideId, formattedData }));
     } else {
-      console.log("add");
-      await dispatch(postRideData(formattedData));
+      // Creating new ride
+      dispatch(postRideData(formattedData));
     }
-    navigate("/activities");
+    setSuccessMessage(true);
+    setTimeout(() => {
+      navigate("/activities");
+    }, 2000);
   };
 
   useEffect(() => {
@@ -88,7 +101,7 @@ const AddTripForm = () => {
   }, [rideId, dispatch]);
 
   useEffect(() => {
-    if (rideId && ride) {
+    if (rideId) {
       setValue("fromLocation", ride?.fromLocation || "");
       setValue("toLocation", ride?.toLocation || "");
       setValue("carType", ride?.carType || "");
@@ -108,7 +121,9 @@ const AddTripForm = () => {
           </Typography>
           {error && (
             <Typography color="error">
-              {typeof error === "string" ? error : error.message || "An error occurred"}
+              {typeof error === "string"
+                ? error
+                : error.message || "An error occurred"}
             </Typography>
           )}
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -225,17 +240,43 @@ const AddTripForm = () => {
               type="submit"
               variant="contained"
               fullWidth
-              style={{ marginTop: "20px", backgroundColor: "#ffb800", color: "black" }}
+              style={{
+                marginTop: "20px",
+                backgroundColor: "#ffb800",
+                color: "black",
+              }}
               disabled={loading}
             >
               {loading ? "Submitting..." : "Confirm Pickup"}
             </Button>
           </form>
         </Grid>
-        <Grid item xs={12} md={6} style={{ height: "400px", position: "relative" }}>
-          <MapComponent onLocationSelect={handleLocationSelect} pickupCoords={pickupCoords} />
+        <Grid
+          item
+          xs={12}
+          md={6}
+          style={{ height: "400px", position: "relative" }}
+        >
+          <MapComponent
+            onLocationSelect={handleLocationSelect}
+            pickupCoords={pickupCoords}
+          />
         </Grid>
       </Grid>
+      <Snackbar
+        open={successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Trip added successfully!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

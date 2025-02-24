@@ -1,8 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import apiService from "../../api/apiService";
-
-const BASE_URL = "http://localhost:5000/api";
 
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
@@ -10,12 +7,12 @@ export const fetchRideData = createAsyncThunk(
     console.log("Fetching ride data for:", { fromLocation, toLocation, date, time });
 
     try {
-      const response = await axios.get(`${BASE_URL}/rides/search`, {
-        params: { fromLocation, toLocation, date, time },
-      });
+      const response = await apiService.getAll(
+        `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
+      );
 
-      console.log("Ride data received:", response.data);
-      return response.data;
+      console.log("Ride data received:", response);
+      return response;
     } catch (error) {
       console.error("Error fetching ride data:", error);
       return rejectWithValue(
@@ -40,21 +37,14 @@ export const getRideById = createAsyncThunk(
     }
   }
 );
-
 export const updateRideAction = createAsyncThunk(
-  "ride/updateRideAction",
-  async ({ rideId, newRide }, { rejectWithValue }) => {
+  "rides/updateRide",
+  async ({ rideId, formattedData }, { rejectWithValue }) => {
     try {
-      console.log("Ride data received:", newRide);
-      console.log("rideId", rideId);
-      const response = await apiService.update(`rides/${rideId}`, newRide);
-      console.log("Updated data received:", response);
+      const response = await apiService.update(`rides/${rideId}`, formattedData);
       return response;
     } catch (error) {
-      console.error("Error updating ride data:", error);
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update ride data"
-      );
+      return rejectWithValue(error.response?.data?.message || "Error updating ride.");
     }
   }
 );

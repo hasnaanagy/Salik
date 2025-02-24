@@ -62,8 +62,21 @@ export function RideSearch() {
     setFormData((prev) => ({ ...prev, fromLocation: address }));
   };
 
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   setView("results");
+  //   dispatch(fetchRideData(formData));
+  // };
+
   const handleSubmit = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
+    // const token = localStorage.getItem("token");
+
+    // // if (!token) {
+    // //   navigate("/login"); // تحويل المستخدم إلى صفحة تسجيل الدخول
+    // //   return;
+    // // }
+
     setView("results");
     dispatch(fetchRideData(formData));
   };
