@@ -37,20 +37,23 @@ export const getRideById = createAsyncThunk(
     }
   }
 );
-
 export const updateRideAction = createAsyncThunk(
+<<<<<<< HEAD
   "ride/updateRideAction",
   async (rideId, newRide, { rejectWithValue }) => {
     try {
       console.log("Ride data received:", newRide);
       console.log("rideId", rideId);
       const response = await apiService.update(`rides/${rideId}`, newRide);
+=======
+  "rides/updateRide",
+  async ({ rideId, formattedData }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.update(`rides/${rideId}`, formattedData);
+>>>>>>> Elgohary
       return response;
     } catch (error) {
-      console.error("Error updating ride data:", error);
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update ride data"
-      );
+      return rejectWithValue(error.response?.data?.message || "Error updating ride.");
     }
   }
 );

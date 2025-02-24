@@ -81,6 +81,7 @@ const AddTripForm = () => {
       date: data.date,
       time: data.time,
     };
+<<<<<<< HEAD
 
     if (data.fromLocation && data.toLocation) {
       dispatch(postRideData(formattedData));
@@ -91,6 +92,19 @@ const AddTripForm = () => {
     } else {
       console.error("Failed to post ride data");
     }
+=======
+    if (rideId) {
+      // Editing existing ride
+      dispatch(updateRideAction({ rideId, formattedData }));
+    } else {
+      // Creating new ride
+      dispatch(postRideData(formattedData));
+    }
+    setSuccessMessage(true);
+    setTimeout(() => {
+      navigate("/activities");
+    }, 2000);
+>>>>>>> Elgohary
   };
 
   useEffect(() => {
@@ -100,7 +114,7 @@ const AddTripForm = () => {
   }, [rideId, dispatch]);
 
   useEffect(() => {
-    if (rideId && ride) {
+    if (rideId) {
       setValue("fromLocation", ride?.fromLocation || "");
       setValue("toLocation", ride?.toLocation || "");
       setValue("carType", ride?.carType || "");
