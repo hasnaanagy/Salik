@@ -4,7 +4,12 @@ import apiService from "../../api/apiService";
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
   async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
-    console.log("Fetching ride data for:", { fromLocation, toLocation, date, time });
+    console.log("Fetching ride data for:", {
+      fromLocation,
+      toLocation,
+      date,
+      time,
+    });
 
     try {
       const response = await apiService.getAll(
@@ -38,22 +43,24 @@ export const getRideById = createAsyncThunk(
   }
 );
 export const updateRideAction = createAsyncThunk(
-<<<<<<< HEAD
   "ride/updateRideAction",
-  async (rideId, newRide, { rejectWithValue }) => {
-    try {
-      console.log("Ride data received:", newRide);
-      console.log("rideId", rideId);
-      const response = await apiService.update(`rides/${rideId}`, newRide);
-=======
-  "rides/updateRide",
+  // async (rideId, newRide, { rejectWithValue }) => {
+  //   try {
+  //     console.log("Ride data received:", newRide);
+  //     console.log("rideId", rideId);
+  //     const response = await apiService.update(`rides/${rideId}`, newRide);
+  // "rides/updateRide",
   async ({ rideId, formattedData }, { rejectWithValue }) => {
     try {
-      const response = await apiService.update(`rides/${rideId}`, formattedData);
->>>>>>> Elgohary
+      const response = await apiService.update(
+        `rides/${rideId}`,
+        formattedData
+      );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Error updating ride.");
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
+      );
     }
   }
 );

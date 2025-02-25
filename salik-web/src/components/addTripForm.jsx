@@ -81,18 +81,7 @@ const AddTripForm = () => {
       date: data.date,
       time: data.time,
     };
-<<<<<<< HEAD
 
-    if (data.fromLocation && data.toLocation) {
-      dispatch(postRideData(formattedData));
-      setSuccessMessage(true); // <-- إظهار رسالة النجاح
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    } else {
-      console.error("Failed to post ride data");
-    }
-=======
     if (rideId) {
       // Editing existing ride
       dispatch(updateRideAction({ rideId, formattedData }));
@@ -104,7 +93,6 @@ const AddTripForm = () => {
     setTimeout(() => {
       navigate("/activities");
     }, 2000);
->>>>>>> Elgohary
   };
 
   useEffect(() => {
