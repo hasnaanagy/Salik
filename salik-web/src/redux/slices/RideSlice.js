@@ -42,20 +42,24 @@ export const getRideById = createAsyncThunk(
     }
   }
 );
-
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
-  async (rideId, newRide, { rejectWithValue }) => {
+  // async (rideId, newRide, { rejectWithValue }) => {
+  //   try {
+  //     console.log("Ride data received:", newRide);
+  //     console.log("rideId", rideId);
+  //     const response = await apiService.update(`rides/${rideId}`, newRide);
+  // "rides/updateRide",
+  async ({ rideId, formattedData }, { rejectWithValue }) => {
     try {
-      console.log("Ride data received:", newRide);
-      console.log("rideId", rideId);
-      const response = await apiService.update(`rides/${rideId}`, newRide);
-      console.log("updated data received:", response);
+      const response = await apiService.update(
+        `rides/${rideId}`,
+        formattedData
+      );
       return response;
     } catch (error) {
-      console.error("Error fetching ride data:", error);
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch ride data"
+        error.response?.data?.message || "Error updating ride."
       );
     }
   }

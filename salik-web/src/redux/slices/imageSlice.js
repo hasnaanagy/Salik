@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { uploadImageApi } from "../../api/uploadLicenceService";
 import apiService from "../../api/apiService";
 
 // Async thunk for uploading images
@@ -17,7 +16,7 @@ export const uploadImages = createAsyncThunk(
             }
 
             const response = await apiService.patch("auth", formData);
-            
+
             return {
                 nationalIdImage: response.data.updatedUser.nationalIdImage,
                 licenseImage: response.data.updatedUser.licenseImage,
@@ -28,7 +27,6 @@ export const uploadImages = createAsyncThunk(
     }
 );
 
-
 const imageSlice = createSlice({
     name: "images",
     initialState: {
@@ -37,7 +35,11 @@ const imageSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        setImage: (state, action) => {
+            state[action.payload.type] = action.payload.url;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(uploadImages.pending, (state) => {
@@ -56,4 +58,5 @@ const imageSlice = createSlice({
     },
 });
 
+export const { setImage } = imageSlice.actions;
 export default imageSlice.reducer;

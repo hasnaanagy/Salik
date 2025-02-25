@@ -16,10 +16,9 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
-
+import { useNavigate } from "react-router-dom";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { transformation } from "leaflet";
-import { useNavigate } from "react-router-dom";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -31,6 +30,7 @@ const schema = yup.object().shape({
 });
 
 const AddServiceForm = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const { loading, error } = useSelector(
@@ -55,7 +55,6 @@ const AddServiceForm = () => {
 
   const [pickupCoords, setPickupCoords] = useState(null);
   const [locationError, setLocationError] = useState("");
-  const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
 
   // Handle location selection from the map
@@ -105,6 +104,7 @@ const AddServiceForm = () => {
         to: data.availableTo + " PM",
       },
     };
+
     if (transformation === undefined) {
       console.log(" Please set all the fields");
     } else {
@@ -128,7 +128,7 @@ const AddServiceForm = () => {
       <Grid container spacing={4} alignItems="center">
         <Grid item xs={12} md={6}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Add Mechanic Service
+            Add Your Service
           </Typography>
 
           {/* Server error as raw HTML (like mechanic form) */}
@@ -277,7 +277,7 @@ const AddServiceForm = () => {
               }}
               disabled={loading}
             >
-              {loading ? "Submitting..." : "Add Mechanic Service"}
+              {loading ? "Submitting..." : "Add Service"}
             </Button>
           </form>
         </Grid>
