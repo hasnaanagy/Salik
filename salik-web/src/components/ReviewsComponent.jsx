@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import ReviewCard from "./ReviewsComponents/reviewCard";
 import { Box, Button } from "@mui/material";
 import ReviewModal from "./ReviewsComponents/ReviewModal";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllReviewsAction } from "../redux/slices/reviewsSlice";
 import CircularProgress from '@mui/material/CircularProgress';
+import ReviewCard from "./ReviewsComponents/ReviewCard";
 
 export default function ReviewsComponent({ providerId }) {
   const dispatch = useDispatch();

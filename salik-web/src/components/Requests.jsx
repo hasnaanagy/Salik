@@ -14,7 +14,7 @@ const statusColors = {
     completed: "#673AB7"
 };
 
-const Requests = ({ userType }) => {
+const Requests = () => {
     const dispatch = useDispatch();
     const { requests = {}, isLoading } = useSelector((state) => state.requestSlice || {});
     const { user } = useSelector((state) => state.auth);
@@ -24,7 +24,7 @@ const Requests = ({ userType }) => {
 
     useEffect(() => {
         dispatch(getAllResquestsAction());
-    }, [dispatch]);
+    }, [dispatch,user]);
 
     // Convert coordinates to address
     const getAddressFromCoordinates = async (lat, lng, requestId) => {

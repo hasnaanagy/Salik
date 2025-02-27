@@ -68,7 +68,7 @@ const handleDelete = async () => {
               {ride.fromLocation} to {ride.toLocation}
             </Typography>
             <Typography variant="body2">
-              Price: {ride.price} $ &nbsp; &nbsp; Seats: {ride.bookedSeats}
+              Price: {ride.price} $ &nbsp; &nbsp; Seats: {ride.totalSeats}
             </Typography>
           </Box>
 

@@ -4,18 +4,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchBooking, fetchProvidedRides } from "../redux/slices/activitySlice";
 import Cards from "./Card";
 const ActivityComponent = () => {
-  const userType = localStorage.getItem("userRole");
+  const {user}=useSelector((state)=>state.auth)
   const dispatch = useDispatch();
-
+const userType=user?.type
   // Fetch rides based on user type
-  useEffect(() => {
+  const fetchActivity = async () => { 
     if (userType === "customer") {
       console.log("Fetching customer rides");
-      dispatch(fetchBooking());
+      await dispatch(fetchBooking());
     } else {
       console.log("Fetching provider rides");
-      dispatch(fetchProvidedRides());
+     await dispatch(fetchProvidedRides());
     }
+  }
+  useEffect(() => {
+    fetchActivity();
   }, [dispatch, userType]);
 
   // Access state.activity correctly

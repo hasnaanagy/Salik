@@ -35,7 +35,7 @@ export default function ServicesHome() {
           <Link
             to={token ? "/addTrip" : "#"}
             style={{ textDecoration: "none", color: "inherit" }}
-            onClick={(e) => handleProtectedNavigation(e, "/addTrip")}
+            onClick={(e) => handleProtectedNavigation(e, "/liscense")}
           >
             <Box
               sx={{

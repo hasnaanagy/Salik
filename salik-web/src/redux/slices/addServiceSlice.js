@@ -28,7 +28,7 @@ export const postRideData = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.response?.data); // Debugging
+      console.error("Error response:", error); // Debugging
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );

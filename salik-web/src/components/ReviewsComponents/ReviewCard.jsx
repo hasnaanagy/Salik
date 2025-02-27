@@ -34,7 +34,7 @@ export default function ReviewCard({ handleOpen,review }) {
         {/* Rating and Action Buttons */}
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Rating name="read-only" value={review.rating} readOnly precision={0.5} />
-        {review.customerId?._id===user._id&&<Box>
+        {review.customerId?._id===user?._id&&<Box>
             <IconButton size="small" onClick={()=>handleOpen(review)}>
               <RiPencilFill style={{ fontSize: "18px" }}  />
             </IconButton>
