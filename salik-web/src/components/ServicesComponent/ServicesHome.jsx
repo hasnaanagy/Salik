@@ -3,17 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 
 export default function ServicesHome() {
-  const token = localStorage.getItem("token"); // ✅ جلب التوكن
-  const navigate = useNavigate(); // ✅ استخدام التنقل
-  const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
+  const token = localStorage.getItem("token"); 
+  const navigate = useNavigate(); 
+  const [successMessage, setSuccessMessage] = useState(false); 
 
   const handleProtectedNavigation = (e, path) => {
     if (!token) {
-      setSuccessMessage(true); // <-- إظهار رسالة النجاح
+      setSuccessMessage(true);
 
-      e.preventDefault(); // ✅ منع التنقل إذا لم يكن هناك توكن
+      e.preventDefault(); 
       setTimeout(() => {
-        navigate("/login"); // ✅ إعادة التوجيه إلى صفحة تسجيل الدخول
+        navigate("/login");  
       }, 5000);
     }
   };
@@ -33,7 +33,7 @@ export default function ServicesHome() {
         {/* Ride Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to={token ? "/addTrip" : "#"}
+            to={token ? "/licence" : "#"}
             style={{ textDecoration: "none", color: "inherit" }}
             onClick={(e) => handleProtectedNavigation(e, "/liscense")}
           >

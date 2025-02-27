@@ -16,7 +16,7 @@ import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getRideById, updateRideAction } from "../redux/slices/rideSlice";
+import { getRideById, updateRideAction } from "../redux/slices/RideSlice";
 
 const schema = yup.object().shape({
   fromLocation: yup.string().required("Pickup location is required"),
@@ -82,15 +82,17 @@ const AddTripForm = () => {
       time: data.time,
     };
 
-    if (data.fromLocation && data.toLocation) {
-      dispatch(postRideData(formattedData));
-      setSuccessMessage(true); // <-- إظهار رسالة النجاح
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
+    if (rideId) {
+      // Editing existing ride
+      dispatch(updateRideAction({ rideId, formattedData }));
     } else {
-      console.error("Failed to post ride data");
+      // Creating new ride
+      dispatch(postRideData(formattedData));
     }
+    setSuccessMessage(true);
+    setTimeout(() => {
+      navigate("/activities");
+    }, 2000);
   };
 
   useEffect(() => {
@@ -100,7 +102,7 @@ const AddTripForm = () => {
   }, [rideId, dispatch]);
 
   useEffect(() => {
-    if (rideId && ride) {
+    if (rideId) {
       setValue("fromLocation", ride?.fromLocation || "");
       setValue("toLocation", ride?.toLocation || "");
       setValue("carType", ride?.carType || "");
