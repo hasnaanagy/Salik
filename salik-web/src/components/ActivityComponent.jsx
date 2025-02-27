@@ -1,26 +1,38 @@
 import React, { useEffect } from "react";
 import { Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBooking, fetchProvidedRides } from "../redux/slices/activitySlice";
+import {
+  fetchBooking,
+  fetchProvidedRides,
+} from "../redux/slices/activitySlice";
 import Cards from "./Card";
-const ActivityComponent = () => {
-  const userType = localStorage.getItem("userRole");
-  const dispatch = useDispatch();
 
+const ActivityComponent = () => {
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const userType = user?.type;
   // Fetch rides based on user type
-  useEffect(() => {
+  const fetchActivity = async () => {
     if (userType === "customer") {
       console.log("Fetching customer rides");
-      dispatch(fetchBooking());
+      await dispatch(fetchBooking());
     } else {
       console.log("Fetching provider rides");
-      dispatch(fetchProvidedRides());
+      await dispatch(fetchProvidedRides());
     }
+  };
+  useEffect(() => {
+    fetchActivity();
   }, [dispatch, userType]);
 
   // Access state.activity correctly
-  const { upcoming = [], completed = [], canceled = [], loading, error } =
-    useSelector((state) => state.activity);
+  const {
+    upcoming = [],
+    completed = [],
+    canceled = [],
+    loading,
+    error,
+  } = useSelector((state) => state.activity);
 
   // Loading and error states
   if (loading) return <Typography>Loading...</Typography>;

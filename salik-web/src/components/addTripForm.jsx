@@ -16,7 +16,7 @@ import * as yup from "yup";
 import { postRideData } from "../redux/slices/addServiceSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getRideById, updateRideAction } from "../redux/slices/rideSlice";
+import { getRideById, updateRideAction } from "../redux/slices/RideSlice";
 
 const schema = yup.object().shape({
   fromLocation: yup.string().required("Pickup location is required"),
