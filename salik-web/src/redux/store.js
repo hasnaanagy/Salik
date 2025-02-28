@@ -4,10 +4,10 @@ import addMechanicReducer from "./slices/addMechanicSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
 import { activityReducer } from "./slices/activitySlice";
-import { rideReducer } from "./slices/rideSlice";
 import { bookingReducer } from "./slices/bookingSlice";
 import { authReducer } from "./slices/authSlice";
 import { requestReducer } from "./slices/requestServiceSlice";
+import { rideReducer } from "./slices/RideSlice";
 
 export const store = configureStore({
   reducer: {

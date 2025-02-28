@@ -1,7 +1,6 @@
 import React from "react";
-import { Box, Typography, Snackbar } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useDropzone } from "react-dropzone";
-import { useDispatch, useSelector } from "react-redux";
 
 const ProfilePhotoUpload = ({ setFile }) => {
     const { getRootProps, getInputProps } = useDropzone({

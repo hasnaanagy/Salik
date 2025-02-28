@@ -31,7 +31,7 @@ export function Header() {
   const { user, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(getUser()); // ✅ Fetch latest user data when component mounts
+    dispatch(getUser()); 
   }, [dispatch]);
 
   const navigate = useNavigate();
@@ -58,7 +58,7 @@ export function Header() {
   const fullName = user?.fullName || "Guest";
 
   const profileImg = user?.profileImg
-    ? `http://localhost:5000${user.profileImg}`
+    ? user.profileImg 
     : "https://via.placeholder.com/150";
   const currentRole = user?.type || "customer ";
 
@@ -78,7 +78,7 @@ export function Header() {
           {/* Logo and Navigation Links (Left Side) */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {/* Logo */}
-            <NavLink to="/" style={{ margin: "4px" }}>
+            <NavLink to="/" style={{ margin: "4px",border:"none",outline:"none" }}>
               <img src={logo} alt="Logo" width="70" height="70" />
             </NavLink>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import AddTrip from "../pages/AddTrip";
 import UploadLicence from "../pages/UploadLicence";
 import { SharedLayout } from "./SharedLayout";
@@ -9,20 +9,22 @@ import SignUpPage from "../pages/SignupPage";
 import Reviews from "../pages/Reviews";
 import AddService from "../pages/AddService";
 import EditProfile from "../pages/EditProfile";
-import { BrowserRouter } from "react-router-dom";
 import Activity from "../pages/Activity";
-import CustomerRequests from "../components/Requests";
 import Requests from "../components/Requests";
+import ProtectedRoute from "./ProtectedRoute"; // Import ProtectedRoute
 
 export default function MainLayout() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SharedLayout />}>
-            <Route index element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUpPage />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes - Accessible by everyone */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/" element={<SharedLayout />}>
+          <Route index element={<Home />} />
+
+          {/* Protected Routes - Require Authentication */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/addTrip" element={<AddTrip />} />
             <Route path="/addService" element={<AddService />} />
             <Route path="/licence" element={<UploadLicence />} />
@@ -32,8 +34,8 @@ export default function MainLayout() {
             <Route path="/activities" element={<Activity />} />
             <Route path="/requests" element={<Requests />} />
           </Route>
-        </Routes>
-      </BrowserRouter>
-    </>
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
