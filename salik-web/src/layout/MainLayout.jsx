@@ -19,10 +19,10 @@ export default function MainLayout() {
     <>
       <BrowserRouter>
         <Routes>
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<SharedLayout />}>
             <Route index element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/addTrip" element={<AddTrip />} />
             <Route path="/addService" element={<AddService />} />
             <Route path="/licence" element={<UploadLicence />} />
