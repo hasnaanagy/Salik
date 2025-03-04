@@ -39,7 +39,6 @@ const Requests = ({ userType }) => {
 
   const [selectedProvider, setSelectedProvider] = useState({});
   const [locations, setLocations] = useState({});
-
   useEffect(() => {
     dispatch(getAllResquestsAction());
   }, [dispatch, user]);

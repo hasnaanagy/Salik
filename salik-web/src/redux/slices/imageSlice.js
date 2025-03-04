@@ -15,7 +15,7 @@ export const uploadImages = createAsyncThunk(
       );
 
       // إرسال البيانات إلى الخادم
-      const response = await apiService.patch("auth/", formData, {
+      const response = await apiService.patch("auth", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

@@ -8,6 +8,7 @@ import {
   Avatar,
   Paper,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,12 +16,16 @@ import { getUser, updateUser } from "../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import { validateForm } from "../validation/validation";
 import { MainButton } from "../custom/MainButton";
+
 export default function EditProfile() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading } = useSelector((state) => state.auth);
+
   const [message, setMessage] = useState({ type: "", text: "" });
   const [errors, setErrors] = useState({});
+  const [uploading, setUploading] = useState(false);
+
   const [profile, setProfile] = useState({
     fullName: "",
     phone: "",
@@ -33,7 +38,7 @@ export default function EditProfile() {
       console.log("User data:", user);
 
       const profileImg = user?.profileImg
-        ? `http://localhost:5000${user.profileImg}`
+        ? user.profileImg // Use Cloudinary URL if available
         : "https://via.placeholder.com/150";
 
       setProfile({
@@ -50,15 +55,43 @@ export default function EditProfile() {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfile((prev) => ({
-        ...prev,
-        profileImg: file,
-        profilePreview: imageUrl,
-      }));
+    if (!file) return;
+
+    setUploading(true); // Show loading while uploading
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "salik-preset"); // ✅ Replace with your actual Cloudinary preset
+
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dfouknww9/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      setUploading(false); // Stop loading
+
+      if (data.secure_url) {
+        setProfile((prev) => ({
+          ...prev,
+          profileImg: data.secure_url,
+          profilePreview: data.secure_url,
+        }));
+        console.log("✅ Uploaded to Cloudinary:", data.secure_url);
+      } else {
+        setMessage({ type: "error", text: "❌ Cloudinary upload failed!" });
+        console.error("❌ Cloudinary upload failed:", data);
+      }
+    } catch (error) {
+      setUploading(false);
+      setMessage({ type: "error", text: "❌ Error uploading to Cloudinary!" });
+      console.error("❌ Error uploading to Cloudinary:", error);
     }
   };
 
@@ -69,70 +102,44 @@ export default function EditProfile() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("fullName", profile.fullName);
-    formData.append("phone", profile.phone);
-
-    if (profile.profileImg instanceof File) {
-      formData.append("profileImg", profile.profileImg);
-    }
-
-    console.log("📝 FormData Sent:", formData.get("profileImg"));
+    const formData = {
+      fullName: profile.fullName,
+      phone: profile.phone,
+      profileImg: profile.profileImg, // ✅ Cloudinary URL
+    };
 
     dispatch(updateUser(formData))
       .unwrap()
       .then((response) => {
-        console.log("✅ Full Server Response:", response);
-
         if (!response) {
-          console.error("❌ No response received from the server.");
           setMessage({ type: "error", text: "No response from server." });
           return;
         }
 
-        setMessage({
-          type: "success",
-          text: "✅ Profile updated successfully!",
-        });
-
-        if (response.profileImg) {
-          const imageUrl = `http://localhost:5000${response.profileImg}`;
-
-          setProfile((prev) => ({
-            ...prev,
-            profilePreview: imageUrl,
-          }));
-        }
-
+        setMessage({ type: "success", text: "✅ Profile updated successfully!" });
         dispatch(getUser());
       })
       .catch((error) => {
-        console.error("❌ Error updating profile:", error);
-
         setMessage({
           type: "error",
-          text: error?.message || "Failed to update profile.",
+          text: error?.message || "❌ Failed to update profile.",
         });
       });
   };
 
   return (
     <Container maxWidth="sm">
-      <Paper
-        elevation={4}
-        sx={{ p: 4, mt: 4, borderRadius: 3, textAlign: "center" }}
-      >
+      <Paper elevation={4} sx={{ p: 4, mt: 4, borderRadius: 3, textAlign: "center" }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Hi,{user?.fullName}
+          Hi, {user?.fullName}
         </Typography>
         <Typography variant="body1" gutterBottom>
-          Manage your info to make salik work better for you
+          Manage your info to make Salik work better for you
         </Typography>
+
+        {/* Profile Image Upload */}
         <Box position="relative" display="inline-block" sx={{ mb: 3 }}>
-          <Avatar
-            src={profile.profilePreview}
-            sx={{ width: 120, height: 120, mx: "auto" }}
-          />
+          <Avatar src={profile.profilePreview} sx={{ width: 120, height: 120, mx: "auto" }} />
           <IconButton
             component="label"
             sx={{
@@ -145,14 +152,15 @@ export default function EditProfile() {
             }}
           >
             <PhotoCameraIcon fontSize="small" />
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleFileChange}
-            />
+            <input type="file" hidden accept="image/*" onChange={handleFileChange} />
           </IconButton>
         </Box>
+
+        {uploading && (
+          <Box sx={{ mb: 2, display: "flex", justifyContent: "center" }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
 
         <TextField
           fullWidth
@@ -174,13 +182,13 @@ export default function EditProfile() {
           error={!!errors.phone}
           helperText={errors.phone}
         />
+
         {message.text && (
-          <Box
-            sx={{ mb: 2, color: message.type === "success" ? "green" : "red" }}
-          >
+          <Box sx={{ mb: 2, color: message.type === "success" ? "green" : "red" }}>
             <Typography>{message.text}</Typography>
           </Box>
         )}
+
         <Box display="flex" justifyContent="space-between" gap={2}>
           <MainButton onClick={handleSave} disabled={loading}>
             {loading ? "Saving..." : "Save Changes"}

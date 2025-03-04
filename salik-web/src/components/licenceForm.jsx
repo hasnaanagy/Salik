@@ -6,6 +6,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
@@ -18,51 +19,77 @@ const LicenceForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // جلب البيانات من Redux
-  const { nationalIdImage, licenseImage, loading } = useSelector(
-    (state) => state.images
-  );
+  // Get data from Redux
+  const { nationalIdImage, licenseImage, loading } = useSelector((state) => state.images);
   const { user } = useSelector((state) => state.auth);
 
-  // الحالة المحلية لتخزين الملفات المختارة
+  // Local state for selected images
   const [selectedNationalIdImage, setSelectedNationalIdImage] = useState(null);
   const [selectedLicenseImage, setSelectedLicenseImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  // تحميل البيانات الموجودة في Redux عند تشغيل الكومبوننت
   useEffect(() => {
     if (nationalIdImage?.file) setSelectedNationalIdImage(nationalIdImage.file);
     if (licenseImage?.file) setSelectedLicenseImage(licenseImage.file);
   }, [nationalIdImage, licenseImage]);
 
   useEffect(() => {
-    dispatch(getUser()); // تحميل بيانات المستخدم عند التشغيل
+    dispatch(getUser()); // Load user data on mount
   }, [dispatch]);
 
-  const handleUpload = async () => {
-    try {
-      console.log(
-        "🚀 Uploading:",
-        selectedNationalIdImage,
-        selectedLicenseImage
-      );
+  // ✅ Function to upload a file to Cloudinary
+  const uploadToCloudinary = async (file) => {
+    if (!file) return null;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "salik-preset"); // Replace with your Cloudinary upload preset
 
-      const response = await dispatch(
+    try {
+      const response = await fetch("https://api.cloudinary.com/v1_1/dfouknww9/image/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      return data.secure_url || null;
+    } catch (error) {
+      console.error("❌ Cloudinary Upload Error:", error);
+      return null;
+    }
+  };
+
+  const handleUpload = async () => {
+    setUploading(true); // Show loading while uploading
+
+    try {
+      console.log("🚀 Uploading Images to Cloudinary...");
+
+      const nationalIdUrl = await uploadToCloudinary(selectedNationalIdImage);
+      const licenseUrl = await uploadToCloudinary(selectedLicenseImage);
+
+      if (!nationalIdUrl || !licenseUrl) {
+        setUploading(false);
+        alert("❌ Upload failed! Please try again.");
+        return;
+      }
+
+      console.log("✅ Uploaded Successfully:", { nationalIdUrl, licenseUrl });
+
+      // Dispatch action to store Cloudinary URLs in Redux
+     await dispatch(
         uploadImages({
-          nationalIdImage: selectedNationalIdImage,
-          licenseImage: selectedLicenseImage,
+          nationalIdImage: nationalIdUrl,
+          licenseImage: licenseUrl,
         })
       );
+      dispatch(getUser()); 
 
-      console.log("📌 Upload Response:", response);
-
-      if (response.payload?.nationalIdImage && response.payload?.licenseImage) {
-        navigate("/addTrip");
-      } else {
-        console.error("❌ Upload succeeded but missing image URLs:", response);
-      }
+      setUploading(false);
+      navigate("/addTrip");
     } catch (error) {
       console.error("❌ Upload failed:", error);
-      alert("Upload failed! Please try again.");
+      setUploading(false);
+      alert("❌ Upload failed! Please try again.");
     }
   };
 
@@ -84,9 +111,8 @@ const LicenceForm = () => {
             type="nationalIdImage"
             label="National ID"
             setImage={(file) => {
-              const fileURL = URL.createObjectURL(file);
               setSelectedNationalIdImage(file);
-              dispatch(setImage({ type: "nationalIdImage", url: fileURL }));
+              dispatch(setImage({ type: "nationalIdImage", url: URL.createObjectURL(file) }));
             }}
             existingImage={nationalIdImage}
           />
@@ -102,9 +128,8 @@ const LicenceForm = () => {
             type="licenseImage"
             label="License Photo"
             setImage={(file) => {
-              const objectURL = URL.createObjectURL(file);
               setSelectedLicenseImage(file);
-              dispatch(setImage({ type: "licenseImage", url: objectURL }));
+              dispatch(setImage({ type: "licenseImage", url: URL.createObjectURL(file) }));
             }}
             existingImage={licenseImage}
           />
@@ -117,9 +142,9 @@ const LicenceForm = () => {
         fullWidth
         sx={{ mt: 2 }}
         onClick={handleUpload}
-        disabled={loading || !selectedNationalIdImage || !selectedLicenseImage}
+        disabled={uploading || !selectedNationalIdImage || !selectedLicenseImage}
       >
-        {loading ? "Uploading..." : "Upload Images"}
+        {uploading ? <CircularProgress size={24} /> : "Upload Images"}
       </Button>
     </Box>
   );

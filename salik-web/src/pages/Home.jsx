@@ -9,7 +9,6 @@ export default function Home() {
   const { user, loading, error } = useSelector((state) => state.auth);
   const token = localStorage.getItem("token");
 
-  // ✅ عرض "loading" أثناء تحميل البيانات
   if (loading) {
     return (
       <Box
@@ -25,7 +24,6 @@ export default function Home() {
     );
   }
 
-  // ✅ إذا لم يكن هناك مستخدم، عرض المحتوى الافتراضي
   if (!user || !token) {
     return (
       <>
@@ -50,6 +48,7 @@ export default function Home() {
           <IntoScreen />
         </>
       )}
+          
     </>
   );
 }

@@ -4,12 +4,12 @@ import { Header } from "../components/Sharedcomponent/Header";
 import { Footer } from "../components/Sharedcomponent/Footer";
 
 export function SharedLayout() {
-  const location = useLocation();
-
   return (
     <>
       <Header />
-      <Outlet />
+      <div style={{ margin: "20px" }}>
+        <Outlet />
+      </div>
       <Footer />
     </>
   );
