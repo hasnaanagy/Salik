@@ -20,7 +20,9 @@ const LicenceForm = () => {
   const navigate = useNavigate();
 
   // Get data from Redux
-  const { nationalIdImage, licenseImage, loading } = useSelector((state) => state.images);
+  const { nationalIdImage, licenseImage, loading } = useSelector(
+    (state) => state.images
+  );
   const { user } = useSelector((state) => state.auth);
 
   // Local state for selected images
@@ -45,10 +47,13 @@ const LicenceForm = () => {
     formData.append("upload_preset", "salik-preset"); // Replace with your Cloudinary upload preset
 
     try {
-      const response = await fetch("https://api.cloudinary.com/v1_1/dfouknww9/image/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dfouknww9/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
       return data.secure_url || null;
@@ -76,13 +81,13 @@ const LicenceForm = () => {
       console.log("✅ Uploaded Successfully:", { nationalIdUrl, licenseUrl });
 
       // Dispatch action to store Cloudinary URLs in Redux
-     await dispatch(
+      await dispatch(
         uploadImages({
           nationalIdImage: nationalIdUrl,
           licenseImage: licenseUrl,
         })
       );
-      dispatch(getUser()); 
+      dispatch(getUser());
 
       setUploading(false);
       navigate("/addTrip");
@@ -112,7 +117,12 @@ const LicenceForm = () => {
             label="National ID"
             setImage={(file) => {
               setSelectedNationalIdImage(file);
-              dispatch(setImage({ type: "nationalIdImage", url: URL.createObjectURL(file) }));
+              dispatch(
+                setImage({
+                  type: "nationalIdImage",
+                  url: URL.createObjectURL(file),
+                })
+              );
             }}
             existingImage={nationalIdImage}
           />
@@ -129,7 +139,12 @@ const LicenceForm = () => {
             label="License Photo"
             setImage={(file) => {
               setSelectedLicenseImage(file);
-              dispatch(setImage({ type: "licenseImage", url: URL.createObjectURL(file) }));
+              dispatch(
+                setImage({
+                  type: "licenseImage",
+                  url: URL.createObjectURL(file),
+                })
+              );
             }}
             existingImage={licenseImage}
           />
@@ -142,7 +157,9 @@ const LicenceForm = () => {
         fullWidth
         sx={{ mt: 2 }}
         onClick={handleUpload}
-        disabled={uploading || !selectedNationalIdImage || !selectedLicenseImage}
+        disabled={
+          uploading || !selectedNationalIdImage || !selectedLicenseImage
+        }
       >
         {uploading ? <CircularProgress size={24} /> : "Upload Images"}
       </Button>

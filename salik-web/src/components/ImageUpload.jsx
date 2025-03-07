@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { Box, Typography, Snackbar } from "@mui/material";
 import { useDropzone } from "react-dropzone";
+import { useState } from "react";
 
 const ImageUpload = ({ type, label, setImage }) => {
-  const [error, setError] = React.useState(null);
-  const [preview, setPreview] = React.useState(null);
+  const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: { "image/jpeg": [".jpeg", ".jpg"], "image/png": [".png"] },
