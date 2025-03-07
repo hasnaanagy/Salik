@@ -46,9 +46,8 @@ export const deleteRideAction = createAsyncThunk(
   "rides/deleteRide",
   async (rideId, { rejectWithValue }) => {
     try {
-
       const response = await apiService.delete(`rides`, rideId);
-      console.log(response)
+      console.log(response);
       return response;
     } catch (error) {
       return rejectWithValue(
