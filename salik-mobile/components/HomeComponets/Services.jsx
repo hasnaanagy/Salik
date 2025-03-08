@@ -1,15 +1,17 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View, Dimensions, Image } from 'react-native';
 import CustomText from '../CustomeComponents/CustomText';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window'); // Get screen width
 const numItems = 3; 
 
 const Services = () => {
+    const router=useRouter()
     const data = [
-        { id: "1", title: "Ride", image: require("../../assets/car.png") },
-        { id: "2", title: "Fuel", image: require("../../assets/gas-pump.png")},
-        { id: "3", title: "Mechanic", image: require("../../assets/technician.png") }
+        { id: "1", title: "Ride", image: require("../../assets/car.png"), onPress:()=>router.push('addTrip') },
+        { id: "2", title: "Fuel", image: require("../../assets/gas-pump.png"),onPress:()=>router.push('addService')},
+        { id: "3", title: "Mechanic", image: require("../../assets/technician.png") ,onPress:()=>router.push('addService')}
     ];
 
     return (
@@ -22,7 +24,7 @@ const Services = () => {
                 showsHorizontalScrollIndicator={false}
                 scrollEnabled={false}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.item}>
+                    <TouchableOpacity style={styles.item} onPress={item.onPress}>
                         <Image source={item.image} style={styles.image} />
                         <Text style={styles.text}>{item.title}</Text>
                     </TouchableOpacity>
