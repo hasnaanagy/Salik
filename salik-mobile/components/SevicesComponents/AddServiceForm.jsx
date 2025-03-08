@@ -11,7 +11,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Checkbox } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-
 import appColors from "../../constants/colors.js";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -89,7 +88,6 @@ export default function AddServiceForm() {
       location: {
         description: form.location.trim(),
       },
-
       workingDays: form.workingDays,
       workingHours: {
         from: form.startTime.toISOString(),
