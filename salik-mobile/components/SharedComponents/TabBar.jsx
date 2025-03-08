@@ -84,14 +84,14 @@ const style=StyleSheet.create({
         justifyContent:'space-between',
         alignItems:'center',
         position:'absolute',
-        bottom:50,
-        marginHorizontal:40,
+        bottom:Platform.OS==='ios'?50:20,
+        marginHorizontal:30,
         shadowColor:'#000',
         shadowOffset:{width:0,height:10},
         shadowOpacity:0.1,
         shadowRadius:10,
         borderRadius:30,
-        paddingVertical:15,
+        paddingVertical:Platform.OS==='ios'?14:8,
     },
 
 })

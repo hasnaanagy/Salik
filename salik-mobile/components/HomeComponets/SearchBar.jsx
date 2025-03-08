@@ -19,9 +19,6 @@ const SearchBar = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        // paddingHorizontal: 16,
-    },
     searchContainer: {
         flex: 1,  // Allows it to take the available space
         justifyContent: 'center',
