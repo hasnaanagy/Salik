@@ -1,12 +1,12 @@
+import { Provider } from "react-redux";
+import store from "../redux/store";
 import { Stack } from "expo-router";
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import { View, ActivityIndicator } from "react-native";
 
 const RootLayout = () => {
-  const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-  });
+  const [fontsLoaded] = useFonts({ Poppins_400Regular });
 
   if (!fontsLoaded) {
     return (
@@ -17,22 +17,20 @@ const RootLayout = () => {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerTitleStyle: {
-          fontFamily: "Poppins_400Regular",
-        },
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="search"
-        options={{
-          headerShown: false,
-          headerTransparent: true,
-        }}
-      />
-      <Stack.Screen
+    <Provider store={store}>
+      <Stack screenOptions={{ headerTitleStyle: { fontFamily: "Poppins_400Regular" } }}>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="signup" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> 
+        <Stack.Screen 
+                name="search"
+                options={{
+                    fontFamily: 'Poppins_400Regular',
+                    headerShown: false, 
+                    headerTransparent: true,
+                }}
+            />
+                <Stack.Screen
         name="license"
         options={{
           headerShown: false,
@@ -53,7 +51,8 @@ const RootLayout = () => {
           headerTransparent: true,
         }}
       />
-    </Stack>
+      </Stack>
+    </Provider>
   );
 };
 

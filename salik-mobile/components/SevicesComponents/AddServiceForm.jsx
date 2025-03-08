@@ -18,6 +18,7 @@ import {
   postServiceData,
   resetSuccess,
 } from "../../redux/slices/addServiceSlice.js";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddServiceForm() {
   const router = useRouter();
@@ -99,6 +100,7 @@ export default function AddServiceForm() {
   };
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="black" />
@@ -220,6 +222,7 @@ export default function AddServiceForm() {
         <Text style={styles.submitButtonText}>Add Service</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -227,7 +230,6 @@ export default function AddServiceForm() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
     padding: 10,
     minHeight: 800,
   },

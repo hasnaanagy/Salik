@@ -1,12 +1,21 @@
 import { configureStore } from "@reduxjs/toolkit";
-import addRideReducer from "./slices/addRideSlice";
-import addServiceReducer from "./slices/addServiceSlice";
+import authReducer from "./slices/authSlice";
+import { addServiceReducer } from "./slices/addServiceSlice";
+import { addRideReducer } from "./slices/addRideSlice";
+
+const rootReducer = (state, action) => {
+    if (action.type === "RESET_APP") {
+        state = undefined;
+    }
+    return authReducer(state, action);
+};
 
 const store = configureStore({
-  reducer: {
-    rideService: addRideReducer,
-    addServices: addServiceReducer,
-  },
+    reducer: {
+        auth: rootReducer,
+        rideService: addRideReducer,
+        addServices: addServiceReducer,
+    },
 });
 
 export default store;

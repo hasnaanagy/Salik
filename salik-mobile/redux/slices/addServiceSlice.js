@@ -72,4 +72,4 @@ const addServiceSlice = createSlice({
 });
 
 export const { clearError, resetSuccess } = addServiceSlice.actions;
-export default addServiceSlice.reducer;
+export const addServiceReducer= addServiceSlice.reducer;

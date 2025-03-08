@@ -22,6 +22,7 @@ import {
   resetSuccess,
 } from "../../redux/slices/addRideSlice";
 import appColors from "../../constants/colors.js";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddTripForm() {
   const router = useRouter();
@@ -118,6 +119,7 @@ export default function AddTripForm() {
   };
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -261,6 +263,7 @@ export default function AddTripForm() {
         </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 }
 
@@ -271,7 +274,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     padding: 20,
   },
   header: {

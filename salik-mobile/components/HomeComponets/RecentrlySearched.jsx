@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, FlatList, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CustomText from '../CustomeComponents/CustomText';
 
 const RecentlySearched = () => {
-    const [searchHistory, setSearchHistory] = useState(["New York", "Cairo", "London"]);
+    const [searchHistory, setSearchHistory] = useState(["Alexandria", "Cairo"]);
 
     return (
-        <View style={styles.container}>
-            <CustomText style={styles.title}>Recently Searched</CustomText>
+        <View >
+            <CustomText >Recently Searched</CustomText>
 
             <FlatList
                 data={searchHistory}
@@ -28,21 +28,14 @@ const RecentlySearched = () => {
 export default RecentlySearched;
 
 const styles = StyleSheet.create({
-    container:{
-    marginLeft:10,
-    marginRight:10,
-    },
-    title: {
-        fontSize: 18,
-        marginBottom: 10,
-    },
     item: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
+        paddingVertical: Platform.OS === 'ios' ? 14 : 12,
         paddingHorizontal: 10,
-        backgroundColor: '#eee',
+        backgroundColor: '#ddd',
         marginVertical: 5,
+        borderRadius: 8,
 
     },
     icon: {

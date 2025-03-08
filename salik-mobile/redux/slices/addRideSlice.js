@@ -69,4 +69,4 @@ const addRideSlice = createSlice({
 });
 
 export const { clearError, resetSuccess } = addRideSlice.actions;
-export default addRideSlice.reducer;
+export const addRideReducer = addRideSlice.reducer;
