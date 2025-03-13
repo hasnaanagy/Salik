@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getAllResquestsAction, confirmRequestAction, updateRequestStateAction } from '../../redux/slices/requestServiceSlice';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-
 import axios from 'axios';
 
 const statusColors = {
