@@ -2,18 +2,21 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiService from "../../api/api_service";
 
-export const loginUser = createAsyncThunk("auth/login", async (userData, { rejectWithValue }) => {
-  try {
-    const data = await apiService.create("auth/login", userData);
-    await AsyncStorage.setItem("token", data.token);
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.error("Registration error:", error.response?.data || error.message);
-    console.log(error);
-    return rejectWithValue(error || "Login failed");
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const data = await apiService.create("auth/login", userData);
+      await AsyncStorage.setItem("token", data.token);
+      console.log("Login Response:", data);
+      return data;
+    } catch (error) {
+      console.error("Login error:", error.response?.data || error.message);
+      console.error("Full error object:", error);
+      return rejectWithValue(error.response?.data?.message || "Login failed");
+    }
   }
-});
+);
 
 export const registerUser = createAsyncThunk("auth/register", async (userData, { rejectWithValue }) => {
   try {
@@ -33,15 +36,18 @@ export const getUser = createAsyncThunk("auth/getUser", async (_, { rejectWithVa
   try {
     const data = await apiService.getAll("auth");
     if (!data) throw new Error("User data not found");
+    await AsyncStorage.setItem("user", JSON.stringify(data.user)); 
+    await AsyncStorage.setItem("userType", JSON.stringify(data.user.type)); // Store user data
+
     return data;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
+    return rejectWithValue(error.message || "Failed to fetch user");
   }
 });
 
 export const updateUser = createAsyncThunk("auth/updateUser", async (formData, { rejectWithValue }) => {
   try {
-    const response = await apiService.put("auth", formData);
+    const response = await apiService.patch("auth/", formData);
     return response.updatedUser;
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
@@ -52,7 +58,10 @@ export const switchRole = createAsyncThunk("auth/switchRole", async (_, { reject
   try {
     console.log("🔄 Sending request to switch role...");
     const response = await apiService.update("auth/switch-role", {}); // Ensure this endpoint is correct
+
     console.log("✅ Switch Role Response:", response);
+  
+    await AsyncStorage.setItem("userType", JSON.stringify(response.newRole));
     return response;
   } catch (error) {
     console.error("❌ Error switching role:", error.response?.data || error.message);

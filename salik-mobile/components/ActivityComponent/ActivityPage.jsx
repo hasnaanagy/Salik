@@ -11,7 +11,6 @@ const baseColor = appColors.primary;
 const ActivityComponent = () => {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-
     const {
         upcoming = [],
         completed = [],
@@ -74,6 +73,7 @@ const ActivityComponent = () => {
         </ScrollView>
     );
 
+
 };
 
 const styles = StyleSheet.create({
@@ -103,7 +103,6 @@ const styles = StyleSheet.create({
         marginVertical: 20,
         alignSelf: 'center',
     }
-
 });
 
 export default ActivityComponent;

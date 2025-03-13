@@ -18,6 +18,7 @@ const RootLayout = () => {
 
   return (
     <Provider store={store}>
+
       <Stack screenOptions={{ headerTitleStyle: { fontFamily: "Poppins_400Regular" } }}>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="signup" options={{ headerShown: false }} />
@@ -30,31 +31,9 @@ const RootLayout = () => {
             headerTransparent: true,
           }}
         />
-        <Stack.Screen
-          name="license"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen
-          name="addTrip"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen
-          name="addService"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen name="activity"
-          options={{ headerShown: false, headerTransparent: true }} />
-        <Stack.Screen name="requests"
-          options={{ headerShown: false, headerTransparent: true }} />
+        <Stack.Screen name="license" options={{ headerShown: false, headerTransparent: true }} />
+        <Stack.Screen name="addTrip" options={{ headerShown: false, headerTransparent: true }} />
+        <Stack.Screen name="addService" options={{ headerShown: false, headerTransparent: true }} />
       </Stack>
 
     </Provider>

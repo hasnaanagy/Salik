@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import SearchBar from '../../components/HomeComponets/SearchBar';
 import CustomText from '../../components/CustomeComponents/CustomText';
 import RecentrlySearched from './RecentrlySearched';
 import Services from './Services';
 import Slider from './Slider';
+import { useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const HomeComponent = () => {
-    return (
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        const fetchUser = async () => {
+          try {
+            const storedUser = await AsyncStorage.getItem("user");
+            if (storedUser) {
+              setUser(JSON.parse(storedUser));
+            }
+          } catch (error) {
+            console.error("Error retrieving user from AsyncStorage:", error);
+          }
+        };
+    
+        fetchUser();
+      }, []);
+          return (
+        console.log("local user",user?.type),
         <View style={styles.container}>
             <SearchBar/>
             <RecentrlySearched/>

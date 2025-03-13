@@ -41,8 +41,8 @@ const Cards = ({ ride }) => {
   };
 
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
-
   const handleLocationField = (data) => (data?.length > 10 ? `${data?.slice(0, 10)}...` : data);
+
 
   const rideColor =
     ride.status === "upcoming" ? baseColor
@@ -54,10 +54,12 @@ const Cards = ({ ride }) => {
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <Image source={car} style={styles.carImage} />
+
           <View style={styles.rideDetails}>
             <Text style={styles.title}>
               {handleLocationField(ride.fromLocation)} to {handleLocationField(ride.toLocation)}
             </Text>
+
 
             {/* Ride Date Section */}
             <Text style={styles.rideDate}>
@@ -66,6 +68,7 @@ const Cards = ({ ride }) => {
 
             <Text style={styles.details}>
               Price: ${ride.price} | {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"} {user?.type === "customer" ? ride.bookedSeats : ride.totalSeats}
+
             </Text>
             {user?.type === "provider" && (
               <Text style={styles.details}>
@@ -83,7 +86,6 @@ const Cards = ({ ride }) => {
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
           )}
-
           {ride.status === "upcoming" && user?.type === "provider" && (
             <View style={styles.iconContainer}>
               <TouchableOpacity
@@ -95,6 +97,7 @@ const Cards = ({ ride }) => {
 
               <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
                 <FontAwesome name="trash" size={30} color="#F44336" />
+
               </TouchableOpacity>
             </View>
           )}
