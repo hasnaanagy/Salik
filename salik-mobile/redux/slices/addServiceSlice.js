@@ -26,8 +26,8 @@ export const postServiceData = createAsyncThunk(
       console.log("Response data:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.message); // Debugging
-      console.log("Error details:", error.response?.data); // عرض تفاصيل الخطأ
+      // console.error("Error response:", error.message); // Debugging
+      // console.log("Error details:", error.response?.data); // عرض تفاصيل الخطأ
 
       return rejectWithValue(
         error.response?.data?.message || "Failed to add  service"
@@ -72,4 +72,4 @@ const addServiceSlice = createSlice({
 });
 
 export const { clearError, resetSuccess } = addServiceSlice.actions;
-export const addServiceReducer= addServiceSlice.reducer;
+export const addServiceReducer = addServiceSlice.reducer;

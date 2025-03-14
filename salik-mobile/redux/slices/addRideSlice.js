@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api_service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -21,11 +20,11 @@ export const postRideData = createAsyncThunk(
         time,
       });
 
-      console.log("🚀 Response Data:", response); // ✅ طباعة الاستجابة بعد استدعاء API
+      // console.log("🚀 Response Data:", response); // ✅ طباعة الاستجابة بعد استدعاء API
 
       return response; // ✅ تأكد من إرجاع البيانات الصحيحة
     } catch (error) {
-      console.error("❌ API Error:", error.response?.data || error.message);
+      // console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );

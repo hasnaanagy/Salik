@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./slices/authSlice";
+import { authReducer } from "./slices/authSlice";
 import { addServiceReducer } from "./slices/addServiceSlice";
 import { addRideReducer } from "./slices/addRideSlice";
+<<<<<<< HEAD
 import { requestReducer } from "./slices/requestServiceSlice";
 import { activityReducer } from "./slices/activitySlice";
 import { locationReducer } from "./slices/locationSlice";
@@ -21,6 +22,23 @@ const store = configureStore({
         requestSlice: requestReducer,
         location: locationReducer,
     },
+=======
+import { licenseReducer } from "./slices/licenseSlice";
+import { reviewReducer } from "./slices/reviewsSlice";
+import { locationReducer } from "./slices/locationSlice";
+import { activityReducer } from "./slices/activitySlice";
+
+const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    rideService: addRideReducer,
+    addServices: addServiceReducer,
+    images: licenseReducer,
+    reviews: reviewReducer,
+    location: locationReducer,
+    activity: activityReducer,
+  },
+>>>>>>> master
 });
 
 export default store;

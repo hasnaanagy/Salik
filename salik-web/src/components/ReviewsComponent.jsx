@@ -3,7 +3,7 @@ import { Box, Button } from "@mui/material";
 import ReviewModal from "./ReviewsComponents/ReviewModal";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllReviewsAction } from "../redux/slices/reviewsSlice";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import ReviewCard from "./ReviewsComponents/ReviewCard";
 
 export default function ReviewsComponent({ providerId }) {
@@ -13,26 +13,36 @@ export default function ReviewsComponent({ providerId }) {
   );
   const [open, setOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-  
-  const handleOpen = (review ) => {
+
+  const handleOpen = (review) => {
     setSelectedReview(review);
     setOpen(true);
   };
-  
+
   useEffect(() => {
     dispatch(getAllReviewsAction(`${providerId}`));
   }, []);
 
-    if (isLoading) {
-      return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center",marginTop:"40px"}}>
-      <CircularProgress />;
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: "40px",
+        }}
+      >
+        <CircularProgress />;
       </Box>
-    }
-    if(error){
-      return <div>{error}</div>
-    }
-    if(reviews){
-      return <Box sx={{ margin: "30px 20px" }}>
+    );
+  }
+  if (error) {
+    return <div>{error}</div>;
+  }
+  if (reviews) {
+    return (
+      <Box sx={{ margin: "30px 20px" }}>
         <Box
           sx={{
             display: "grid",
@@ -65,8 +75,13 @@ export default function ReviewsComponent({ providerId }) {
         >
           Add Review
         </Button>
-        <ReviewModal open={open} setOpen={setOpen}  providerId={providerId} review={selectedReview}/>
+        <ReviewModal
+          open={open}
+          setOpen={setOpen}
+          providerId={providerId}
+          review={selectedReview}
+        />
       </Box>
-    }
-
+    );
+  }
 }
