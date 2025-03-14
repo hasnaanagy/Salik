@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Alert, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -44,7 +52,7 @@ export default function LoginScreen() {
         value={formData.password}
         onChangeText={(text) => setFormData({ ...formData, password: text })}
       />
-      
+
       {loading ? (
         <ActivityIndicator size="large" color="#FFB800" />
       ) : (
@@ -65,9 +73,25 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: "center" },
   label: { fontSize: 16, fontWeight: "bold", marginBottom: 5 },
-  input: { borderWidth: 1, padding: 12, marginBottom: 15, borderRadius: 8, borderColor: "#ccc" },
-  button: { backgroundColor: "#FFB800", padding: 15, borderRadius: 8, alignItems: "center" },
+  input: {
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 15,
+    borderRadius: 8,
+    borderColor: "#ccc",
+  },
+  button: {
+    backgroundColor: "#FFB800",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
   buttonText: { color: "#FFFFFF", fontSize: 18, fontWeight: "bold" },
   error: { color: "red", marginTop: 10 },
-  link: { color: "#FFB800", textAlign: "center", marginTop: 20, fontWeight: "bold" },
+  link: {
+    color: "#FFB800",
+    textAlign: "center",
+    marginTop: 20,
+    fontWeight: "bold",
+  },
 });

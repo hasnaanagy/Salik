@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
@@ -27,6 +28,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function AddTripForm() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [alertVisible, setAlertVisible] = useState(false); // تتبع حالة التنبيه
+
   const { loading, success, error } = useSelector((state) => state.rideService);
 
   const [form, setForm] = useState({
@@ -42,6 +45,7 @@ export default function AddTripForm() {
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   const validateForm = () => {
     let newErrors = {};
@@ -57,53 +61,66 @@ export default function AddTripForm() {
     return Object.keys(newErrors).length === 0; // إرجاع true إذا لم يكن هناك أخطاء
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    const rideData = {
-      carType: form.carType,
-      fromLocation: form.fromLocation,
-      toLocation: form.toLocation,
-      totalSeats: parseInt(form.seats, 10),
-      price: parseFloat(form.price),
-      date: form.date.toISOString().split("T")[0],
-      time: form.time.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
-    };
+    try {
+      const rideData = {
+        carType: form.carType,
+        fromLocation: form.fromLocation,
+        toLocation: form.toLocation,
+        totalSeats: parseInt(form.seats, 10),
+        price: parseFloat(form.price),
+        date: form.date.toISOString().split("T")[0],
+        time: form.time.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+      };
 
-    dispatch(postRideData(rideData));
+      dispatch(postRideData(rideData));
+    } catch (err) {
+      // console.log("Error posting ride:", err); // ✅ لا تظهر الخطأ للمستخدم
+      return;
+    }
   };
 
   useEffect(() => {
-    if (success) {
-      Alert.alert("Success", "Trip added successfully!", [
+    if (success && !alertVisible) {
+      setAlertVisible(true); // ✅ تحديد أن التنبيه معروض حاليًا
+      Alert.alert("Success", "✅ Service added successfully!", [
         {
           text: "OK",
           onPress: () => {
-            dispatch(resetSuccess()); // إعادة ضبط الحالة
-            setForm({
-              fromLocation: "",
-              toLocation: "",
-              seats: "",
-              price: "",
-              carType: "",
-              date: new Date(),
-              time: new Date(),
-            });
-            router.push("/"); // العودة إلى الصفحة الرئيسية
+            setAlertVisible(false); // ✅ إغلاق التنبيه وإعادة ضبط الحالة
+            dispatch(resetSuccess());
+            router.push("/");
           },
         },
       ]);
     }
 
-    if (error) {
-      Alert.alert("Error", error);
-      dispatch(clearError());
+    if (error && !alertVisible) {
+      setAlertVisible(true); // ✅ تحديد أن التنبيه معروض حاليًا
+      const errorMessage =
+        error?.message ||
+        (typeof error === "string"
+          ? error
+          : "❌ An unexpected error occurred. Please try again.");
+
+      Alert.alert("Error", `❌ ${errorMessage}`, [
+        {
+          text: "OK",
+          onPress: () => {
+            setAlertVisible(false); // ✅ إغلاق التنبيه وإعادة ضبط الحالة
+            dispatch(clearError());
+          },
+        },
+      ]);
     }
-  }, [success, error]);
+  }, [success, error, alertVisible]); // ✅ أضف alertVisible إلى التبعيات لمنع ظهور التنبيه مرتين
+
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setForm({ ...form, date: selectedDate });
@@ -120,149 +137,188 @@ export default function AddTripForm() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.header}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.header}>
+                <TouchableOpacity
+                  onPress={() => router.push("/")}
+                  style={styles.backButton}
+                >
+                  <Ionicons name="arrow-back" size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Add Trip Details</Text>
+              </View>
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.fromLocation && styles.errorInput,
+                  focusedField === "fromLocation" && styles.focusedInput,
+                ]}
+                placeholder="Enter departure location"
+                value={form.fromLocation}
+                onFocus={() => setFocusedField("fromLocation")} // ✅ تحديث حالة التركيز
+                onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
+                onChangeText={(text) => {
+                  setForm({ ...form, fromLocation: text });
+                  if (errors.fromLocation) {
+                    setErrors({ ...errors, fromLocation: undefined });
+                  }
+                }}
+              />
+              {errors.fromLocation && (
+                <Text style={styles.errorText}>{errors.fromLocation}</Text>
+              )}
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.toLocation && styles.errorInput,
+                  focusedField === "toLocation" && styles.focusedInput,
+                ]}
+                placeholder="Enter destination"
+                value={form.toLocation}
+                onFocus={() => setFocusedField("toLocation")} // ✅ تحديث حالة التركيز
+                onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
+                onChangeText={(text) => {
+                  setForm({ ...form, toLocation: text });
+                  if (errors.toLocation) {
+                    setErrors({ ...errors, toLocation: undefined });
+                  }
+                }}
+              />
+              {errors.toLocation && (
+                <Text style={styles.errorText}>{errors.toLocation}</Text>
+              )}
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.seats && styles.errorInput,
+                  focusedField === "seats" && styles.focusedInput,
+                ]}
+                placeholder="Enter available seats"
+                keyboardType="numeric"
+                value={form.seats}
+                onFocus={() => setFocusedField("seats")} // ✅ تحديث حالة التركيز
+                onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
+                onChangeText={(text) => {
+                  setForm({ ...form, seats: text });
+                  if (errors.seats) {
+                    setErrors({ ...errors, seats: undefined });
+                  }
+                }}
+              />
+              {errors.seats && (
+                <Text style={styles.errorText}>{errors.seats}</Text>
+              )}
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.price && styles.errorInput,
+                  focusedField === "price" && styles.focusedInput,
+                ]}
+                placeholder="Enter price"
+                keyboardType="numeric"
+                value={form.price}
+                onFocus={() => setFocusedField("price")} // ✅ تحديث حالة التركيز
+                onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
+                onChangeText={(text) => {
+                  setForm({ ...form, price: text });
+                  if (errors.price) {
+                    setErrors({ ...errors, price: undefined });
+                  }
+                }}
+              />
+              {errors.price && (
+                <Text style={styles.errorText}>{errors.price}</Text>
+              )}
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.carType && styles.errorInput,
+                  focusedField === "carType" && styles.focusedInput,
+                ]}
+                placeholder="Enter car type"
+                value={form.carType}
+                onFocus={() => setFocusedField("carType")} // ✅ تحديث حالة التركيز
+                onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
+                onChangeText={(text) => {
+                  setForm({ ...form, carType: text });
+                  if (errors.carType) {
+                    setErrors({ ...errors, carType: undefined });
+                  }
+                }}
+              />
+              {errors.carType && (
+                <Text style={styles.errorText}>{errors.carType}</Text>
+              )}
+
               <TouchableOpacity
-                onPress={() => router.back()}
-                style={styles.backButton}
+                style={styles.input}
+                onPress={() => setShowTimePicker(true)}
               >
-                <Ionicons name="arrow-back" size={24} color="black" />
+                <Text style={styles.placeholderText}>
+                  {form.time.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </Text>
               </TouchableOpacity>
-              <Text style={styles.title}>Add Trip Details</Text>
+              {showTimePicker && (
+                <DateTimePicker
+                  value={form.time}
+                  mode="time"
+                  display="default"
+                  onChange={handleTimeChange}
+                />
+              )}
+
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={styles.placeholderText}>
+                  {form.date.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={form.date}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
+              )}
+
+              <TouchableOpacity
+                style={[styles.addButton, loading && styles.disabledButton]} // تغيير لون الزر عند التحميل
+                onPress={handleSubmit}
+                disabled={loading} // تعطيل الزر أثناء الإرسال
+              >
+                {loading ? (
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <ActivityIndicator size="small" color="#fff" />
+                    <Text style={[styles.addButtonText, { marginLeft: 10 }]}>
+                      Adding...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.addButtonText}>Add Trip</Text>
+                )}
+              </TouchableOpacity>
             </View>
-
-            <TextInput
-              style={[styles.input, errors.fromLocation && styles.errorInput]}
-              placeholder="Enter departure location"
-              value={form.fromLocation}
-              onChangeText={(text) => {
-                setForm({ ...form, fromLocation: text });
-                if (errors.fromLocation) {
-                  setErrors({ ...errors, fromLocation: undefined });
-                }
-              }}
-            />
-            {errors.fromLocation && (
-              <Text style={styles.errorText}>{errors.fromLocation}</Text>
-            )}
-
-            <TextInput
-              style={[styles.input, errors.toLocation && styles.errorInput]}
-              placeholder="Enter destination"
-              value={form.toLocation}
-              onChangeText={(text) => {
-                setForm({ ...form, toLocation: text });
-                if (errors.toLocation) {
-                  setErrors({ ...errors, toLocation: undefined });
-                }
-              }}
-            />
-            {errors.toLocation && (
-              <Text style={styles.errorText}>{errors.toLocation}</Text>
-            )}
-
-            <TextInput
-              style={[styles.input, errors.seats && styles.errorInput]}
-              placeholder="Enter available seats"
-              keyboardType="numeric"
-              value={form.seats}
-              onChangeText={(text) => {
-                setForm({ ...form, seats: text });
-                if (errors.seats) {
-                  setErrors({ ...errors, seats: undefined });
-                }
-              }}
-            />
-            {errors.seats && (
-              <Text style={styles.errorText}>{errors.seats}</Text>
-            )}
-
-            <TextInput
-              style={[styles.input, errors.price && styles.errorInput]}
-              placeholder="Enter price"
-              keyboardType="numeric"
-              value={form.price}
-              onChangeText={(text) => {
-                setForm({ ...form, price: text });
-                if (errors.price) {
-                  setErrors({ ...errors, price: undefined });
-                }
-              }}
-            />
-            {errors.price && (
-              <Text style={styles.errorText}>{errors.price}</Text>
-            )}
-
-            <TextInput
-              style={[styles.input, errors.carType && styles.errorInput]}
-              placeholder="Enter car type"
-              value={form.carType}
-              onChangeText={(text) => {
-                setForm({ ...form, carType: text });
-                if (errors.carType) {
-                  setErrors({ ...errors, carType: undefined });
-                }
-              }}
-            />
-            {errors.carType && (
-              <Text style={styles.errorText}>{errors.carType}</Text>
-            )}
-
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => setShowTimePicker(true)}
-            >
-              <Text style={styles.placeholderText}>
-                {form.time.toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
-              </Text>
-            </TouchableOpacity>
-            {showTimePicker && (
-              <DateTimePicker
-                value={form.time}
-                mode="time"
-                display="default"
-                onChange={handleTimeChange}
-              />
-            )}
-
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text style={styles.placeholderText}>
-                {form.date.toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={form.date}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
-              />
-            )}
-
-            <TouchableOpacity
-              style={[styles.addButton]}
-              onPress={handleSubmit}
-              // disabled={!isFormValid}
-            >
-              <Text style={styles.addButtonText}>Add Trip</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -285,7 +341,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 15,
-    marginLeft: 50,
+    marginLeft: 75,
   },
   input: {
     height: 50,
@@ -293,8 +349,9 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 10,
+    marginBottom: 20,
     justifyContent: "center",
+    backgroundColor: "#fff",
   },
   errorInput: {
     borderColor: "red",
@@ -327,5 +384,12 @@ const styles = StyleSheet.create({
     top: 5,
     left: 0,
     zIndex: 10,
+  },
+  focusedInput: {
+    borderColor: appColors.primary, // ✅ تغيير لون الحدود عند التركيز
+    borderWidth: 2, // ✅ جعل الحدود أكثر وضوحًا
+  },
+  disabledButton: {
+    backgroundColor: "#ccc", // لون رمادي للزر أثناء التحميل
   },
 });
