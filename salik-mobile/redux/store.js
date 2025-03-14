@@ -4,6 +4,8 @@ import { addServiceReducer } from "./slices/addServiceSlice";
 import { addRideReducer } from "./slices/addRideSlice";
 import { licenseReducer } from "./slices/licenseSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
+import { locationReducer } from "./slices/locationSlice";
+import { activityReducer } from "./slices/activitySlice";
 
 const store = configureStore({
   reducer: {
@@ -12,6 +14,8 @@ const store = configureStore({
     addServices: addServiceReducer,
     images: licenseReducer,
     reviews: reviewReducer,
+    location: locationReducer,
+    activity: activityReducer,
   },
 });
 

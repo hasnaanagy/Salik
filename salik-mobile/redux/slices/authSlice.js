@@ -8,15 +8,13 @@ export const loginUser = createAsyncThunk(
     try {
       const data = await apiService.create("auth/login", userData);
       await AsyncStorage.setItem("token", data.token);
-      console.log(data);
+
+      console.log("Login Response:", data);
       return data;
     } catch (error) {
-      console.error(
-        "Registration error:",
-        error.response?.data || error.message
-      );
-      console.log(error);
-      return rejectWithValue(error || "Login failed");
+      console.error("Login error:", error.response?.data || error.message);
+      console.error("Full error object:", error);
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
@@ -49,11 +47,12 @@ export const getUser = createAsyncThunk(
     try {
       const data = await apiService.getAll("auth");
       if (!data) throw new Error("User data not found");
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      await AsyncStorage.setItem("userType", JSON.stringify(data.user.type)); // Store user data
+
       return data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch user"
-      );
+      return rejectWithValue(error.message || "Failed to fetch user");
     }
   }
 );
@@ -62,7 +61,7 @@ export const updateUser = createAsyncThunk(
   "auth/updateUser",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await apiService.put("auth", formData);
+      const response = await apiService.patch("auth/", formData);
       return response.updatedUser;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Update failed");
@@ -76,7 +75,10 @@ export const switchRole = createAsyncThunk(
     try {
       console.log("🔄 Sending request to switch role...");
       const response = await apiService.update("auth/switch-role", {}); // Ensure this endpoint is correct
+
       console.log("✅ Switch Role Response:", response);
+
+      await AsyncStorage.setItem("userType", JSON.stringify(response.newRole));
       return response;
     } catch (error) {
       console.error(
