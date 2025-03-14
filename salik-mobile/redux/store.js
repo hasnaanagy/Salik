@@ -2,31 +2,11 @@ import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "./slices/authSlice";
 import { addServiceReducer } from "./slices/addServiceSlice";
 import { addRideReducer } from "./slices/addRideSlice";
-<<<<<<< HEAD
-import { requestReducer } from "./slices/requestServiceSlice";
-import { activityReducer } from "./slices/activitySlice";
-import { locationReducer } from "./slices/locationSlice";
-const rootReducer = (state, action) => {
-    if (action.type === "RESET_APP") {
-        state = undefined;
-    }
-    return authReducer(state, action);
-};
-
-const store = configureStore({
-    reducer: {
-        auth: rootReducer,
-        rideService: addRideReducer,
-        addServices: addServiceReducer,
-        activity: activityReducer,
-        requestSlice: requestReducer,
-        location: locationReducer,
-    },
-=======
 import { licenseReducer } from "./slices/licenseSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
 import { locationReducer } from "./slices/locationSlice";
 import { activityReducer } from "./slices/activitySlice";
+import { requestReducer } from "./slices/requestServiceSlice";
 
 const store = configureStore({
   reducer: {
@@ -37,8 +17,8 @@ const store = configureStore({
     reviews: reviewReducer,
     location: locationReducer,
     activity: activityReducer,
+    requestSlice: requestReducer,
   },
->>>>>>> master
 });
 
 export default store;
