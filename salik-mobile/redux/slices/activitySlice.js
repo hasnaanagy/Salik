@@ -2,18 +2,21 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiService from "../../api/api_service";
 
 // Fetch booked rides
-export const fetchBooking = createAsyncThunk("rides/fetchBooking", async (_,{rejectWithValue}) => {
-  try {
-    const response = await apiService.getAll("rideBooking");
-    console.log(response)
-    return response;
-  } catch (error) {
-    console.error("❌ API Error:", error.response?.data || error.message)
-    return rejectWithValue(
-      error.response?.data || "Failed to add ride service"
-    );
+export const fetchBooking = createAsyncThunk(
+  "rides/fetchBooking",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getAll("rideBooking");
+      console.log(response);
+      return response;
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || "Failed to add ride service"
+      );
+    }
   }
-});
+);
 
 // Fetch provided rides
 export const fetchProvidedRides = createAsyncThunk(
@@ -21,11 +24,11 @@ export const fetchProvidedRides = createAsyncThunk(
   async () => {
     try {
       const response = await apiService.getAll("rides/myrides");
-      console.log(response)
+      console.log(response);
 
       return response;
     } catch (error) {
-      console.error("❌ API Error:", error.response?.data || error.message)
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );
@@ -53,10 +56,11 @@ export const deleteRideAction = createAsyncThunk(
   "rides/deleteRide",
   async (rideId, { rejectWithValue }) => {
     try {
-      const response = await apiService.delete(rides, rideId);
+      const response = await apiService.delete(`rides`, rideId);
       console.log(response);
       return response;
     } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data?.message || "Error deleting ride."
       );

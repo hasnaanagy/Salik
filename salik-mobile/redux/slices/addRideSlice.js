@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api_service";
+<<<<<<< HEAD
 import apiService from "../../api/api_service";
+=======
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -21,11 +24,11 @@ export const postRideData = createAsyncThunk(
         time,
       });
 
-      console.log("🚀 Response Data:", response); // ✅ طباعة الاستجابة بعد استدعاء API
+      // console.log("🚀 Response Data:", response); // ✅ طباعة الاستجابة بعد استدعاء API
 
       return response; // ✅ تأكد من إرجاع البيانات الصحيحة
     } catch (error) {
-      console.error("❌ API Error:", error.response?.data || error.message);
+      // console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );
@@ -52,6 +55,21 @@ export const searchRidesAction = createAsyncThunk(
 );
 
 
+export const updateRideAction = createAsyncThunk(
+  "ride/updateRideAction",
+  async ({ id, form }, { rejectWithValue }) => {
+    try {
+      const response = await api.update(`rides/${id}`, form);
+      return response;
+    } catch (error) {
+      // console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
+      );
+    }
+  }
+);
+
 const addRideSlice = createSlice({
   name: "rideService",
   initialState: {
@@ -59,7 +77,11 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
+<<<<<<< HEAD
     rides:[]
+=======
+    isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
   },
   reducers: {
     clearError: (state) => {
@@ -79,12 +101,15 @@ const addRideSlice = createSlice({
       .addCase(postRideData.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        state.isEditMode = false; // ✅ تأكيد أنها عملية إضافة
+
         state.rideInfo = action.payload;
       })
       .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+<<<<<<< HEAD
       builder
       .addCase(searchRidesAction.pending, (state) => {
         state.error=null
@@ -96,6 +121,19 @@ const addRideSlice = createSlice({
         state.rides = action.payload;
       })
       .addCase(searchRidesAction.rejected, (state, action) => {
+=======
+      .addCase(updateRideAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true; // ✅ ضبط success ليظهر الـ Alert
+        state.isEditMode = true; // ✅ تأكيد أنها عملية تحديث
+        state.ride = action.payload.ride;
+      })
+      .addCase(updateRideAction.rejected, (state, action) => {
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
         state.loading = false;
         state.error = action.payload;
       });
