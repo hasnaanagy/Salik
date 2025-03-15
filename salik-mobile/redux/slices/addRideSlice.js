@@ -32,6 +32,21 @@ export const postRideData = createAsyncThunk(
   }
 );
 
+export const updateRideAction = createAsyncThunk(
+  "ride/updateRideAction",
+  async ({ id, form }, { rejectWithValue }) => {
+    try {
+      const response = await api.update(`rides/${id}`, form);
+      return response;
+    } catch (error) {
+      // console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
+      );
+    }
+  }
+);
+
 const addRideSlice = createSlice({
   name: "rideService",
   initialState: {
@@ -39,6 +54,7 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
+    isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
   },
   reducers: {
     clearError: (state) => {
@@ -58,9 +74,25 @@ const addRideSlice = createSlice({
       .addCase(postRideData.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        state.isEditMode = false; // ✅ تأكيد أنها عملية إضافة
+
         state.rideInfo = action.payload;
       })
       .addCase(postRideData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateRideAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true; // ✅ ضبط success ليظهر الـ Alert
+        state.isEditMode = true; // ✅ تأكيد أنها عملية تحديث
+        state.ride = action.payload.ride;
+      })
+      .addCase(updateRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

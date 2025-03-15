@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,17 +14,32 @@ import {
   fetchBooking,
   fetchProvidedRides,
 } from "../../redux/slices/activitySlice";
+import { getUser } from "../../redux/slices/authSlice";
 import { useRouter } from "expo-router";
 import car from "../../assets/car.png";
 import appColors from "../../constants/colors";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { Feather } from "@expo/vector-icons";
+
 const baseColor = appColors.primary;
 
 const Cards = ({ ride }) => {
-  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const { user } = useSelector((state) => state.auth);
   const [cancelled, setCancelled] = useState(ride.status === "canceled");
+  const fadeAnim = new Animated.Value(0);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(getUser());
+    }
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [user, dispatch]);
 
   const handleCancel = async () => {
     await dispatch(cancelRideAction(ride._id));
@@ -31,37 +51,45 @@ const Cards = ({ ride }) => {
     await dispatch(deleteRideAction(ride._id));
     dispatch(fetchProvidedRides());
   };
-
-  const rideDate = ride?.rideDateTime?.split("T")[0];
+  const handleEdit = () => {
+    router.push({
+      pathname: "addTrip",
+      params: {
+        ride: JSON.stringify(ride),
+      },
+    });
+  };
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
-
   const handleLocationField = (data) =>
-    data?.length > 13 ? `${data?.slice(0, 13)}...` : data;
+    data?.length > 10 ? `${data?.slice(0, 10)}... ` : data;
 
   const rideColor =
-    ride.status === "upcoming" ? baseColor
-      : ride.status === "completed" ? "#4C585B"
-        : "#F44336";
+    ride.status === "upcoming"
+      ? baseColor
+      : ride.status === "completed"
+      ? "#4C585B"
+      : "#F44336";
 
   return (
-    <View style={styles.container}>
-      {/* Ride Date and Time */}
-      <View style={styles.dateTimeContainer}>
-        <View style={[styles.statusIndicator, { backgroundColor: rideColor }]} />
-        <Text style={styles.dateText}> {rideTime}</Text>
-      </View>
-      {/* {rideDate} */}
-      {/* Ride Card */}
+    <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <Image source={car} style={styles.carImage} />
 
           <View style={styles.rideDetails}>
             <Text style={styles.title}>
-              {handleLocationField(ride.fromLocation)} to {handleLocationField(ride.toLocation)}
+              {handleLocationField(ride.fromLocation)} to{" "}
+              {handleLocationField(ride.toLocation)}
             </Text>
+
+            {/* Ride Date Section */}
+            <Text style={styles.rideDate}>
+              {ride?.rideDateTime?.split("T")[0]} | {rideTime}
+            </Text>
+
             <Text style={styles.details}>
-              Price: ${ride.price} | {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"}{" "}
+              Price: ${ride.price} |{" "}
+              {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"}{" "}
               {user?.type === "customer" ? ride.bookedSeats : ride.totalSeats}
             </Text>
             {user?.type === "provider" && (
@@ -71,7 +99,6 @@ const Cards = ({ ride }) => {
             )}
           </View>
 
-          {/* Cancel Button (for customers) */}
           {ride.status === "upcoming" && user?.type === "customer" && (
             <TouchableOpacity
               disabled={cancelled}
@@ -81,25 +108,26 @@ const Cards = ({ ride }) => {
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
           )}
-
-          {/* Edit & Delete Buttons (for providers) */}
           {ride.status === "upcoming" && user?.type === "provider" && (
             <View style={styles.iconContainer}>
               <TouchableOpacity
-                onPress={() => router.push("addTrip", { rideId: ride._id })}
+                onPress={() => handleEdit()}
                 style={styles.iconButton}
               >
-                <FontAwesome name="pencil-square" size={25} color="grey" />
+                <Feather name="edit" size={20} color="black" />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
-                <FontAwesome name="trash" size={25} color="red" />
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={styles.iconButton}
+              >
+                <Feather name="trash" size={20} color="#F44336" />
               </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -108,21 +136,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
-  },
-  dateTimeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 5,
-  },
-  dateText: {
-    color: "gray",
-    fontSize: 14,
   },
   card: {
     flex: 1,
@@ -151,6 +164,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  rideDate: {
+    fontSize: 14,
+    color: appColors.primary,
+    marginBottom: 5,
+    marginTop: 5,
+  },
   details: {
     fontSize: 14,
     color: "gray",
@@ -163,7 +182,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: {
-    color: "white",
+    color: "black",
     fontWeight: "bold",
   },
   disabledButton: {
@@ -176,15 +195,7 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     marginLeft: 5,
-    padding: 5,
-  },
-  editIcon: {
-    fontSize: 20,
-    color: baseColor,
-  },
-  deleteIcon: {
-    fontSize: 20,
-    color: "#F44336",
+    padding: 10,
   },
 });
 
