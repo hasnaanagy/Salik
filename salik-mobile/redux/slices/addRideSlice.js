@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api_service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import apiService from "../../api/api_service";
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -32,6 +32,25 @@ export const postRideData = createAsyncThunk(
     }
   }
 );
+export const searchRidesAction = createAsyncThunk(
+  "rideService/searchRidesAction",
+  async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
+    try {
+      console.log("🚀 Dispatching search with:", { fromLocation, toLocation, date, time });
+
+      const response = await apiService.getAll(
+        `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
+      );
+
+      console.log("✅ API Response:", response);
+      return response.rides;
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Failed to search rides");
+    }
+  }
+);
+
 
 const addRideSlice = createSlice({
   name: "rideService",
@@ -40,6 +59,7 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
+    rides:[]
   },
   reducers: {
     clearError: (state) => {
@@ -62,6 +82,20 @@ const addRideSlice = createSlice({
         state.rideInfo = action.payload;
       })
       .addCase(postRideData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      builder
+      .addCase(searchRidesAction.pending, (state) => {
+        state.error=null
+        state.loading = true;
+      })
+      .addCase(searchRidesAction.fulfilled, (state, action) => {
+        state.error=null
+        state.loading = false;
+        state.rides = action.payload;
+      })
+      .addCase(searchRidesAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

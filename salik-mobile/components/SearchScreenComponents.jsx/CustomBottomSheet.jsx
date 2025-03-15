@@ -49,7 +49,7 @@ const CustomBottomSheet = () => {
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.bottomSheetContainer, bottomSheetStyle]}>
         <View style={styles.line} />
-        <Text style={styles.text}>Set Your PickUp Location</Text>
+        <Text style={styles.text}>{!isExpanded?"Set Your PickUp Location":"Search"}</Text>
         <View style={styles.divider}></View>
 
         {!isExpanded ? (
