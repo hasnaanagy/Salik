@@ -24,7 +24,7 @@ export const postRideData = createAsyncThunk(
 
       return response; // ✅ تأكد من إرجاع البيانات الصحيحة
     } catch (error) {
-      // console.error("❌ API Error:", error.response?.data || error.message);
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );
@@ -90,7 +90,7 @@ const addRideSlice = createSlice({
         state.loading = false;
         state.success = true; // ✅ ضبط success ليظهر الـ Alert
         state.isEditMode = true; // ✅ تأكيد أنها عملية تحديث
-        state.ride = action.payload.ride;
+        state.rideInfo = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
         state.loading = false;
