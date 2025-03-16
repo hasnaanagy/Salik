@@ -1,15 +1,14 @@
 import React, { useEffect } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import { FontAwesome5, AntDesign } from "@expo/vector-icons"; // Import AntDesign for 'X' button
+import { FontAwesome5, AntDesign } from "@expo/vector-icons"; 
 import { useDispatch, useSelector } from "react-redux";
 import { setFocusedInput, setFromLocation, setToLocation } from "../../redux/slices/locationSlice";
 
-const LocationInputs = ({ fromLocation, toLocation, onChange }) => {
+const LocationInputs = ({ fromLocation, toLocation, onLocationChange }) => {
   const dispatch = useDispatch();
   const fromLoc = useSelector((state) => state.location.fromLocation);
   const toLoc = useSelector((state) => state.location.toLocation);
-  const focusedInput = useSelector((state) => state.location.focusedInput); // Get focused input from Redux
-
+  const focusedInput = useSelector((state) => state.location.focusedInput); 
   useEffect(() => {
     console.log("From Location Updated:", fromLocation);
     console.log("To Location Updated:", toLocation);
@@ -23,15 +22,14 @@ const LocationInputs = ({ fromLocation, toLocation, onChange }) => {
         <TextInput
           placeholder="Pickup Location"
           value={fromLoc || fromLocation}
-          onChangeText={(text) => onChange("fromLocation", text)}
-          onFocus={() => dispatch(setFocusedInput("fromLocation"))} // Dispatch focus change
+          onChangeText={(text) => {onLocationChange("fromLocation", text ),dispatch(setFromLocation(text))}}
+          onFocus={() => dispatch(setFocusedInput("fromLocation"))} 
           style={[
             styles.input,
-            focusedInput === "fromLocation" && styles.focusedInput, // Highlight active field
           ]}
         />
         {fromLoc && ( // Show clear button only if there's a location
-          <TouchableOpacity onPress={() => dispatch(setFromLocation(""))}>
+          <TouchableOpacity onPress={() => {dispatch(setFromLocation("")),onLocationChange("fromLocation","")}}>
             <AntDesign name="close" size={20} color="black" />
           </TouchableOpacity>
         )}
@@ -45,15 +43,15 @@ const LocationInputs = ({ fromLocation, toLocation, onChange }) => {
         <TextInput
           placeholder="Where To?"
           value={toLoc || toLocation}
-          onChangeText={(text) => onChange("toLocation", text)}
+          onChangeText={(text) =>{onLocationChange("toLocation", text),dispatch(setToLocation(text))}}
           onFocus={() => dispatch(setFocusedInput("toLocation"))} // Dispatch focus change
           style={[
             styles.input,
-            focusedInput === "toLocation" && styles.focusedInput, // Highlight active field
+            focusedInput === "toLocation" 
           ]}
         />
         {toLoc && ( // Show clear button only if there's a location
-          <TouchableOpacity onPress={() => dispatch(setToLocation(""))}>
+          <TouchableOpacity onPress={() => {dispatch(setToLocation("")),onLocationChange("toLocation","")}}>
             <AntDesign name="close" size={20} color="black" />
           </TouchableOpacity>
         )}

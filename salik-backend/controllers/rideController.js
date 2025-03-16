@@ -1,8 +1,9 @@
 const Ride = require("../models/Ride");
 const User = require("../models/User");
 const Booking = require("../models/RideBookings");
+const moment = require("moment");
 // Create new ride
-// Create new ride
+
 exports.createRide = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -11,40 +12,36 @@ exports.createRide = async (req, res) => {
     }
 
     if (user.type !== "provider") {
-      return res
-        .status(403)
-        .json({ message: "Only Providers can create rides." });
+      return res.status(403).json({ message: "Only Providers can create rides." });
     }
 
-    const { carType, fromLocation, toLocation, totalSeats, price, date, time } =
-      req.body;
+    const { carType, fromLocation, toLocation, totalSeats, price, date, time } = req.body;
 
-    if (
-      !carType ||
-      !fromLocation ||
-      !toLocation ||
-      !totalSeats ||
-      !price ||
-      !date
-    ) {
-      return res
-        .status(400)
-        .json({ message: "All fields except 'time' are required." });
+    if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !date || !time) {
+      return res.status(400).json({ message: "All fields including 'time' are required." });
     }
 
-    const rideDateTime = new Date(`${date}T${time || "00:00"}:00.000Z`);
+    // Validate time format (Only 12-hour AM/PM format is allowed)
+    if (!moment(time, "h:mm A", true).isValid()) {
+      return res.status(400).json({ message: "Invalid time format. Please use 'hh:mm AM/PM' format." });
+    }
+
+    // Convert AM/PM format to 24-hour format before storing
+    const rideDateTime = moment(`${date} ${time}`, "YYYY-MM-DD h:mm A").toDate();
+
+    // Check if ride time conversion is valid
     if (isNaN(rideDateTime.getTime())) {
       return res.status(400).json({ message: "Invalid date or time format." });
     }
 
+    // Check if the provider already has a ride at the same date and time
     const existingRide = await Ride.findOne({
       providerId: user._id,
       rideDateTime,
     });
+
     if (existingRide) {
-      return res.status(400).json({
-        message: "You already have a ride scheduled at this date and time.",
-      });
+      return res.status(400).json({ message: "You already have a ride scheduled at this date and time." });
     }
 
     const newRide = new Ride({
@@ -60,73 +57,62 @@ exports.createRide = async (req, res) => {
     });
 
     await newRide.save();
-    res
-      .status(201)
-      .json({ message: "Ride created successfully", ride: newRide });
+    res.status(201).json({ message: "Ride created successfully", ride: newRide });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error creating ride", error: err.message });
+    res.status(500).json({ message: "Error creating ride", error: err.message });
   }
 };
 
 // Search rides
+
 exports.searchRides = async (req, res) => {
   try {
     const { fromLocation, toLocation, date, time } = req.query;
 
     if (!fromLocation || !toLocation || !date) {
       return res.status(400).json({
-        message:
-          "Both 'fromLocation' and 'toLocation' and 'date' are required.",
+        message: "Both 'fromLocation' and 'toLocation' and 'date' are required.",
       });
     }
 
-    // Convert date into a full Date object
-    let startDateTime = new Date(`${date}T00:00:00.000Z`); // Start of the day
-    let endDateTime = new Date(`${date}T23:59:59.999Z`); // End of the day
+    // Convert date to a full Date object (Start and End of the Day)
+    let startDateTime = moment(`${date} 12:00 AM`, "YYYY-MM-DD hh:mm A").utc().toDate(); // Start of the day
+    let endDateTime = moment(`${date} 11:59 PM`, "YYYY-MM-DD hh:mm A").utc().toDate(); // End of the day
 
     if (time) {
-      let searchTime = new Date(`${date}T${time}:00.000Z`);
-      if (isNaN(searchTime.getTime())) {
-        return res.status(400).json({ message: "Invalid time format." });
+      // ✅ Convert AM/PM format to 24-hour format & ensure valid time
+      let searchTime = moment(`${date} ${time}`, "YYYY-MM-DD hh:mm A").utc();
+
+      if (!searchTime.isValid()) {
+        return res.status(400).json({ message: "Invalid time format. Use hh:mm AM/PM." });
       }
 
-      // Define a time range (±30 minutes)
-      let timeRangeStart = new Date(searchTime);
-      timeRangeStart.setMinutes(timeRangeStart.getMinutes() - 30);
+      // Define a ±30-minute search range
+      let timeRangeStart = moment(searchTime).subtract(30, "minutes").toDate();
+      let timeRangeEnd = moment(searchTime).add(30, "minutes").toDate();
 
-      let timeRangeEnd = new Date(searchTime);
-      timeRangeEnd.setMinutes(timeRangeEnd.getMinutes() + 30);
-
-      // Ensure the search window does not exceed the day's limits
-      startDateTime =
-        timeRangeStart < startDateTime ? startDateTime : timeRangeStart;
+      // Ensure search window does not exceed the day's limits
+      startDateTime = timeRangeStart < startDateTime ? startDateTime : timeRangeStart;
       endDateTime = timeRangeEnd > endDateTime ? endDateTime : timeRangeEnd;
     }
+
+    console.log("🔍 Searching between:", startDateTime, " and ", endDateTime);
 
     let query = {
       fromLocation: { $regex: new RegExp(fromLocation, "i") },
       toLocation: { $regex: new RegExp(toLocation, "i") },
       rideDateTime: { $gte: startDateTime, $lte: endDateTime },
     };
-    // Sort reviews by newest first
-    const rides = await Ride.find(query).populate(
-      "providerId",
-      "fullName profileImg phone nationalId"
-    );
+
+    const rides = await Ride.find(query).populate("providerId", "fullName profileImg phone nationalId");
 
     if (rides.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No rides found matching your criteria." });
+      return res.status(404).json({ message: "No rides found matching your criteria." });
     }
 
     res.status(200).json({ message: "Rides retrieved successfully", rides });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error searching for rides", error: err.message });
+    res.status(500).json({ message: "Error searching for rides", error: err.message });
   }
 };
 

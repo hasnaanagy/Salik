@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api_service";
+<<<<<<< HEAD
+import apiService from "../../api/api_service";
+=======
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -31,6 +35,25 @@ export const postRideData = createAsyncThunk(
     }
   }
 );
+export const searchRidesAction = createAsyncThunk(
+  "rideService/searchRidesAction",
+  async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
+    try {
+      console.log("🚀 Dispatching search with:", { fromLocation, toLocation, date, time });
+
+      const response = await apiService.getAll(
+        `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
+      );
+
+      console.log("✅ API Response:", response);
+      return response.rides;
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Failed to search rides");
+    }
+  }
+);
+
 
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
@@ -54,7 +77,11 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
+<<<<<<< HEAD
+    rides:[]
+=======
     isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
   },
   reducers: {
     clearError: (state) => {
@@ -82,6 +109,19 @@ const addRideSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+<<<<<<< HEAD
+      builder
+      .addCase(searchRidesAction.pending, (state) => {
+        state.error=null
+        state.loading = true;
+      })
+      .addCase(searchRidesAction.fulfilled, (state, action) => {
+        state.error=null
+        state.loading = false;
+        state.rides = action.payload;
+      })
+      .addCase(searchRidesAction.rejected, (state, action) => {
+=======
       .addCase(updateRideAction.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -93,6 +133,7 @@ const addRideSlice = createSlice({
         state.rideInfo = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
+>>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
         state.loading = false;
         state.error = action.payload;
       });

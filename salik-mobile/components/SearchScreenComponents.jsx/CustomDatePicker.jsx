@@ -1,90 +1,81 @@
 import React, { useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import DatePicker, { getFormatedDate } from "react-native-modern-datepicker";
-
+import { View, Text, TouchableOpacity, Platform, StyleSheet } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { FontAwesome } from "@expo/vector-icons";
 const CustomDatePicker = ({ selectedDate, onDateChange }) => {
-  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [date, setDate] = useState(selectedDate ? new Date(selectedDate) : new Date());
+  const [showPicker, setShowPicker] = useState(false);
 
-  const today = new Date();
-  const formattedToday = getFormatedDate(today, "YYYY/MM/DD");
-
-  const handleDateChange = (date) => {
-    if (date !== selectedDate) { 
-      onDateChange(date);
+  const handleDateChange = (event, selected) => {
+    if (Platform.OS === "android") {
+      setShowPicker(false); 
+    }
+    if (selected) {
+      setDate(selected);
+      onDateChange(selected.toISOString().split("T")[0]); // Format as YYYY-MM-DD
     }
   };
 
   return (
-    <View style={styles.dateTimeContainer}>
-      <Text style={styles.labelText}>Select Date:</Text>
-      <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.label}>
-        <Text>{selectedDate || "Pick a date"}</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>Select Date:</Text>
+      <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.inputContainer}>
+        <Text style={styles.inputText}>{selectedDate || "Pick a date"}</Text>
       </TouchableOpacity>
 
-      <Modal animationType="slide" transparent={true} visible={openDatePicker}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <DatePicker
-              mode="calendar"
-              minimumDate={formattedToday}
-              selected={selectedDate || formattedToday}
-              onSelectedChange={handleDateChange} // ✅ Prevent infinite updates
-              options={{
-                backgroundColor: "#fff",
-                textHeaderColor: "#000",
-                textDefaultColor: "#000",
-                selectedTextColor: "#fff",
-                selectedBackgroundColor: "#FFB800",
-                mainColor: "#FFB800",
-                textSecondaryColor: "#808080",
-                borderColor: "rgba(122,146,165,0.1)",
-              }}
-            />
-            <TouchableOpacity onPress={() => setOpenDatePicker(false)}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {/* DateTime Picker Modal (For Android & iOS) */}
+      {showPicker && (
+        <View style={styles.pickerContainer}>
+
+        <TouchableOpacity onPress={() => setShowPicker(false)} style={styles.closeButton}>
+            <FontAwesome name="times-circle" size={24} color="gray" />
+          </TouchableOpacity>
+
+        <DateTimePicker
+          value={date}
+          mode="date"
+          minimumDate={new Date()} // Prevent past dates
+          display={Platform.OS === "ios" ? "spinner" : "calendar"} // Android uses "calendar"
+          onChange={handleDateChange}
+        />
+      </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  dateTimeContainer: {
+  container: {
     justifyContent: "center",
     width: "90%",
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
   label: {
-    borderColor: "black",
-    borderWidth: 2,
-    borderRadius: 10,
-    padding: 15,
-  },
-  labelText: {
     fontWeight: "bold",
     marginBottom: 5,
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: "#f8f8f8",
-    padding: 35,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-    width: "80%",
-  },
-  closeText: {
-    color: "black",
     fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "black",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  inputText: {
+    fontSize: 16,
+  },
+  pickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between", // Pushes close button to the right
     marginTop: 10,
+  },
+  closeButton: {
+    paddingHorizontal: 10,
   },
 });
 
