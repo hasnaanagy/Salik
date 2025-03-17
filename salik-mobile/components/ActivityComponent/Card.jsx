@@ -61,7 +61,7 @@ const Cards = ({ ride }) => {
   };
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
   const handleLocationField = (data) =>
-    data?.length > 10 ? `${data?.slice(0, 10)}... ` : data;
+    data?.length > 10 ? ` ${data?.slice(0, 10)}... ` : data;
 
   const rideColor =
     ride.status === "upcoming"
@@ -72,6 +72,7 @@ const Cards = ({ ride }) => {
 
   return (
     <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
+      <View style={[styles.status, { backgroundColor: rideColor }]}></View>
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <Image source={car} style={styles.carImage} />
@@ -114,14 +115,14 @@ const Cards = ({ ride }) => {
                 onPress={() => handleEdit()}
                 style={styles.iconButton}
               >
-                <Feather name="edit" size={20} color="black" />
+                <Feather name="edit" size={18} color="black" />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleDelete}
                 style={styles.iconButton}
               >
-                <Feather name="trash" size={20} color="#F44336" />
+                <Feather name="trash" size={18} color="#F44336" />
               </TouchableOpacity>
             </View>
           )}
@@ -195,7 +196,18 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     marginLeft: 5,
-    padding: 10,
+    padding: 5,
+  },
+  status: {
+    width: 15,
+    height: 15,
+    borderRadius: 7,
+    margin: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
 

@@ -13,7 +13,6 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     try {
       const token = await AsyncStorage.getItem("token");
-      // const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2I5ZDYzMTEzZDhkYzUwM2JmYTk2MTUiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3NDE0OTQyMTl9.b6K9CF49FanC6dVHBVgMGHxelHfnD8BXS5oAYDKNwb0`;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/api_service";
-<<<<<<< HEAD
 import apiService from "../../api/api_service";
-=======
->>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -14,7 +10,7 @@ export const postRideData = createAsyncThunk(
   ) => {
     console.log("API Call:", { carType, fromLocation, toLocation, totalSeats });
     try {
-      const response = await api.create("rides", {
+      const response = await apiService.create("rides", {
         carType,
         fromLocation,
         toLocation,
@@ -39,7 +35,12 @@ export const searchRidesAction = createAsyncThunk(
   "rideService/searchRidesAction",
   async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
     try {
-      console.log("🚀 Dispatching search with:", { fromLocation, toLocation, date, time });
+      console.log("🚀 Dispatching search with:", {
+        fromLocation,
+        toLocation,
+        date,
+        time,
+      });
 
       const response = await apiService.getAll(
         `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
@@ -54,12 +55,11 @@ export const searchRidesAction = createAsyncThunk(
   }
 );
 
-
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
   async ({ id, form }, { rejectWithValue }) => {
     try {
-      const response = await api.update(`rides/${id}`, form);
+      const response = await apiService.update(`rides/${id}`, form);
       return response;
     } catch (error) {
       // console.error("❌ API Error:", error.response?.data || error.message);
@@ -77,11 +77,8 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
-<<<<<<< HEAD
-    rides:[]
-=======
+    rides: [],
     isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
->>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
   },
   reducers: {
     clearError: (state) => {
@@ -108,20 +105,21 @@ const addRideSlice = createSlice({
       .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-<<<<<<< HEAD
-      builder
+      });
+    builder
       .addCase(searchRidesAction.pending, (state) => {
-        state.error=null
+        state.error = null;
         state.loading = true;
       })
       .addCase(searchRidesAction.fulfilled, (state, action) => {
-        state.error=null
+        state.error = null;
         state.loading = false;
         state.rides = action.payload;
       })
       .addCase(searchRidesAction.rejected, (state, action) => {
-=======
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(updateRideAction.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,7 +131,6 @@ const addRideSlice = createSlice({
         state.rideInfo = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
->>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
         state.loading = false;
         state.error = action.payload;
       });
