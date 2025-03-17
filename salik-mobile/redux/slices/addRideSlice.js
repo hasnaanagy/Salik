@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiService from "../../api/api_service";
 
-
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
   async (
@@ -25,7 +24,7 @@ export const postRideData = createAsyncThunk(
 
       return response; // ✅ تأكد من إرجاع البيانات الصحيحة
     } catch (error) {
-      // console.error("❌ API Error:", error.response?.data || error.message);
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
       );
@@ -36,7 +35,12 @@ export const searchRidesAction = createAsyncThunk(
   "rideService/searchRidesAction",
   async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
     try {
-      console.log("🚀 Dispatching search with:", { fromLocation, toLocation, date, time });
+      console.log("🚀 Dispatching search with:", {
+        fromLocation,
+        toLocation,
+        date,
+        time,
+      });
 
       const response = await apiService.getAll(
         `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
@@ -50,7 +54,6 @@ export const searchRidesAction = createAsyncThunk(
     }
   }
 );
-
 
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
@@ -74,7 +77,7 @@ const addRideSlice = createSlice({
     loading: false,
     error: null,
     success: false,
-    rides:[],
+    rides: [],
     isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
   },
   reducers: {
@@ -102,14 +105,14 @@ const addRideSlice = createSlice({
       .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-      builder
+      });
+    builder
       .addCase(searchRidesAction.pending, (state) => {
-        state.error=null
+        state.error = null;
         state.loading = true;
       })
       .addCase(searchRidesAction.fulfilled, (state, action) => {
-        state.error=null
+        state.error = null;
         state.loading = false;
         state.rides = action.payload;
       })

@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +26,8 @@ import SubmitButton from "./SubmitButton";
 export default function AddTripForm() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [alertVisible, setAlertVisible] = useState(false); // تتبع حالة التنبيه
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // State for RefreshControl
   const { loading, success, error, isEditMode } = useSelector(
     (state) => state.rideService
   );
@@ -119,7 +121,7 @@ export default function AddTripForm() {
       time: form.time.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false,
+        hour12: true,
       }),
     };
     if (editRide) {
@@ -134,6 +136,30 @@ export default function AddTripForm() {
     if (errors[key]) setErrors({ ...errors, [key]: undefined });
   };
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Reset form to initial state (only if not in edit mode)
+    if (!editRide) {
+      setForm({
+        fromLocation: "",
+        toLocation: "",
+        totalSeats: "",
+        price: "",
+        carType: "",
+        date: new Date(),
+        time: new Date(),
+      });
+      setErrors({});
+      setFocusedField(null);
+      dispatch(clearError());
+      dispatch(resetSuccess());
+    }
+    // Simulate a delay for the refresh animation
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -141,7 +167,12 @@ export default function AddTripForm() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1, minHeight: 900 }}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, minHeight: 900 }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
             <View style={{ flex: 1, padding: 20 }}>
               <Header title="Add Trip Details" />
               <FormInput
