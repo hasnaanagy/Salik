@@ -34,7 +34,6 @@ const RootLayout = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}> 
     <Provider store={store}>
-<<<<<<< HEAD
       <Stack screenOptions={{ headerTitleStyle: { fontFamily: "Poppins_400Regular" } }}>
         <Stack.Screen name="splash" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
@@ -53,44 +52,6 @@ const RootLayout = () => {
         <Stack.Screen name="addService" options={{ headerShown: false, headerTransparent: true }} />
         <Stack.Screen name="intro" options={{ headerShown: false, headerTransparent: true }} />
         <Stack.Screen name="joinUs" options={{ headerShown: false, headerTransparent: true }} />
-=======
-      <Stack
-        screenOptions={{
-          headerTitleStyle: { fontFamily: "Poppins_400Regular" },
-        }}
-      >
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="signup" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="search"
-          options={{
-            fontFamily: "Poppins_400Regular",
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen
-          name="license"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen
-          name="addTrip"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
-        <Stack.Screen
-          name="addService"
-          options={{
-            headerShown: false,
-            headerTransparent: true,
-          }}
-        />
         <Stack.Screen
           name="reviews"
           options={{
@@ -98,7 +59,6 @@ const RootLayout = () => {
             headerTransparent: true,
           }}
         />
->>>>>>> 5fb6248eaaa8563d44fa71518310c42ee4a076a8
       </Stack>
     </Provider>
     </GestureHandlerRootView>
