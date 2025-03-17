@@ -5,24 +5,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "../../redux/slices/authSlice";
 
 export default function ServicesHome() {
-  const token = localStorage.getItem("token"); 
-  const navigate = useNavigate(); 
-  const [successMessage, setSuccessMessage] = useState(false); 
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const handleProtectedNavigation = (e, path) => {
     if (!token) {
       setSuccessMessage(true);
 
-      e.preventDefault(); 
+      e.preventDefault();
       setTimeout(() => {
-        navigate("/login");  
+        navigate("/login");
       }, 5000);
     }
   };
 
   return (
-    console.log("ssssssssssssssss",user),
     <Box sx={{ marginTop: "70px", px: 2, mb: 5 }}>
       <Typography
         variant="h4"
@@ -38,7 +37,11 @@ export default function ServicesHome() {
         {/* Ride Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to={user?.nationalIdImage && user?.licenseImage ? "/addTrip" : "/licence"}
+            to={
+              user?.nationalIdImage && user?.licenseImage
+                ? "/addTrip"
+                : "/licence"
+            }
             style={{ textDecoration: "none", color: "inherit" }}
             onClick={(e) => handleProtectedNavigation(e, "/login")}
           >

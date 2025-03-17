@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_BASE_URL = "http://192.168.1.100:5000/api";
+const API_BASE_URL = "http://192.168.1.9:5000/api";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -13,6 +13,7 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     try {
       const token = await AsyncStorage.getItem("token");
+      // const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2I5ZDYzMTEzZDhkYzUwM2JmYTk2MTUiLCJ0eXBlIjoicHJvdmlkZXIiLCJpYXQiOjE3NDE0OTQyMTl9.b6K9CF49FanC6dVHBVgMGHxelHfnD8BXS5oAYDKNwb0`;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -28,7 +29,9 @@ const apiService = {
   patch: async (endpoint, data) => {
     const headers =
       data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
-    const response = await axiosInstance.patch(`/${endpoint}`, data, { headers });
+    const response = await axiosInstance.patch(`/${endpoint}`, data, {
+      headers,
+    });
     return response.data;
   },
   getAll: async (endpoint) => {

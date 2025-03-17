@@ -1,15 +1,16 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { TabBar } from '../../components/SharedComponents/TabBar';
+import { Platform } from 'react-native';
 
 const TabsLayout = () => {
+
     const options={
-        headerStyle:{backgroundColor:'transparent'},
+        headerStyle:{backgroundColor:'transparent',elevation:0,shadowOpacity:0,height:Platform.OS==='ios'?100:60},
         headerTitleAlign:'left',
         headerTitleStyle:{
                   fontFamily: 'Poppins_400Regular',
-                    fontSize: 32,
-                    fontWeight: 'bold',
+                    fontSize: 34,
     }}
     return (
        <Tabs tabBar={(props)=><TabBar {...props} />}>
@@ -20,6 +21,5 @@ const TabsLayout = () => {
        </Tabs>
     );
 }
-
 
 export default TabsLayout;

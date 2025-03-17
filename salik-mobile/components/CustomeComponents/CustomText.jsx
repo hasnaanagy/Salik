@@ -1,6 +1,15 @@
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { globalStyles } from '../../styles/globalStyles';
-export default function CustomText({ children, style, ...props }) {
-  return <Text style={[globalStyles.text, style]} {...props}>{children}</Text>;
+
+export default function CustomText({ children, ...props }) {
+  return <Text style={[globalStyles.text, style.title]} {...props}>{children}</Text>;
 }
 
+const style=StyleSheet.create({
+  title: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontWeight: '600',
+  }
+}
+)

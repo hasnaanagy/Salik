@@ -29,6 +29,7 @@ const animatedIconStyle=useAnimatedStyle(()=>{
 })
     return (
         <PlatformPressable
+        android_ripple={{ color: 'transparent' }}
         onPress={onPress}
         onLongPress={onLongPress}
         style={styles.tabBarItem}
@@ -48,6 +49,7 @@ const styles = StyleSheet.create({
         flex:1,
         justifyContent:'center',
         alignItems:'center',
+      
     }
 })
 

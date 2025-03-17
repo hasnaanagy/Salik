@@ -3,7 +3,8 @@ import SearchComponent from "../components/SearchScreenComponents.jsx/SearchComp
 
 const SearchScreen = () => {
     return (
-      <SearchComponent/>
+            <SearchComponent/>
+
     );
 };
 
