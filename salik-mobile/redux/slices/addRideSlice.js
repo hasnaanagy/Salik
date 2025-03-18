@@ -73,7 +73,6 @@ export const updateRideAction = createAsyncThunk(
 const addRideSlice = createSlice({
   name: "rideService",
   initialState: {
-    rideInfo: {},
     loading: false,
     error: null,
     success: false,
@@ -99,8 +98,6 @@ const addRideSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.isEditMode = false; // ✅ تأكيد أنها عملية إضافة
-
-        state.rideInfo = action.payload;
       })
       .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
@@ -128,7 +125,6 @@ const addRideSlice = createSlice({
         state.loading = false;
         state.success = true; // ✅ ضبط success ليظهر الـ Alert
         state.isEditMode = true; // ✅ تأكيد أنها عملية تحديث
-        state.rideInfo = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
         state.loading = false;
