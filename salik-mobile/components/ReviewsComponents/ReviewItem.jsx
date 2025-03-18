@@ -28,7 +28,7 @@ const ReviewItem = ({ review, onEdit, onDelete }) => {
               <Feather name="edit" size={18} color="black" />
             </TouchableOpacity>
             <TouchableOpacity onPress={onDelete} style={styles.iconButton}>
-              <Feather name="trash" size={18} color="black" />
+              <Feather name="trash" size={18} color="#F44336" />
             </TouchableOpacity>
           </>
         ))}

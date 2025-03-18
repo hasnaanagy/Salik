@@ -36,7 +36,7 @@ export const postServiceData = createAsyncThunk(
   }
 );
 
-const addServiceSlice = createSlice({
+const ServiceSlice = createSlice({
   name: "addServices",
   initialState: {
     serviceInfo: {},
@@ -71,5 +71,5 @@ const addServiceSlice = createSlice({
   },
 });
 
-export const { clearError, resetSuccess } = addServiceSlice.actions;
-export const addServiceReducer = addServiceSlice.reducer;
+export const { clearError, resetSuccess } = ServiceSlice.actions;
+export const ServiceReducer = ServiceSlice.reducer;

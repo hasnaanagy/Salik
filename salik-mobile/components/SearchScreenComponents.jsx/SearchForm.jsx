@@ -5,7 +5,7 @@ import CustomDatePicker from "./CustomDatePicker";
 import CustomTimePicker from "./CustomTimePicker";
 import LocationInputs from "./LocationInputs";
 import { useDispatch, useSelector } from "react-redux";
-import { searchRidesAction } from "../../redux/slices/addRideSlice";
+import { searchRidesAction } from "../../redux/slices/RideSlice";
 import SearchResultsComponent from "./SearchResultsComponent";
 import RideDetailesComponent from "./RideDetailesComponent";
 
@@ -78,7 +78,10 @@ const SearchForm = () => {
           </TouchableOpacity>
         </View>
       ) : selectedRide ? (
-        <RideDetailesComponent ride={selectedRide} setSelectedRide={setSelectedRide} />
+        <RideDetailesComponent
+          ride={selectedRide}
+          setSelectedRide={setSelectedRide}
+        />
       ) : rides.length > 0 ? (
         <SearchResultsComponent
           setDisplayResults={setDisplayResults}
@@ -92,8 +95,22 @@ const SearchForm = () => {
 };
 
 const styles = StyleSheet.create({
-  button: { padding: 15, borderRadius: 14, width: "90%", alignSelf: "center", marginTop: 20, textAlign: "center", fontWeight: "bold", fontSize: 16 },
-  noResultsText: { fontSize: 16, textAlign: "center", marginTop: 20, color: "#666" },
+  button: {
+    padding: 15,
+    borderRadius: 14,
+    width: "90%",
+    alignSelf: "center",
+    marginTop: 20,
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  noResultsText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+    color: "#666",
+  },
 });
 
 export default SearchForm;
