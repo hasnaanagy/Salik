@@ -39,18 +39,24 @@ const Cards = ({ ride }) => {
     await dispatch(deleteRideAction(ride._id));
     dispatch(fetchProvidedRides());
   };
-
+  const handleEdit = () => {
+    router.push(
+      {
+        pathname: "addTrip", params: {
+          ride: JSON.stringify(ride),
+        }
+      });
+  }
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
   const handleLocationField = (data) => (data?.length > 10 ? `${data?.slice(0, 10)}...` : data);
 
+  const rideColor = ride.status === "upcoming" ? baseColor : ride.status === "completed" ? "#4C585B" : "#F44336";
 
-  const rideColor =
-    ride.status === "upcoming" ? baseColor
-      : ride.status === "completed" ? "#4C585B"
-        : "#F44336";
+
 
   return (
     <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
+      <View style={[styles.status, { backgroundColor: rideColor }]}></View>
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <Image source={car} style={styles.carImage} />
@@ -89,7 +95,7 @@ const Cards = ({ ride }) => {
           {ride.status === "upcoming" && user?.type === "provider" && (
             <View style={styles.iconContainer}>
               <TouchableOpacity
-                onPress={() => router.push("addTrip", { rideId: ride._id })}
+                onPress={() => handleEdit()}
                 style={styles.iconButton}
               >
                 <FontAwesome name="pencil-square" size={30} color="#4C585B" />
@@ -173,6 +179,17 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     padding: 5,
   },
+  status: {
+    width: 15,
+    height: 15,
+    borderRadius: 7,
+    margin: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  }
 });
 
 export default Cards;

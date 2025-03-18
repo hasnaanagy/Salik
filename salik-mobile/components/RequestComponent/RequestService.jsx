@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import Geolocation from '@react-native-community/geolocation';
 import { useDispatch } from "react-redux";
 import { sendRequestAction } from "../redux/slices/requestServiceSlice";
-import { useNavigation } from "@react-navigation/native";
+import useRouter from "expo-router";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:5000"); // Replace with your backend URL
@@ -12,7 +12,7 @@ const RequestService = ({ serviceType }) => {
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [problem, setProblem] = useState("");
     const dispatch = useDispatch();
-    const navigation = useNavigation();
+    const router = useRouter();
 
     useEffect(() => {
         Geolocation.getCurrentPosition(
@@ -47,7 +47,7 @@ const RequestService = ({ serviceType }) => {
         };
 
         await dispatch(sendRequestAction(requestData));
-        navigation.navigate("Requests");
+        // rouyter.push("/");
     };
 
     return (

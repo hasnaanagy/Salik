@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useFocusEffect } from '@react-navigation/native';
 import { getAllResquestsAction, confirmRequestAction, updateRequestStateAction } from '../../redux/slices/requestServiceSlice';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const statusColors = {
@@ -12,46 +14,46 @@ const statusColors = {
     completed: '#673AB7',
 };
 
-const RequestPage = ({ userType }) => {
+const RequestPage = () => {
     const dispatch = useDispatch();
     const { requests = {}, isLoading } = useSelector(state => state.requestSlice || {});
-    const { user } = useSelector(state => state.auth);
 
     const [selectedProvider, setSelectedProvider] = useState({});
     const [locations, setLocations] = useState({});
+    const [userType, setUserType] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        dispatch(getAllResquestsAction());
-    }, [dispatch, user]);
-
-    const getAddressFromCoordinates = async (lat, lng, requestId) => {
+    const fetchUserType = async () => {
         try {
-            const apiKey = '2d4b78c5799a4d8292da41dce45cadde';
-            const response = await axios.get(
-                `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}`
-            );
-            const address = response.data.results[0]?.formatted || 'Unknown location';
-            setLocations(prev => ({ ...prev, [requestId]: address }));
+            const storedUserType = await AsyncStorage.getItem('userType');
+            if (storedUserType) {
+                setUserType(JSON.parse(storedUserType));
+            }
         } catch (error) {
-            console.error('Error fetching address:', error);
-            setLocations(prev => ({ ...prev, [requestId]: 'Location not found' }));
+            console.error('Error fetching user type:', error);
         }
     };
 
-    useEffect(() => {
-        Object.entries(requests).forEach(([status, reqList]) => {
-            reqList.forEach(req => {
-                if (req.location?.coordinates) {
-                    const [lng, lat] = req.location.coordinates;
-                    getAddressFromCoordinates(lat, lng, req._id);
-                }
-            });
-        });
-    }, [requests]);
+    const fetchData = async () => {
+        await fetchUserType();
+        dispatch(getAllResquestsAction());
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [dispatch])
+    );
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+    };
 
     const handleAcceptRequest = async requestId => {
         await dispatch(updateRequestStateAction({ requestId, action: 'accept' }));
-        dispatch(getAllResquestsAction());
+        fetchData();
     };
 
     const handleConfirmProvider = async requestId => {
@@ -63,12 +65,12 @@ const RequestPage = ({ userType }) => {
                 providerId: selectedProvider[requestId],
             })
         );
-        dispatch(getAllResquestsAction());
+        fetchData();
     };
 
     const handleCompleteRequest = async requestId => {
         await dispatch(updateRequestStateAction({ requestId, action: 'complete' }));
-        dispatch(getAllResquestsAction());
+        fetchData();
     };
 
     if (isLoading) {
@@ -89,7 +91,10 @@ const RequestPage = ({ userType }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
             <Text style={styles.header}>Service Requests</Text>
             {Object.entries(requests).map(([status, reqList]) =>
                 reqList.length > 0 && (
@@ -98,12 +103,12 @@ const RequestPage = ({ userType }) => {
                             {status.charAt(0).toUpperCase() + status.slice(1)} Requests
                         </Text>
                         {reqList.map(req => (
-                            <View key={req._id} style={styles.card}>
+                            <View key={req._id} style={[styles.card, { borderLeftColor: statusColors[status] }]}>
                                 <Text style={styles.title}>{req.serviceType}</Text>
                                 <Text>📍 {locations[req._id] || 'Fetching location...'}</Text>
                                 <Text>📝 Problem: {req.problemDescription}</Text>
 
-                                {user?.type === 'provider' && status === 'pending' && (
+                                {userType === 'provider' && status === 'pending' && (
                                     <TouchableOpacity
                                         style={styles.button}
                                         onPress={() => handleAcceptRequest(req._id)}
@@ -112,7 +117,7 @@ const RequestPage = ({ userType }) => {
                                     </TouchableOpacity>
                                 )}
 
-                                {user?.type === 'customer' && status === 'accepted' && req.acceptedProviders?.length > 0 && (
+                                {userType === 'customer' && status === 'accepted' && req.acceptedProviders?.length > 0 && (
                                     <>
                                         <Text style={styles.label}>Select a Provider:</Text>
                                         <Picker
@@ -138,7 +143,7 @@ const RequestPage = ({ userType }) => {
                                     </>
                                 )}
 
-                                {user?.type === 'customer' && status === 'confirmed' && (
+                                {userType === 'customer' && status === 'confirmed' && (
                                     <TouchableOpacity
                                         style={styles.button}
                                         onPress={() => handleCompleteRequest(req._id)}
@@ -151,7 +156,7 @@ const RequestPage = ({ userType }) => {
                     </View>
                 )
             )}
-        </View>
+        </ScrollView>
     );
 };
 
@@ -160,10 +165,10 @@ const styles = StyleSheet.create({
     centeredView: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
     statusHeader: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
-    card: { padding: 15, marginBottom: 15, borderRadius: 10, backgroundColor: '#f9f9f9' },
+    card: { padding: 15, marginBottom: 15, borderRadius: 10, backgroundColor: '#f9f9f9', shadowColor: "#000", shadowOffset: { width: 0, height: 2, }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, borderLeftWidth: 5, },
     title: { fontSize: 18, fontWeight: 'bold' },
     button: { backgroundColor: '#2196F3', padding: 10, borderRadius: 5, marginTop: 10 },
-    buttonText: { color: '#fff', textAlign: 'center' },
+    buttonText: { color: '#00ff00', textAlign: 'center' },
     label: { fontWeight: 'bold', marginTop: 10 },
 });
 

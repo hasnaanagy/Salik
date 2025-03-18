@@ -14,13 +14,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import {
   postRideData,
   clearError,
   resetSuccess,
+  updateRideAction,
 } from "../../redux/slices/addRideSlice";
 import appColors from "../../constants/colors.js";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,16 +32,36 @@ export default function AddTripForm() {
   const [alertVisible, setAlertVisible] = useState(false); // تتبع حالة التنبيه
 
   const { loading, success, error } = useSelector((state) => state.rideService);
+  const { ride } = useLocalSearchParams();
+  const editRide = ride ? JSON.parse(ride) : null;
 
   const [form, setForm] = useState({
     fromLocation: "",
     toLocation: "",
-    seats: "",
+    totalSeats: "",
     price: "",
     carType: "",
     date: new Date(),
     time: new Date(),
   });
+
+  useEffect(() => {
+    if (editRide) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        fromLocation: editRide.fromLocation || "",
+        toLocation: editRide.toLocation || "",
+        totalSeats: editRide.totalSeats ? editRide.totalSeats.toString() : "",
+        price: editRide.price ? editRide.price.toString() : "",
+        carType: editRide.carType || "",
+        date: editRide.date ? new Date(editRide.date) : new Date(),
+        time: editRide.time
+          ? new Date(`1970-01-01T${editRide.time.padStart(5, "0")}:00`)
+          : new Date(),
+      }));
+    }
+  }, []);
+
 
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -51,8 +72,8 @@ export default function AddTripForm() {
     let newErrors = {};
     if (!form.fromLocation) newErrors.fromLocation = "Required";
     if (!form.toLocation) newErrors.toLocation = "Required";
-    if (!form.seats || isNaN(form.seats))
-      newErrors.seats = "Valid number required";
+    if (!form.totalSeats || isNaN(form.totalSeats))
+      newErrors.totalSeats = "Valid number required";
     if (!form.price || isNaN(form.price))
       newErrors.price = "Valid price required";
     if (!form.carType) newErrors.carType = "Required";
@@ -69,7 +90,7 @@ export default function AddTripForm() {
         carType: form.carType,
         fromLocation: form.fromLocation,
         toLocation: form.toLocation,
-        totalSeats: parseInt(form.seats, 10),
+        totalSeats: parseInt(form.totalSeats, 10),
         price: parseFloat(form.price),
         date: form.date.toISOString().split("T")[0],
         time: form.time.toLocaleTimeString("en-US", {
@@ -78,8 +99,14 @@ export default function AddTripForm() {
           hour12: false,
         }),
       };
-
-      dispatch(postRideData(rideData));
+      if (editRide) {
+        // Editing existing ride
+        var id = editRide._id;
+        dispatch(updateRideAction({ id, form }));
+      } else {
+        // Creating new ride
+        dispatch(postRideData(rideData));
+      }
     } catch (err) {
       // console.log("Error posting ride:", err); // ✅ لا تظهر الخطأ للمستخدم
       return;
@@ -170,6 +197,7 @@ export default function AddTripForm() {
                     setErrors({ ...errors, fromLocation: undefined });
                   }
                 }}
+                editable={!editRide} // ✅ تعطيل التحرير عند التحرير
               />
               {errors.fromLocation && (
                 <Text style={styles.errorText}>{errors.fromLocation}</Text>
@@ -191,6 +219,7 @@ export default function AddTripForm() {
                     setErrors({ ...errors, toLocation: undefined });
                   }
                 }}
+                editable={!editRide}
               />
               {errors.toLocation && (
                 <Text style={styles.errorText}>{errors.toLocation}</Text>
@@ -199,23 +228,23 @@ export default function AddTripForm() {
               <TextInput
                 style={[
                   styles.input,
-                  errors.seats && styles.errorInput,
-                  focusedField === "seats" && styles.focusedInput,
+                  errors.totalSeats && styles.errorInput,
+                  focusedField === "totalSeats" && styles.focusedInput,
                 ]}
-                placeholder="Enter available seats"
+                placeholder="Enter available totalSeats"
                 keyboardType="numeric"
-                value={form.seats}
-                onFocus={() => setFocusedField("seats")} // ✅ تحديث حالة التركيز
+                value={form.totalSeats}
+                onFocus={() => setFocusedField("totalSeats")} // ✅ تحديث حالة التركيز
                 onBlur={() => setFocusedField(null)} // ✅ إزالة التركيز عند الخروج
                 onChangeText={(text) => {
-                  setForm({ ...form, seats: text });
-                  if (errors.seats) {
-                    setErrors({ ...errors, seats: undefined });
+                  setForm({ ...form, totalSeats: text });
+                  if (errors.totalSeats) {
+                    setErrors({ ...errors, totalSeats: undefined });
                   }
                 }}
               />
-              {errors.seats && (
-                <Text style={styles.errorText}>{errors.seats}</Text>
+              {errors.totalSeats && (
+                <Text style={styles.errorText}>{errors.totalSeats}</Text>
               )}
 
               <TextInput
@@ -256,6 +285,7 @@ export default function AddTripForm() {
                     setErrors({ ...errors, carType: undefined });
                   }
                 }}
+                editable={!editRide}
               />
               {errors.carType && (
                 <Text style={styles.errorText}>{errors.carType}</Text>
@@ -264,6 +294,7 @@ export default function AddTripForm() {
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowTimePicker(true)}
+                disabled={!!editRide} // ✅ تعطيل الحقل عند التحرير
               >
                 <Text style={styles.placeholderText}>
                   {form.time.toLocaleTimeString("en-US", {
@@ -285,6 +316,7 @@ export default function AddTripForm() {
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowDatePicker(true)}
+                disabled={!!editRide}
               >
                 <Text style={styles.placeholderText}>
                   {form.date.toLocaleDateString()}
@@ -308,11 +340,11 @@ export default function AddTripForm() {
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <ActivityIndicator size="small" color="#fff" />
                     <Text style={[styles.addButtonText, { marginLeft: 10 }]}>
-                      Adding...
+                      {editRide ? "Editing..." : "Adding..."}
                     </Text>
                   </View>
                 ) : (
-                  <Text style={styles.addButtonText}>Add Trip</Text>
+                  <Text style={styles.addButtonText}>{editRide ? "Edit Trip" : "Add Trip"}</Text>
                 )}
               </TouchableOpacity>
             </View>

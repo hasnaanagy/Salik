@@ -24,9 +24,27 @@ export const postRideData = createAsyncThunk(
 
       return response; // ✅ تأكد من إرجاع البيانات الصحيحة
     } catch (error) {
-      // console.error("❌ API Error:", error.response?.data || error.message);
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
+      );
+    }
+  }
+);
+
+export const updateRideAction = createAsyncThunk(
+  "ride/updateRideAction",
+  async ({ id, form }, { rejectWithValue }) => {
+    try {
+      const response = await api.update(
+        `rides/${id}`,
+        form
+      );
+      return response;
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
       );
     }
   }
@@ -61,6 +79,18 @@ const addRideSlice = createSlice({
         state.rideInfo = action.payload;
       })
       .addCase(postRideData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateRideAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.ride = action.payload.ride;
+      })
+      .addCase(updateRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
