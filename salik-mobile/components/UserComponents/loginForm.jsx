@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Image
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -47,21 +55,36 @@ export default function LoginForm() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Phone"
-        keyboardType="phone-pad"
-        value={formData.phone}
-        onChangeText={(text) => {
-          setFormData({ ...formData, phone: text });
-          validateField("phone", text);
-        }}
-      />
-      {errors.phone ? <Text style={styles.error}>{errors.phone}</Text> : null}
-      <View style={styles.passwordContainer}>
+      <Image source={require("../../assets/logo.jpg")} style={styles.logo} />
+      
+      <View style={styles.inputContainer}>
+        <View style={styles.iconCircle}>
+          <Icon name="phone" size={20} color="#FFB800" />
+        </View>
         <TextInput
-          style={styles.passwordInput}
+          style={styles.input}
+          placeholder="Phone number"
+          keyboardType="phone-pad"
+          value={formData.phone}
+          onChangeText={(text) => {
+            setFormData({ ...formData, phone: text });
+            validateField("phone", text);
+          }}
+        />
+      </View>
+      {errors.phone ? <Text style={styles.error}>{errors.phone}</Text> : null}
+
+      <View style={styles.inputContainer}>
+        <View style={styles.iconCircle}>
+          <Icon 
+            name={secureText ? "eye-off" : "eye"} 
+            size={20} 
+            color="#FFB800"
+            onPress={() => setSecureText(!secureText)} 
+          />
+        </View>
+        <TextInput
+          style={styles.input}
           placeholder="Password"
           secureTextEntry={secureText}
           value={formData.password}
@@ -70,24 +93,20 @@ export default function LoginForm() {
             validateField("password", text);
           }}
         />
-        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-          <Icon name={secureText ? "eye-off" : "eye"} size={20} color="#666" style={styles.icon} />
-        </TouchableOpacity>
       </View>
       {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
+
       {loading ? (
-        <ActivityIndicator size="large" color="#FFB800" />
+        <ActivityIndicator size="large" color="#FFB800" style={styles.loading} />
       ) : (
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
       )}
+     
       <TouchableOpacity onPress={() => router.push("/signup")}>
         <Text style={styles.link}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
-
-      {/* Alert Component */}
-      <CustomAlert visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
     </View>
   );
 }
@@ -95,66 +114,88 @@ export default function LoginForm() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     justifyContent: "center",
-    backgroundColor: "#F8F9FA",
+    alignItems: "center",
+    backgroundColor: "#F5F6F5",
+    padding: 20,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
+    marginBottom: 20,
+    zIndex: 1,
   },
   title: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
     color: "#333",
+    marginBottom: 40,
+    zIndex: 1,
   },
-  input: {
-    borderWidth: 1,
-    padding: 14,
-    marginBottom: 10,
-    borderRadius: 10,
-    borderColor: "#ddd",
-    backgroundColor: "#FFF",
-    fontSize: 16,
-    elevation: 3,
-  },
-  passwordContainer: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#FFF",
-    borderRadius: 10,
-    padding: 4,
-    marginBottom: 10,
+    width: "100%",
+    marginBottom: 15,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 25,
+    paddingHorizontal: 10,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  passwordInput: {
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 184, 0, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  input: {
     flex: 1,
-    fontSize: 16,padding:10
-  },
-  icon: {
-    marginLeft: 10,
+    height: 50,
+    fontSize: 16,
+    color: "#333",
   },
   button: {
     backgroundColor: "#FFB800",
-    padding: 15,
-    borderRadius: 10,
+    paddingVertical: 15,
+    width: "100%",
     alignItems: "center",
+    borderRadius: 25,
+    marginTop: 20,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   buttonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
+    color: "white",
     fontWeight: "bold",
-  },
-  error: {
-    color: "red",
-    fontSize: 14,
-    marginBottom: 5,
+    fontSize: 18,
   },
   link: {
     color: "#FFB800",
-    textAlign: "center",
-    marginTop: 20,
-    fontWeight: "600",
     fontSize: 16,
+    marginTop: 20,
+    fontWeight: "300",
+    zIndex: 1,
+  },
+  error: {
+    color: "#FF4444",
+    fontSize: 14,
+    alignSelf: "flex-start",
+    marginBottom: 5,
+    marginLeft: 50,
+    zIndex: 1,
+  },
+  loading: {
+    marginTop: 20,
   },
 });

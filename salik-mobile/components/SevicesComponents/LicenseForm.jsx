@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
   },
-  uploadButtonText: { color: "#000", fontSize: 16, fontWeight: "bold" },
+  uploadButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 
   backButton: { position: "absolute", top: 18, left: 15, zIndex: 10 },
 });

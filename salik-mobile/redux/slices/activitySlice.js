@@ -17,10 +17,13 @@ export const fetchProvidedRides = createAsyncThunk(
   async () => {
     try {
       const response = await apiService.getAll("rides/myrides");
+      console.log(response);
+
       return response;
     } catch (error) {
-      throw new Error(
-        error.message || "An error occurred while fetching rides."
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || "Failed to add ride service"
       );
     }
   }
@@ -50,6 +53,7 @@ export const deleteRideAction = createAsyncThunk(
       console.log(response);
       return response;
     } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data?.message || "Error deleting ride."
       );

@@ -17,8 +17,13 @@ const locationSlice = createSlice({
     setFocusedInput: (state, action) => {
       state.focusedInput = action.payload; // تحديث الإدخال النشط
     },
+    clearLocation:(state)=>{
+      state.fromLocation=""
+      state.toLocation=""
+      state.focusedInput="fromLocation"
+    }
   },
 });
 
-export const { setFromLocation, setToLocation, setFocusedInput } = locationSlice.actions;
+export const { setFromLocation, setToLocation, setFocusedInput,clearLocation } = locationSlice.actions;
 export const locationReducer = locationSlice.reducer;

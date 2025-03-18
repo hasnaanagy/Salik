@@ -7,7 +7,6 @@ const initialState = {
   isLoading: false,
 };
 
-
 export const sendRequestAction = createAsyncThunk(
   "requests/sendRequestAction",
   async ({ serviceType, location, problem }, { rejectWithValue }) => {

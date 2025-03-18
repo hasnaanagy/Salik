@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   ScrollView,
-  ActivityIndicator,
+  Text,
   Alert,
+  StyleSheet,
+  RefreshControl,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Checkbox } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
-import appColors from "../../constants/colors.js";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,13 +14,20 @@ import {
   resetSuccess,
 } from "../../redux/slices/addServiceSlice.js";
 import { SafeAreaView } from "react-native-safe-area-context";
+import BackButton from "./BackButton";
+import FormInput from "./FormInput";
+import ServiceTypePicker from "./ServiceTypePicker";
+import WorkingDaysSelector from "./WorkingDaysSelector";
+import TimePicker from "./TimePicker";
+import SubmitButton from "./SubmitButton";
 
 export default function AddServiceForm() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const [alertVisible, setAlertVisible] = useState(false); // تتبع حالة التنبيه
   const { loading, success, error } = useSelector((state) => state.addServices);
+  const [alertVisible, setAlertVisible] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [refreshing, setRefreshing] = useState(false); // State for RefreshControl
 
   const [form, setForm] = useState({
     location: "",
@@ -41,7 +40,6 @@ export default function AddServiceForm() {
   const [showStartTime, setShowStartTime] = useState(false);
   const [showEndTime, setShowEndTime] = useState(false);
   const [errors, setErrors] = useState({});
-  const [isValid, setIsValid] = useState(false);
 
   const validateForm = useCallback(() => {
     let newErrors = {};
@@ -50,11 +48,7 @@ export default function AddServiceForm() {
       newErrors.serviceType = "Service type is required";
     if (form.workingDays.length === 0)
       newErrors.workingDays = "Select at least one day";
-    // if (form.startTime >= form.endTime)
-    //   newErrors.time = "End time must be after start time";
-
     setErrors(newErrors);
-    setIsValid(Object.keys(newErrors).length === 0);
   }, [form]);
 
   const toggleWorkingDay = (day) => {
@@ -73,10 +67,9 @@ export default function AddServiceForm() {
     setShowStartTime(false);
     setShowEndTime(false);
   };
-  const handleSubmit = () => {
-    validateForm(); // التحقق من الأخطاء
 
-    // التحقق يدويًا من الأخطاء بعد التحديث
+  const handleSubmit = () => {
+    validateForm();
     const newErrors = {};
     if (!form.location.trim()) newErrors.location = "Location is required";
     if (!form.serviceType.trim())
@@ -86,15 +79,12 @@ export default function AddServiceForm() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // وقف التنفيذ في حالة وجود أخطاء
+      return;
     }
 
-    // تجهيز البيانات للإرسال
     const serviceData = {
       serviceType: form.serviceType.trim(),
-      location: {
-        description: form.location.trim(),
-      },
+      location: { description: form.location.trim() },
       workingDays: form.workingDays,
       workingHours: {
         from: form.startTime.toISOString(),
@@ -106,6 +96,30 @@ export default function AddServiceForm() {
     dispatch(postServiceData(serviceData));
   };
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Reset form to initial state
+    setForm({
+      location: "",
+      serviceType: "",
+      workingDays: [],
+      startTime: new Date(),
+      endTime: new Date(new Date().setHours(new Date().getHours() + 8)),
+    });
+    setErrors({});
+    setFocusedField(null);
+    setShowStartTime(false);
+    setShowEndTime(false);
+    // Optionally clear Redux state if needed
+    dispatch(clearError());
+    dispatch(resetSuccess());
+
+    // Simulate a delay for the refresh animation (optional)
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, [dispatch]);
+
   useEffect(() => {
     if (success && !alertVisible) {
       setAlertVisible(true);
@@ -113,7 +127,7 @@ export default function AddServiceForm() {
         {
           text: "OK",
           onPress: () => {
-            setAlertVisible(false); // ✅ مسح التنبيه عند الضغط على OK
+            setAlertVisible(false);
             dispatch(resetSuccess());
             router.push("/");
           },
@@ -128,225 +142,77 @@ export default function AddServiceForm() {
         (typeof error === "string"
           ? error
           : "❌ An unexpected error occurred. Please try again.");
-
       Alert.alert("Error", `❌ ${errorMessage}`, [
         {
           text: "OK",
           onPress: () => {
-            setAlertVisible(false); // ✅ مسح التنبيه عند الضغط على OK
+            setAlertVisible(false);
             dispatch(clearError());
           },
         },
       ]);
     }
-  }, [success, error, alertVisible]);
+  }, [success, error, alertVisible, dispatch, router]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <BackButton />
         <Text style={styles.title}>Add Service Details</Text>
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          style={[
-            styles.input,
-            errors.location && styles.errorInput,
-            focusedField === "location" && styles.focusedInput,
-          ]}
-          placeholder="Enter location"
+        <FormInput
+          label="Location"
           value={form.location}
-          onFocus={() => setFocusedField("location")}
-          onBlur={() => setFocusedField(null)}
           onChangeText={(text) => setForm({ ...form, location: text })}
+          placeholder="Enter location"
+          error={errors.location}
+          onFocus={setFocusedField}
+          onBlur={() => setFocusedField(null)}
+          focusedField={focusedField}
+          fieldName="location"
         />
-        {errors.location && (
-          <Text style={styles.errorText}>{errors.location}</Text>
-        )}
-        <Text style={styles.label}>Service Type</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={form.serviceType}
-            onValueChange={(itemValue) =>
-              setForm({ ...form, serviceType: itemValue })
-            }
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Service Type" value="" enabled={false} />
-            <Picker.Item label="Mechanic" value="mechanic" />
-            <Picker.Item label="Fuel" value="fuel" />
-          </Picker>
-        </View>
-        {errors.serviceType && (
-          <Text style={styles.errorText}>{errors.serviceType}</Text>
-        )}
-        <Text style={styles.label}>Working Days:</Text>
-        <View style={styles.daysContainer}>
-          {[
-            "Saturday",
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-          ].map((day) => (
-            <View key={day} style={styles.dayItem}>
-              <Checkbox
-                status={
-                  form.workingDays.includes(day) ? "checked" : "unchecked"
-                }
-                onPress={() => toggleWorkingDay(day)}
-              />
-              <Text>{day}</Text>
-            </View>
-          ))}
-        </View>
-        {errors.workingDays && (
-          <Text style={styles.errorText}>{errors.workingDays}</Text>
-        )}
-        <Text style={styles.label}>Working Hours:</Text>
-        <View style={styles.timeContainer}>
-          <TouchableOpacity
-            style={styles.timeButton}
-            onPress={() => setShowStartTime(true)}
-          >
-            <Ionicons name="time-outline" size={20} color="black" />
-            <Text>
-              {form.startTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.timeButton}
-            onPress={() => setShowEndTime(true)}
-          >
-            <Ionicons name="time-outline" size={20} color="black" />
-            <Text>
-              {form.endTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {errors.time && <Text style={styles.errorText}>{errors.time}</Text>}
-        {showStartTime && (
-          <DateTimePicker
-            value={form.startTime}
-            mode="time"
-            display="default"
-            onChange={(event, selectedTime) =>
-              handleTimeChange(event, selectedTime, "startTime")
-            }
-          />
-        )}
-        {showEndTime && (
-          <DateTimePicker
-            value={form.endTime}
-            mode="time"
-            display="default"
-            onChange={(event, selectedTime) =>
-              handleTimeChange(event, selectedTime, "endTime")
-            }
-          />
-        )}
-        <TouchableOpacity
-          style={[styles.submitButton, loading && styles.disabledButton]} // تغيير لون الزر عند التحميل
-          onPress={handleSubmit}
-          disabled={loading} // تعطيل الزر أثناء التحميل
-        >
-          {loading ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <ActivityIndicator size="small" color="#fff" />
-              <Text style={styles.submitButtonText}>Adding...</Text>
-            </View>
-          ) : (
-            <Text style={styles.submitButtonText}>Add Service</Text>
-          )}
-        </TouchableOpacity>
+        <ServiceTypePicker
+          value={form.serviceType}
+          onValueChange={(itemValue) =>
+            setForm({ ...form, serviceType: itemValue })
+          }
+          error={errors.serviceType}
+        />
+        <WorkingDaysSelector
+          workingDays={form.workingDays}
+          toggleWorkingDay={toggleWorkingDay}
+          error={errors.workingDays}
+        />
+        <TimePicker
+          startTime={form.startTime}
+          endTime={form.endTime}
+          showStartTime={showStartTime}
+          showEndTime={showEndTime}
+          setShowStartTime={setShowStartTime}
+          setShowEndTime={setShowEndTime}
+          handleTimeChange={handleTimeChange}
+          error={errors.time}
+        />
+        <SubmitButton onPress={handleSubmit} loading={loading} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 10,
     minHeight: 800,
   },
-  backButton: { position: "absolute", top: 15, left: 15, zIndex: 10 },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 20,
-  },
-  label: { fontSize: 16, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-    fontSize: 16,
-    backgroundColor: "#f9f9f9",
-  },
-  errorInput: { borderColor: "red" },
-  errorText: { color: "red", fontSize: 12, marginBottom: 10 },
-  daysContainer: { flexDirection: "row", flexWrap: "wrap", marginBottom: 15 },
-  dayItem: { flexDirection: "row", alignItems: "center", width: "33%" },
-  timeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  timeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    width: "45%",
-    justifyContent: "center",
-  },
-  submitButton: {
-    backgroundColor: appColors.primary,
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  disabledButton: { backgroundColor: "#ccc" },
-  submitButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-  pickerContainer: {
-    borderWidth: 1, // سمك الإطار
-    borderColor: "#ccc", // لون الإطار
-    borderRadius: 10, // تدوير الحواف
-    marginBottom: 20, // هامش سفلي
-    overflow: "hidden", // إخفاء الحواف الداخلية الزائدة
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-  },
-  focusedInput: {
-    borderColor: appColors.primary, // ✅ تغيير لون الحدود عند التركيز
-    borderWidth: 2, // ✅ جعل الحدود أكثر وضوحًا
-  },
-  disabledButton: {
-    backgroundColor: "#ccc", // لون رمادي للزر أثناء التحميل
   },
 });

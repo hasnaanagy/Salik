@@ -4,11 +4,19 @@ import appColors from "../../constants/colors";
 import CustomDatePicker from "./CustomDatePicker";
 import CustomTimePicker from "./CustomTimePicker";
 import LocationInputs from "./LocationInputs";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { searchRidesAction } from "../../redux/slices/addRideSlice";
+import SearchResultsComponent from "./SearchResultsComponent";
+import RideDetailesComponent from "./RideDetailesComponent";
 
 const SearchForm = () => {
+  const [displayResults, setDisplayResults] = useState(false);
+  const [selectedRide, setSelectedRide] = useState(null); // Track selected ride
+  const dispatch = useDispatch();
   const fromLoc = useSelector((state) => state.location.fromLocation);
   const toLoc = useSelector((state) => state.location.toLocation);
+  const { rides } = useSelector((state) => state.rideService);
+
   const [formData, setFormData] = useState({
     fromLocation: "",
     toLocation: "",
@@ -22,56 +30,70 @@ const SearchForm = () => {
       [name]: value,
     }));
   };
-  
-const isActive= formData.fromLocation && formData.toLocation && formData.date || fromLoc && toLoc && formData.date
+
+  const handleSearch = async () => {
+    const searchParams = {
+      fromLocation: formData.fromLocation || fromLoc,
+      toLocation: formData.toLocation || toLoc,
+      date: formData.date,
+      time: formData.time,
+    };
+    await dispatch(searchRidesAction(searchParams));
+    setDisplayResults(true);
+  };
+
+  const isActive =
+    (formData.fromLocation && formData.toLocation && formData.date) ||
+    (fromLoc && toLoc && formData.date);
 
   return (
-    <View>
-      {/* Location Inputs */}
-      <LocationInputs
-        fromLocation={formData.fromLocation}
-        toLocation={formData.toLocation}
-        onChange={handleFormData}
-      />
-
-      {/* DatePicker */}
-      <CustomDatePicker selectedDate={formData.date} onDateChange={(date) => handleFormData("date", date)} />
-
-      {/* Time */}
-      <CustomTimePicker selectedTime={formData.time} onTimeChange={(time) => handleFormData("time", time)} />
-
-      {/* Submit Button */}
-      <TouchableOpacity
-        disabled={!formData.fromLocation || !formData.toLocation || !formData.date}
-      >
-        <Text
-          style={[
-            {
-              backgroundColor:
-                isActive ? appColors.primary : "#eee",
-              color: isActive ? "black" : "#ccc",
-            },
-            styles.button,
-          ]}
-        >
-          Confirm PickUp
-        </Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      {!displayResults ? (
+        <View>
+          <LocationInputs
+            fromLocation={formData.fromLocation}
+            toLocation={formData.toLocation}
+            onLocationChange={handleFormData}
+          />
+          <CustomDatePicker
+            selectedDate={formData.date}
+            onDateChange={(date) => handleFormData("date", date)}
+          />
+          <CustomTimePicker
+            selectedTime={formData.time}
+            onTimeChange={(time) => handleFormData("time", time)}
+          />
+          <TouchableOpacity onPress={handleSearch} disabled={!isActive}>
+            <Text
+              style={[
+                {
+                  backgroundColor: isActive ? appColors.primary : "#eee",
+                  color: isActive ? "black" : "#ccc",
+                },
+                styles.button,
+              ]}
+            >
+              Confirm PickUp
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : selectedRide ? (
+        <RideDetailesComponent ride={selectedRide} setSelectedRide={setSelectedRide} />
+      ) : rides.length > 0 ? (
+        <SearchResultsComponent
+          setDisplayResults={setDisplayResults}
+          setSelectedRide={setSelectedRide} // Pass setter to select ride
+        />
+      ) : (
+        <Text style={styles.noResultsText}>🚗 No rides found</Text>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 15,
-    borderRadius: 14,
-    width: "90%",
-    alignSelf: "center",
-    marginTop: 20,
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  button: { padding: 15, borderRadius: 14, width: "90%", alignSelf: "center", marginTop: 20, textAlign: "center", fontWeight: "bold", fontSize: 16 },
+  noResultsText: { fontSize: 16, textAlign: "center", marginTop: 20, color: "#666" },
 });
 
 export default SearchForm;

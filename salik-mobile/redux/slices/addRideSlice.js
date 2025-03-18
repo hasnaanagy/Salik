@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/api_service";
+import apiService from "../../api/api_service";
 
 export const postRideData = createAsyncThunk(
   "rideService/postRideData",
@@ -10,7 +10,7 @@ export const postRideData = createAsyncThunk(
   ) => {
     console.log("API Call:", { carType, fromLocation, toLocation, totalSeats });
     try {
-      const response = await api.create("rides", {
+      const response = await apiService.create("rides", {
         carType,
         fromLocation,
         toLocation,
@@ -27,6 +27,56 @@ export const postRideData = createAsyncThunk(
       console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data || "Failed to add ride service"
+      );
+    }
+  }
+);
+export const searchRidesAction = createAsyncThunk(
+  "rideService/searchRidesAction",
+  async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
+    try {
+      console.log("🚀 Dispatching search with:", {
+        fromLocation,
+        toLocation,
+        date,
+        time,
+      });
+
+      const response = await apiService.getAll(
+        `rides/search?fromLocation=${fromLocation}&toLocation=${toLocation}&date=${date}&time=${time}`
+      );
+
+      console.log("✅ API Response:", response);
+      return response.rides;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to search rides");
+    }
+  }
+);
+
+export const getRideById = createAsyncThunk(
+  "rideService/getRideById",
+  async ({rideId}, { rejectWithValue }) => {
+    try {
+
+      const response = await apiService.getById("rides",rideId);
+      console.log("Ride", response);
+      return response.ride;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to get ride");
+    }
+  }
+);
+export const updateRideAction = createAsyncThunk(
+  "ride/updateRideAction",
+  async ({ id, form }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.update(`rides/${id}`, form);
+      return response;
+    } catch (error) {
+      // console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
       );
     }
   }
@@ -53,10 +103,12 @@ export const updateRideAction = createAsyncThunk(
 const addRideSlice = createSlice({
   name: "rideService",
   initialState: {
-    rideInfo: {},
     loading: false,
     error: null,
     success: false,
+    rides: [],
+    isEditMode: false, 
+    ride:null
   },
   reducers: {
     clearError: (state) => {
@@ -76,7 +128,7 @@ const addRideSlice = createSlice({
       .addCase(postRideData.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        state.rideInfo = action.payload;
+        state.isEditMode = false; // ✅ تأكيد أنها عملية إضافة
       })
       .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
@@ -94,6 +146,45 @@ const addRideSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+    builder
+      .addCase(searchRidesAction.pending, (state) => {
+        state.error = null;
+        state.loading = true;
+      })
+      .addCase(searchRidesAction.fulfilled, (state, action) => {
+        state.error = null;
+        state.loading = false;
+        state.rides = action.payload;
+      })
+      .addCase(searchRidesAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateRideAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true; // ✅ ضبط success ليظهر الـ Alert
+        state.isEditMode = true; // ✅ تأكيد أنها عملية تحديث
+      })
+      .addCase(updateRideAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(getRideById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRideById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.ride = action.payload.ride;        
+      })
+      .addCase(getRideById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 

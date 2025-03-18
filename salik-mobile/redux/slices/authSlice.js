@@ -146,9 +146,9 @@ const authSlice = createSlice({
       })
       .addCase(switchRole.fulfilled, (state, action) => {
         console.log("🟢 Role switched successfully:", action.payload);
-        if (action.payload?.newType) {
-          console.log("🔄 Updating Type in Redux:", action.payload.newType);
-          state.user = { ...state.user, type: action.payload.newType };
+        if (action.payload?.newRole) {
+          console.log("🔄 Updating Type in Redux:", action.payload.newRole);
+          state.user = { ...state.user, type: action.payload.newRole };
         }
       });
   },

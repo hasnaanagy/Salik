@@ -6,7 +6,8 @@ import { getUser } from "../../redux/slices/authSlice";
 import { useRouter } from "expo-router";
 import car from "../../assets/car.png";
 import appColors from "../../constants/colors";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { Feather } from "@expo/vector-icons";
+
 
 const baseColor = appColors.primary;
 
@@ -40,19 +41,24 @@ const Cards = ({ ride }) => {
     dispatch(fetchProvidedRides());
   };
   const handleEdit = () => {
-    router.push(
-      {
-        pathname: "addTrip", params: {
-          ride: JSON.stringify(ride),
-        }
-      });
-  }
+
+    router.push({
+      pathname: "addTrip",
+      params: {
+        ride: JSON.stringify(ride),
+      },
+    });
+  };
   const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
-  const handleLocationField = (data) => (data?.length > 10 ? `${data?.slice(0, 10)}...` : data);
+  const handleLocationField = (data) =>
+    data?.length > 10 ? ` ${data?.slice(0, 10)}... ` : data;
 
-  const rideColor = ride.status === "upcoming" ? baseColor : ride.status === "completed" ? "#4C585B" : "#F44336";
-
-
+  const rideColor =
+    ride.status === "upcoming"
+      ? baseColor
+      : ride.status === "completed"
+        ? "#4C585B"
+        : "#F44336";
 
   return (
     <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
@@ -63,7 +69,8 @@ const Cards = ({ ride }) => {
 
           <View style={styles.rideDetails}>
             <Text style={styles.title}>
-              {handleLocationField(ride.fromLocation)} to {handleLocationField(ride.toLocation)}
+              {handleLocationField(ride.fromLocation)} to{" "}
+              {handleLocationField(ride.toLocation)}
             </Text>
 
 
@@ -71,10 +78,8 @@ const Cards = ({ ride }) => {
             <Text style={styles.rideDate}>
               {ride?.rideDateTime?.split("T")[0]}  |  {rideTime}
             </Text>
-
             <Text style={styles.details}>
               Price: ${ride.price} | {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"} {user?.type === "customer" ? ride.bookedSeats : ride.totalSeats}
-
             </Text>
             {user?.type === "provider" && (
               <Text style={styles.details}>
@@ -98,12 +103,14 @@ const Cards = ({ ride }) => {
                 onPress={() => handleEdit()}
                 style={styles.iconButton}
               >
-                <FontAwesome name="pencil-square" size={30} color="#4C585B" />
+                <Feather name="edit" size={18} color="black" />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
-                <FontAwesome name="trash" size={30} color="#F44336" />
-
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={styles.iconButton}
+              >
+                <Feather name="trash" size={18} color="#F44336" />
               </TouchableOpacity>
             </View>
           )}
@@ -189,7 +196,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-  }
+  },
 });
 
 export default Cards;
