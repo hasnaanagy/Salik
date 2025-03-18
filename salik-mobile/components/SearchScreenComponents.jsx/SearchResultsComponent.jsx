@@ -11,7 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import { Ionicons } from '@expo/vector-icons';
 
-const SearchResultsComponent = ({ setDisplayResults }) => {
+const SearchResultsComponent = ({ setDisplayResults, setSelectedRide }) => {
   const { rides, error, loading } = useSelector((state) => state.rideService);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const SearchResultsComponent = ({ setDisplayResults }) => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}> Error loading rides</Text>
+        <Text style={styles.errorText}>Error loading rides</Text>
       </View>
     );
   }
@@ -45,8 +45,8 @@ const SearchResultsComponent = ({ setDisplayResults }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() =>setDisplayResults(false)}>
-           <Ionicons name="arrow-back" size={24} color="black" />
+      <TouchableOpacity onPress={() => setDisplayResults(false)}>
+        <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
       <FlatList
         data={rides}
@@ -54,7 +54,7 @@ const SearchResultsComponent = ({ setDisplayResults }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.rideContainer}
-            onPress={() => console.log(" Ride selected:", item)}
+            onPress={() => setSelectedRide(item)} // Set the selected ride
           >
             <View style={styles.timeContainer}>
               <View style={styles.yellowCircle} />
@@ -65,12 +65,9 @@ const SearchResultsComponent = ({ setDisplayResults }) => {
                 })}
               </Text>
             </View>
-
             <Image source={require("../../assets/car.png")} style={styles.carImage} />
-
             <View style={styles.detailsContainer}>
               <Text style={styles.rideText}>{item.providerId?.fullName}</Text>
-
               <Text style={styles.rideDetails}>
                 {item.price} EGP | {item.totalSeats} Seats
               </Text>
@@ -82,6 +79,7 @@ const SearchResultsComponent = ({ setDisplayResults }) => {
   );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
