@@ -49,7 +49,7 @@ const Services = () => {
       id: "2",
       title: "Fuel",
       image: require("../../assets/gas-pump.png"),
-      onPress: () => router.push("reviews"),
+      onPress: () => router.push("addService"),
     },
     {
       id: "3",

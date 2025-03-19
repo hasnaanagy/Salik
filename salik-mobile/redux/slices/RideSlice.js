@@ -70,6 +70,38 @@ export const updateRideAction = createAsyncThunk(
   }
 );
 
+export const bookRideAction = createAsyncThunk(
+  "ride/bookRideAction",
+  async ({ rideId, bookedSeats }, { rejectWithValue }) => {
+    try {
+      console.log(rideId, bookedSeats)
+      const response = await apiService.create(`rideBooking`, {rideId, bookedSeats});
+      console.log(response)
+      return response;
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating ride."
+      );
+    }
+  }
+);
+
+
+export const getRideById = createAsyncThunk(
+  "rideService/getRideById",
+  async ({rideId}, { rejectWithValue }) => {
+    try {
+
+      const response = await apiService.getById("rides",rideId);
+      console.log("Ride", response);
+      return response.ride;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to get ride");
+    }
+  }
+);
+
 const RideSlice = createSlice({
   name: "rideService",
   initialState: {
@@ -129,7 +161,30 @@ const RideSlice = createSlice({
       .addCase(updateRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(getRideById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRideById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.ride = action.payload.ride;        
+      })
+      .addCase(getRideById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(bookRideAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bookRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(bookRideAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 

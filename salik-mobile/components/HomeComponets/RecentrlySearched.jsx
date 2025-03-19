@@ -7,7 +7,7 @@ const RecentlySearched = () => {
     const [searchHistory, setSearchHistory] = useState(["Alexandria", "Cairo"]);
 
     return (
-        <View >
+        <View style={{marginTop:20}} >
             <CustomText >Recently Searched</CustomText>
 
             <FlatList
