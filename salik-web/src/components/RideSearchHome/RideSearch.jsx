@@ -97,14 +97,7 @@ export function RideSearch() {
   };
 
   return (
-    <Stack
-      spacing={4}
-      sx={{
-        px: { xs: 2, md: 4 },
-        py: { xs: 2, md: 4 },
-        backgroundColor: "#f9f9f9",
-      }}
-    >
+    <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
       <Grid container spacing={4} justifyContent="center">
         {/* Left Section (Ride Form & Navigation) */}
         <Grid
@@ -169,12 +162,7 @@ export function RideSearch() {
               <>
                 <Button
                   onClick={handleBackToSearch}
-                  sx={{
-                    mb: 2,
-                    float: "left",
-                    marginRight: "10px",
-                    marginTop: "10px",
-                  }}
+                  sx={{ mb: 2, float: "left", marginRight: "10px" }}
                 >
                   <KeyboardBackspaceIcon
                     fontSize="large"

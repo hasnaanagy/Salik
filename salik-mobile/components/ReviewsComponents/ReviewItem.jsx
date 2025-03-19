@@ -14,7 +14,7 @@ const ReviewItem = ({ review, onEdit, onDelete }) => {
     <View style={styles.reviewCard}>
       <Image source={image} style={styles.avatar} />
       <View style={styles.reviewContent}>
-        <Text style={styles.name}>{review.comment}</Text>
+        <Text style={styles.name}>{review.customerId?.fullName}</Text>
 
         <Stars rating={review.rating} />
         <Text style={styles.comment}>{review.comment}</Text>

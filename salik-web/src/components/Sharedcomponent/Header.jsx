@@ -105,7 +105,10 @@ export function Header() {
         >
           {/* Logo and Navigation Links */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <NavLink to="/" style={{ display: "flex", alignItems: "center" }}>
+            <NavLink
+              to="/home2"
+              style={{ display: "flex", alignItems: "center" }}
+            >
               <img
                 src={logo}
                 alt="Logo"
