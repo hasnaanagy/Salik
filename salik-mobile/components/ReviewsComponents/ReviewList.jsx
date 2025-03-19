@@ -6,36 +6,46 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllReviewsAction } from "../../redux/slices/reviewsSlice.js";
+import {
+  deleteReviewAction,
+  getAllReviewsAction,
+} from "../../redux/slices/reviewsSlice.js";
 import appColors from "../../constants/colors.js";
 import ReviewItem from "./ReviewItem";
 import Stars from "./Stars";
 import AddRate from "./addRate.jsx";
+
 const ReviewList = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { reviews, isLoading, error } = useSelector((state) => state.reviews);
-  const [isAddRateVisible, setIsAddRateVisible] = useState(false); // تحكم في عرض AddRate
+  const [isAddRateVisible, setIsAddRateVisible] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-  const [editMode, setEditMode] = useState("add"); // 🆕 افتراضيًا الوضع هو "add"
+  const [editMode, setEditMode] = useState("add");
   const [averageRating, setAverageRating] = useState(0);
+  const [refreshing, setRefreshing] = useState(false); // State for RefreshControl
+
   const handleEditReview = (review) => {
     setSelectedReview(review);
-    setEditMode("edit"); // تغيير الوضع إلى تعديل
+    setEditMode("edit");
     setIsAddRateVisible(true);
   };
 
-  // عند الضغط على Plus (إضافة مراجعة جديدة)
   const handleAddReview = () => {
     setSelectedReview(null);
-    setEditMode("add"); // تغيير الوضع إلى إضافة
+    setEditMode("add");
     setIsAddRateVisible(true);
   };
 
+  const handleDeleteReview = async (reviewId) => {
+    await dispatch(deleteReviewAction(reviewId));
+    dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615"));
+  };
   useEffect(() => {
     dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615"));
   }, [dispatch]);
@@ -50,6 +60,13 @@ const ReviewList = () => {
       setAverageRating(0);
     }
   }, [reviews]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615")).then(() => {
+      setRefreshing(false);
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -66,7 +83,7 @@ const ReviewList = () => {
         <Stars rating={averageRating} />
       </View>
 
-      {isLoading ? (
+      {isLoading && !refreshing ? ( // Show loader only for initial load, not refresh
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={appColors.primary} />
         </View>
@@ -80,9 +97,12 @@ const ReviewList = () => {
             <ReviewItem
               review={item}
               onEdit={() => handleEditReview(item)}
-              onDelete={() => console.log("Delete Review", item.id)}
+              onDelete={() => handleDeleteReview(item._id)}
             />
           )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       )}
 
@@ -93,11 +113,11 @@ const ReviewList = () => {
       {isAddRateVisible && (
         <AddRate
           onClose={() => setIsAddRateVisible(false)}
-          initialRating={selectedReview ? selectedReview.rating : 0} // تمرير التقييم الصحيح
-          initialReviewText={selectedReview ? selectedReview.comment : ""} // تمرير التعليق الصحيح
-          mode={editMode} // تمرير الوضع (إضافة/تعديل)
-          providerId={"67b9d63113d8dc503bfa9615"} // ⬅️ تمرير الـ Provider ID
-          reviewId={selectedReview?._id} // ⬅️ تمرير الـ Review ID عند التعديل فقط
+          initialRating={selectedReview ? selectedReview.rating : 0}
+          initialReviewText={selectedReview ? selectedReview.comment : ""}
+          mode={editMode}
+          providerId={"67b9d63113d8dc503bfa9615"}
+          reviewId={selectedReview?._id}
         />
       )}
     </View>

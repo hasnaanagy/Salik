@@ -5,7 +5,7 @@ import CustomDatePicker from "./CustomDatePicker";
 import CustomTimePicker from "./CustomTimePicker";
 import LocationInputs from "./LocationInputs";
 import { useDispatch, useSelector } from "react-redux";
-import { searchRidesAction } from "../../redux/slices/addRideSlice";
+import { searchRidesAction } from "../../redux/slices/RideSlice";
 import SearchResultsComponent from "./SearchResultsComponent";
 import RideDetailesComponent from "./RideDetailesComponent";
 
@@ -84,6 +84,7 @@ const SearchForm = () => {
       ) : selectedRide ? (
         <RideDetailesComponent ride={selectedRide} setSelectedRide={setSelectedRide} />
       ) : (
+
         <SearchResultsComponent
           setDisplayResults={setDisplayResults}
           setSelectedRide={setSelectedRide}

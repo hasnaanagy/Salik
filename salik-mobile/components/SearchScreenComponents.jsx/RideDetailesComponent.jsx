@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import appColors from "../../constants/colors";
 import { useDispatch } from "react-redux";
-import { bookRideAction, getRideById } from "../../redux/slices/addRideSlice";
+import { bookRideAction, getRideById } from "../../redux/slices/RideSlice";
 import { useNavigation } from "@react-navigation/native";
 
 const RideDetailesComponent = ({ ride, setSelectedRide }) => {

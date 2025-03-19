@@ -49,24 +49,12 @@ export const searchRidesAction = createAsyncThunk(
       console.log("✅ API Response:", response);
       return response.rides;
     } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data || "Failed to search rides");
     }
   }
 );
 
-export const getRideById = createAsyncThunk(
-  "rideService/getRideById",
-  async ({rideId}, { rejectWithValue }) => {
-    try {
-
-      const response = await apiService.getById("rides",rideId);
-      console.log("Ride", response);
-      return response.ride;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to get ride");
-    }
-  }
-);
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
   async ({ id, form }, { rejectWithValue }) => {
@@ -100,15 +88,28 @@ export const bookRideAction = createAsyncThunk(
 );
 
 
-const addRideSlice = createSlice({
+export const getRideById = createAsyncThunk(
+  "rideService/getRideById",
+  async ({rideId}, { rejectWithValue }) => {
+    try {
+
+      const response = await apiService.getById("rides",rideId);
+      console.log("Ride", response);
+      return response.ride;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to get ride");
+    }
+  }
+);
+
+const RideSlice = createSlice({
   name: "rideService",
   initialState: {
     loading: false,
     error: null,
     success: false,
     rides: [],
-    isEditMode: false, 
-    ride:null
+    isEditMode: false, // ✅ متغير جديد يحدد إذا كنا في وضع التعديل
   },
   reducers: {
     clearError: (state) => {
@@ -187,5 +188,5 @@ const addRideSlice = createSlice({
   },
 });
 
-export const { clearError, resetSuccess } = addRideSlice.actions;
-export const addRideReducer = addRideSlice.reducer;
+export const { clearError, resetSuccess } = RideSlice.actions;
+export const RideReducer = RideSlice.reducer;
