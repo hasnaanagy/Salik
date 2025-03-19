@@ -11,7 +11,7 @@ const Map = () => {
   const [region, setRegion] = useState(null);
   const [address, setAddress] = useState(""); // تخزين العنوان
   const dispatch = useDispatch(); // لاستخدام Redux
-const {focusedInput}=useSelector((state) => state.location);
+  const { focusedInput } = useSelector((state) => state.location);
   const mapRef = useRef(null);
 
   useEffect(() => {
@@ -50,28 +50,32 @@ const {focusedInput}=useSelector((state) => state.location);
             latitude: newCoords.latitude,
             longitude: newCoords.longitude,
           },
-          altitude: 500, 
+          altitude: 500,
         },
         { duration: 1000 }
       );
     }
-  }; 
+  };
+
   // دالة لتحويل الإحداثيات إلى عنوان
   const fetchAddress = async (latitude, longitude) => {
     try {
       let addressArray = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (addressArray.length > 0) {
         const formattedAddress = `${addressArray[0].name}, ${addressArray[0].city}`;
-        if(focusedInput=="fromLocation"){
-        dispatch(setFromLocation(formattedAddress)); 
-        }else{
-          dispatch(setToLocation(formattedAddress)); 
+        console.log(formattedAddress)
+        if (focusedInput == "fromLocation") {
+          dispatch(setFromLocation(formattedAddress));
+        } else {
+          dispatch(setToLocation(formattedAddress));
         }
+        setAddress(formattedAddress); // Update the address state
       }
     } catch (error) {
       console.log("Error fetching address:", error);
     }
   };
+
   // استدعاء `fetchAddress` عند تغيير `region`
   useEffect(() => {
     if (region) {
@@ -89,6 +93,16 @@ const {focusedInput}=useSelector((state) => state.location);
     }));
   };
 
+  // تحديث الموقع عند الضغط على الخريطة
+  const handleMapPress = (e) => {
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+    setRegion((prevRegion) => ({
+      ...prevRegion,
+      latitude,
+      longitude,
+    }));
+  };
+
   return (
     <View style={styles.container}>
       {region && (
@@ -98,6 +112,7 @@ const {focusedInput}=useSelector((state) => state.location);
           initialRegion={region}
           onRegionChangeComplete={setRegion} // استدعاء عند انتهاء التحريك فقط
           showsUserLocation={Platform.OS === "ios" ? false : true}
+          onPress={handleMapPress} // استدعاء عند الضغط على الخريطة
         >
           <Marker
             coordinate={{

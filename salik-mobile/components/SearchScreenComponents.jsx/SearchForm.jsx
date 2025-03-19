@@ -46,54 +46,70 @@ const SearchForm = () => {
     (formData.fromLocation && formData.toLocation && formData.date) ||
     (fromLoc && toLoc && formData.date);
 
+  const renderForm = () => (
+    <View>
+      <LocationInputs
+        fromLocation={formData.fromLocation}
+        toLocation={formData.toLocation}
+        onLocationChange={handleFormData}
+      />
+      <CustomDatePicker
+        selectedDate={formData.date}
+        onDateChange={(date) => handleFormData("date", date)}
+      />
+      <CustomTimePicker
+        selectedTime={formData.time}
+        onTimeChange={(time) => handleFormData("time", time)}
+      />
+      <TouchableOpacity onPress={handleSearch} disabled={!isActive}>
+        <Text
+          style={[
+            {
+              backgroundColor: isActive ? appColors.primary : "#eee",
+              color: isActive ? "black" : "#ccc",
+            },
+            styles.button,
+          ]}
+        >
+          Confirm PickUp
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={{ flex: 1 }}>
       {!displayResults ? (
-        <View>
-          <LocationInputs
-            fromLocation={formData.fromLocation}
-            toLocation={formData.toLocation}
-            onLocationChange={handleFormData}
-          />
-          <CustomDatePicker
-            selectedDate={formData.date}
-            onDateChange={(date) => handleFormData("date", date)}
-          />
-          <CustomTimePicker
-            selectedTime={formData.time}
-            onTimeChange={(time) => handleFormData("time", time)}
-          />
-          <TouchableOpacity onPress={handleSearch} disabled={!isActive}>
-            <Text
-              style={[
-                {
-                  backgroundColor: isActive ? appColors.primary : "#eee",
-                  color: isActive ? "black" : "#ccc",
-                },
-                styles.button,
-              ]}
-            >
-              Confirm PickUp
-            </Text>
-          </TouchableOpacity>
-        </View>
+        renderForm() // Direct rendering without FlatList
       ) : selectedRide ? (
         <RideDetailesComponent ride={selectedRide} setSelectedRide={setSelectedRide} />
-      ) : rides.length > 0 ? (
+      ) : (
         <SearchResultsComponent
           setDisplayResults={setDisplayResults}
-          setSelectedRide={setSelectedRide} // Pass setter to select ride
+          setSelectedRide={setSelectedRide}
         />
-      ) : (
-        <Text style={styles.noResultsText}>🚗 No rides found</Text>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  button: { padding: 15, borderRadius: 14, width: "90%", alignSelf: "center", marginTop: 20, textAlign: "center", fontWeight: "bold", fontSize: 16 },
-  noResultsText: { fontSize: 16, textAlign: "center", marginTop: 20, color: "#666" },
+  button: {
+    padding: 15,
+    borderRadius: 14,
+    width: "90%",
+    alignSelf: "center",
+    marginTop: 20,
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  noResultsText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+    color: "#666",
+  },
 });
 
 export default SearchForm;
