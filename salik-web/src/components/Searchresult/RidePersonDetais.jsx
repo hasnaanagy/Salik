@@ -338,7 +338,7 @@ export default function RidePersonDetails({ ride }) {
               color: "#333",
             }}
           >
-            EGP {ride?.price?.toFixed(2) || "N/A"}
+            EGP {ride?.price?.toFixed(2) || "N/A"} $
           </Typography>
         </Stack>
 

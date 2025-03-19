@@ -1,13 +1,12 @@
 import React from "react";
-import Link from "@mui/joy/Link";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import { Avatar, Box, Stack, keyframes } from "@mui/material";
 import Divider from "@mui/joy/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
 import { Alert } from "@mui/joy";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import CircularProgress from "@mui/material/CircularProgress";
 
 // Animation keyframes
 const fadeInUp = keyframes`
@@ -19,11 +18,6 @@ const pulse = keyframes`
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
-`;
-
-const hoverScale = keyframes`
-  0% { transform: scale(1); }
-  100% { transform: scale(1.02); }
 `;
 
 // Function to format the date
@@ -86,7 +80,7 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
     : {};
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 1, md: 2 } }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 1, md: 0 } }}>
       <Typography
         level="h2"
         sx={{
@@ -164,32 +158,30 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                 </Box>
 
                 {/* Ride Card */}
-                <Link
-                  sx={{ textDecoration: "none", flexGrow: 1 }}
+                <Card
+                  variant="outlined"
+                  sx={{
+                    width: { xs: 280, sm: 320, md: 360 },
+                    borderRadius: "16px",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+                    border: "1px solid #e0e0e0",
+                    bgcolor: "#fff",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                      borderColor: "#FFB800",
+                      transform: "scale(1.03)",
+                      cursor: "pointer",
+                    },
+                  }}
                   onClick={() => selectedRide && selectedRide(ride)}
                 >
-                  <Card
-                    variant="outlined"
-                    orientation="horizontal"
-                    sx={{
-                      width: { xs: 280, sm: 320, md: 360 },
-                      borderRadius: "12px",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
-                      border: "1px solid #e0e0e0",
-                      bgcolor: "#fff",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-                        borderColor: "#FFB800",
-                        transform: "scale(1.02)",
-                      },
-                    }}
-                  >
+                  <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar
                       src={getVehicleIcon(ride.vehicleType)}
                       sx={{
-                        width: { xs: 40, md: 50 },
-                        height: { xs: 40, md: 50 },
+                        width: { xs: 50, md: 60 },
+                        height: { xs: 50, md: 60 },
                         mt: 1.5,
                         ml: 1.5,
                         border: "2px solid #fff",
@@ -231,8 +223,8 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                         </Typography>
                       </Stack>
                     </CardContent>
-                  </Card>
-                </Link>
+                  </Stack>
+                </Card>
               </Stack>
             ))}
           <Divider sx={{ my: 3, borderColor: "#ddd" }} />
