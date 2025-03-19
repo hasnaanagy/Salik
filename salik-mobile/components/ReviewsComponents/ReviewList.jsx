@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteReviewAction,
@@ -22,6 +22,7 @@ import AddRate from "./addRate.jsx";
 
 const ReviewList = () => {
   const router = useRouter();
+  const { providerId } = useLocalSearchParams(); // Retrieve providerId from navigation params
   const dispatch = useDispatch();
   const { reviews, isLoading, error } = useSelector((state) => state.reviews);
   const [isAddRateVisible, setIsAddRateVisible] = useState(false);
@@ -29,7 +30,7 @@ const ReviewList = () => {
   const [editMode, setEditMode] = useState("add");
   const [averageRating, setAverageRating] = useState(0);
   const [refreshing, setRefreshing] = useState(false); // State for RefreshControl
-
+  const {user}=useSelector((state) => state.auth);
   const handleEditReview = (review) => {
     setSelectedReview(review);
     setEditMode("edit");
@@ -44,10 +45,10 @@ const ReviewList = () => {
 
   const handleDeleteReview = async (reviewId) => {
     await dispatch(deleteReviewAction(reviewId));
-    dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615"));
+    dispatch(getAllReviewsAction(providerId));
   };
   useEffect(() => {
-    dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615"));
+    dispatch(getAllReviewsAction(providerId));
   }, [dispatch]);
 
   useEffect(() => {
@@ -63,12 +64,13 @@ const ReviewList = () => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    dispatch(getAllReviewsAction("67b9d63113d8dc503bfa9615")).then(() => {
+    dispatch(getAllReviewsAction(providerId)).then(() => {
       setRefreshing(false);
     });
   };
 
   return (
+    console.log(providerId),
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => router.push("/")}
@@ -106,9 +108,9 @@ const ReviewList = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
+    { providerId!==user._id && <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
         <Feather name="plus" size={24} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity>}
 
       {isAddRateVisible && (
         <AddRate
@@ -116,7 +118,7 @@ const ReviewList = () => {
           initialRating={selectedReview ? selectedReview.rating : 0}
           initialReviewText={selectedReview ? selectedReview.comment : ""}
           mode={editMode}
-          providerId={"67b9d63113d8dc503bfa9615"}
+          providerId={providerId}
           reviewId={selectedReview?._id}
         />
       )}
