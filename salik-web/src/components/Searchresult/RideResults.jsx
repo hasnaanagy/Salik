@@ -3,13 +3,28 @@ import Link from "@mui/joy/Link";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
-import { Avatar } from "@mui/material";
-import Stack from "@mui/joy/Stack";
+import { Avatar, Box, Stack, keyframes } from "@mui/material";
 import Divider from "@mui/joy/Divider";
-import Box from "@mui/joy/Box";
 import { Alert } from "@mui/joy";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CircularProgress from "@mui/material/CircularProgress";
+
+// Animation keyframes
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+`;
+
+const hoverScale = keyframes`
+  0% { transform: scale(1); }
+  100% { transform: scale(1.02); }
+`;
 
 // Function to format the date
 const formatDate = (dateString) => {
@@ -27,30 +42,39 @@ const getVehicleIcon = (vehicleType) => {
 };
 
 export function RideResults({ loading, error, rideData, selectedRide }) {
-  if (loading)
+  if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
-        <CircularProgress />
+      <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+        <CircularProgress size={40} sx={{ color: "#FFB800" }} />
       </Box>
     );
+  }
+
   if (error) {
     const errorMessage = error.includes("Network Error")
       ? "Connection failed! Please check your internet."
       : error.includes("400")
       ? "Server error! Please try again later."
-      : "Please Set your From and To Location! and select date.";
+      : "Please set your From and To Location and select a date.";
 
     return (
       <Alert
         variant="soft"
         color="danger"
-        sx={{ mb: 2, fontWeight: "bold", padding: "30px" }}
-        startDecorator={<ErrorOutlineIcon />}
+        sx={{
+          mb: 2,
+          fontWeight: "600",
+          padding: "20px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        }}
+        startDecorator={<ErrorOutlineIcon sx={{ color: "#d32f2f" }} />}
       >
         {errorMessage}
       </Alert>
     );
   }
+
   // Group rides by date
   const groupedRides = rideData
     ? rideData.rides.reduce((acc, ride) => {
@@ -62,107 +86,158 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
     : {};
 
   return (
-    <>
+    <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 1, md: 2 } }}>
       <Typography
         level="h2"
         sx={{
-          mb: 2,
-          fontWeight: "bold",
+          mb: 3,
+          fontWeight: "700",
           textAlign: { xs: "center", md: "left" },
+          fontSize: { xs: "24px", sm: "28px", md: "32px" },
+          color: "#333",
         }}
       >
         Available Rides
       </Typography>
-      <Box sx={{ p: 2 }}>
-        {Object.entries(groupedRides).map(([date, rides]) => (
-          <div key={date}>
-            <Typography level="title-lg" sx={{ mb: 1, fontWeight: "bold" }}>
-              {date}
-            </Typography>
 
-            {rides
-              .filter((ride) => ride.totalSeats - ride.bookedSeats > 0)
-              .map((ride) => (
-                <Stack
-                  key={ride._id}
-                  direction="row"
-                  alignItems="center"
-                  spacing={2}
-                  sx={{ mb: 2 }}
+      {Object.entries(groupedRides).map(([date, rides]) => (
+        <Box key={date} sx={{ mb: 4 }}>
+          <Typography
+            level="title-lg"
+            sx={{
+              mb: 2,
+              fontWeight: "600",
+              fontSize: { xs: "18px", md: "20px" },
+              color: "#444",
+            }}
+          >
+            {date}
+          </Typography>
+
+          {rides
+            .filter((ride) => ride.totalSeats - ride.bookedSeats > 0)
+            .map((ride, index) => (
+              <Stack
+                key={ride._id}
+                direction="row"
+                alignItems="center"
+                spacing={2}
+                sx={{
+                  mb: 2,
+                  animation: `${fadeInUp} 0.5s ease-out forwards`,
+                  animationDelay: `${index * 0.1}s`,
+                }}
+              >
+                {/* Time Indicator */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    minWidth: { xs: 70, md: 90 },
+                  }}
                 >
-                  {/* Circular Time Indicator */}
-
-                  {console.log(rides)}
+                  <Box
+                    sx={{
+                      width: 14,
+                      height: 14,
+                      backgroundColor: "#FFB800",
+                      borderRadius: "50%",
+                      boxShadow: "0 2px 6px rgba(15, 15, 15, 0.5)",
+                      mr: 1,
+                      animation: `${pulse} 2s infinite`,
+                    }}
+                  />
                   <Typography
                     level="body-sm"
                     sx={{
-                      minWidth: 80,
-                      textShadow: "0px 5px 10px rgba(0, 0, 0, 0.4)",
+                      fontSize: { xs: "14px", md: "16px" },
+                      fontWeight: "500",
+                      color: "#555",
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "gold",
-                        borderRadius: "50%",
-                        display: "inline-block",
-                        boxShadow: "0px 4px 7px rgba(0, 0, 0, 0.4)",
-                        mr: 1,
-                        mt: 0.5,
-                      }}
-                    />
-                    {/* {ride.rideDateTime.split("T")[1].slice(0, 5)} */}
                     {new Date(ride.rideDateTime).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
-                      hour12: false, // أو true إذا كنت تريد تنسيق AM/PM
+                      hour12: false,
                     })}
                   </Typography>
+                </Box>
 
-                  <Link
-                    sx={{ textDecoration: "none" }}
-                    onClick={() => selectedRide && selectedRide(ride)}
+                {/* Ride Card */}
+                <Link
+                  sx={{ textDecoration: "none", flexGrow: 1 }}
+                  onClick={() => selectedRide && selectedRide(ride)}
+                >
+                  <Card
+                    variant="outlined"
+                    orientation="horizontal"
+                    sx={{
+                      width: { xs: 280, sm: 320, md: 360 },
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+                      border: "1px solid #e0e0e0",
+                      bgcolor: "#fff",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
+                        borderColor: "#FFB800",
+                        transform: "scale(1.02)",
+                      },
+                    }}
                   >
-                    <Card
-                      variant="outlined"
-                      orientation="horizontal"
+                    <Avatar
+                      src={getVehicleIcon(ride.vehicleType)}
                       sx={{
-                        width: 320,
-                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.4)",
-                        borderColor: "white",
-                        "&:hover": {
-                          boxShadow: "md",
-                          borderColor: "#FFB800",
-                        },
+                        width: { xs: 40, md: 50 },
+                        height: { xs: 40, md: 50 },
+                        mt: 1.5,
+                        ml: 1.5,
+                        border: "2px solid #fff",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                       }}
-                    >
-                      <Avatar
-                        src={getVehicleIcon(ride.vehicleType)}
-                        sx={{ width: 50, height: 50, mt: 1, ml: 1 }}
-                      />
-
-                      <CardContent>
-                        <Typography level="title-lg">
-                          {ride.providerId.fullName.replace(
-                            /\b\w/g,
-                            (char) => ` ${char.toUpperCase()}`
-                          )}
+                    />
+                    <CardContent sx={{ p: 1.5 }}>
+                      <Typography
+                        level="title-md"
+                        sx={{
+                          fontSize: { xs: "16px", md: "18px" },
+                          fontWeight: "600",
+                          color: "#333",
+                        }}
+                      >
+                        {ride.providerId.fullName
+                          .toLowerCase()
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                      </Typography>
+                      <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                        <Typography
+                          level="body-sm"
+                          sx={{
+                            fontSize: { xs: "14px", md: "15px" },
+                            color: "#666",
+                          }}
+                        >
+                          Price: <strong>${ride.price}</strong>
                         </Typography>
-
-                        <Typography level="body-sm" sx={{ mt: 1 }}>
-                          Price: {ride.price}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          Seats: {ride.totalSeats - ride.bookedSeats}
+                        <Typography
+                          level="body-sm"
+                          sx={{
+                            fontSize: { xs: "14px", md: "15px" },
+                            color: "#666",
+                          }}
+                        >
+                          Seats:{" "}
+                          <strong>{ride.totalSeats - ride.bookedSeats}</strong>
                         </Typography>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </Stack>
-              ))}
-            <Divider sx={{ my: 4 }} />
-          </div>
-        ))}
-      </Box>
-    </>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </Stack>
+            ))}
+          <Divider sx={{ my: 3, borderColor: "#ddd" }} />
+        </Box>
+      ))}
+    </Box>
   );
 }

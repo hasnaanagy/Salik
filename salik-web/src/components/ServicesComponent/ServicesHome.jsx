@@ -22,7 +22,7 @@ export default function ServicesHome() {
   };
 
   return (
-    <Box sx={{ marginTop: "70px", px: 2, mb: 5 }}>
+    <Box sx={{ marginTop: "70px", px: 2, mb: 5, backgroundColor: "#f9f9f9" }}>
       <Typography
         variant="h4"
         fontWeight="bold"
