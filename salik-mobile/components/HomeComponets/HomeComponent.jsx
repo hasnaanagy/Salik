@@ -36,14 +36,30 @@ const HomeComponent = () => {
         />
       }
     >
-      {user?.type === "customer" && (
+      {user?.type === "customer" ? (
         <View>
         <SearchBar />
         <RecentrlySearched /> 
-        </View>)}
-      <Services />
-      <Slider />
-    </ScrollView>
+        <Services />
+        <Slider />
+        </View>):
+        user?.type === "provider" ? 
+        (
+          <View>
+          <Services />
+          <Slider />
+          </View>
+        ):
+        (
+          <View>
+          <SearchBar />
+          <RecentrlySearched /> 
+          <Services />
+          <Slider />
+          </View>)
+        }
+        </ScrollView>
+
   );
 };
 

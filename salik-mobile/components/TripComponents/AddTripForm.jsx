@@ -16,7 +16,7 @@ import {
   clearError,
   resetSuccess,
   updateRideAction,
-} from "../../redux/slices/addRideSlice";
+} from "../../redux/slices/RideSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "./Header";
 import FormInput from "./FormInput";

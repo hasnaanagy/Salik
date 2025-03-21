@@ -7,7 +7,7 @@ import ConfirmPickUpComponent from "./ConfirmPickUpComponent";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const INITIAL_HEIGHT =Platform.OS === 'ios' ?SCREEN_HEIGHT / 3.5  : SCREEN_HEIGHT / 2.7;
-const EXPANDED_HEIGHT = SCREEN_HEIGHT - 100;
+const EXPANDED_HEIGHT = Platform.OS === 'ios' ? SCREEN_HEIGHT / 1.6 : SCREEN_HEIGHT / 1.3;
 
 const CustomBottomSheet = () => {
   const [isExpanded, setIsExpanded] = useState(false);

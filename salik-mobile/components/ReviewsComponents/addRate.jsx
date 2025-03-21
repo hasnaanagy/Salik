@@ -11,6 +11,7 @@ import { Feather } from "react-native-vector-icons";
 import { useDispatch } from "react-redux";
 import {
   addReviewsAction,
+  getAllReviewsAction,
   updateReviewAction,
 } from "../../redux/slices/reviewsSlice.js";
 import appColors from "../../constants/colors.js";
@@ -31,12 +32,18 @@ const AddRate = ({
     setRating(index + 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (mode === "edit") {
-      dispatch(updateReviewAction({ reviewId, rating, comment: reviewText }));
+      await dispatch(
+        updateReviewAction({ reviewId, rating, comment: reviewText })
+      );
     } else {
-      dispatch(addReviewsAction({ providerId, rating, comment: reviewText }));
+      await dispatch(
+        addReviewsAction({ providerId, rating, comment: reviewText })
+      );
     }
+    dispatch(getAllReviewsAction(providerId));
+
     onClose(); // ⬅️ إغلاق المودال بعد الإرسال
   };
 

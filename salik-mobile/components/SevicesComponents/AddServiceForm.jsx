@@ -12,7 +12,7 @@ import {
   clearError,
   postServiceData,
   resetSuccess,
-} from "../../redux/slices/addServiceSlice.js";
+} from "../../redux/slices/ServiceSlice.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "./BackButton";
 import FormInput from "./FormInput";

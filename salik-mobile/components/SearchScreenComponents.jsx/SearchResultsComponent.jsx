@@ -18,68 +18,66 @@ const SearchResultsComponent = ({ setDisplayResults, setSelectedRide }) => {
     console.log("Rerendering with new rides:", rides);
   }, [rides]);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFB800" />
-        <Text>Loading rides...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error loading rides</Text>
-      </View>
-    );
-  }
-
-  if (rides.length === 0) {
-    return (
-      <View style={styles.noResultsContainer}>
-        <Text style={styles.noResultsText}>No rides found</Text>
-      </View>
-    );
-  }
+  // Filter rides to include only those with available seats
+  const availableRides = rides.filter(ride => ride.totalSeats - ride.bookedSeats > 0);
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setDisplayResults(false)}>
+      <TouchableOpacity onPress={() => setDisplayResults(false)} >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
-      <FlatList
-        data={rides}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.rideContainer}
-            onPress={() => setSelectedRide(item)} // Set the selected ride
-          >
-            <View style={styles.timeContainer}>
-              <View style={styles.yellowCircle} />
-              <Text style={styles.rideTime}>
-                {new Date(item.rideDateTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-            </View>
-            <Image source={require("../../assets/car.png")} style={styles.carImage} />
-            <View style={styles.detailsContainer}>
-              <Text style={styles.rideText}>{item.providerId?.fullName}</Text>
-              <Text style={styles.rideDetails}>
-                {item.price} EGP | {item.totalSeats} Seats
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FFB800" />
+          <Text>Loading rides...</Text>
+        </View>
+      )}
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error.message}</Text>
+        </View>
+      )}
+
+      {!loading && !error && availableRides.length > 0 && (
+        <FlatList
+          data={availableRides}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.rideContainer}
+              onPress={() => setSelectedRide(item)} // Set the selected ride
+            >
+              <View style={styles.timeContainer}>
+                <View style={styles.yellowCircle} />
+                <Text style={styles.rideTime}>
+                  {new Date(item.rideDateTime).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </View>
+              <Image source={require("../../assets/car.png")} style={styles.carImage} />
+              <View style={styles.detailsContainer}>
+                <Text style={styles.rideText}>{item.providerId?.fullName}</Text>
+                <Text style={styles.rideDetails}>
+                  {item.price} EGP | {item.totalSeats - item.bookedSeats} Seats
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+
+      {!loading && !error && availableRides.length === 0 && (
+        <View style={styles.noRidesContainer}>
+          <Text style={styles.noRidesText}>No rides available</Text>
+        </View>
+      )}
     </View>
   );
 };
 
-// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -92,21 +90,13 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
   },
   errorText: {
-    color: "red",
-    fontSize: 16,
-  },
-  noResultsContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noResultsText: {
-    fontSize: 16,
+    position: "absolute",
+    top: "30%",
     color: "#666",
+    fontSize: 16,
   },
   rideContainer: {
     flexDirection: "row",
@@ -149,6 +139,15 @@ const styles = StyleSheet.create({
   },
   rideDetails: {
     fontSize: 14,
+    color: "#666",
+  },
+  noRidesContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noRidesText: {
+    fontSize: 16,
     color: "#666",
   },
 });
