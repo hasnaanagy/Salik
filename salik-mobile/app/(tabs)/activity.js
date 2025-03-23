@@ -3,11 +3,7 @@ import { StyleSheet, View } from "react-native";
 import ActivityComponent from "../../components/ActivityComponent/ActivityPage";
 const Activity = () => {
 
-  return (
-    <View style={styles.container}>
-      <ActivityComponent />
-    </View>
-  );
+  return <ActivityComponent />
 };
 
 const styles = StyleSheet.create({
