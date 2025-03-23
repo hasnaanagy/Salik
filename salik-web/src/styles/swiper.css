@@ -18,9 +18,10 @@ body {
 }
 
 .swiper {
-  margin-top: -90px;
+  margin-top: -10px;
   width: 90%; /* Full width */
-  height: 800px; /* Increased height to 700px */
+  height: 1000px; /* Increased height to 700px */
+  border-radius: 20px;
 }
 
 .swiper-slide {

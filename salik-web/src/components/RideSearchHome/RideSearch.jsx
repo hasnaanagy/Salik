@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Grid, Stack, Typography } from "@mui/material";
 import { RideIcons } from "./RideIcons";
@@ -25,28 +25,20 @@ export function RideSearch() {
     date: "",
     time: "",
   });
+  const [focusedInput, setFocusedInput] = useState("fromLocation"); // Track focused input
+
+  const fromRef = useRef(null); // Ref for "fromLocation"
+  const toRef = useRef(null); // Ref for "toLocation"
 
   const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  `;
 
   const zoomIn = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  `;
 
   const [pickupCoords, setPickupCoords] = useState(null);
 
@@ -57,26 +49,16 @@ export function RideSearch() {
     }));
   };
 
-  const handleLocationSelect = (lat, lng, address) => {
-    setPickupCoords({ lat, lng });
-    setFormData((prev) => ({ ...prev, fromLocation: address }));
+  const handleFocus = (inputName) => {
+    setFocusedInput(inputName); // Update focused input
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   setView("results");
-  //   dispatch(fetchRideData(formData));
-  // };
+  const handleLocationSelect = (lat, lng, address) => {
+    setPickupCoords({ lat, lng });
+    setFormData((prev) => ({ ...prev, [focusedInput]: address })); // Set location in focused input
+  };
 
-  const handleSubmit = (e) => {
-    // e.preventDefault();
-    // const token = localStorage.getItem("token");
-
-    // // if (!token) {
-    // //   navigate("/login"); // تحويل المستخدم إلى صفحة تسجيل الدخول
-    // //   return;
-    // // }
-
+  const handleSubmit = () => {
     setView("results");
     dispatch(fetchRideData(formData));
   };
@@ -97,22 +79,26 @@ export function RideSearch() {
   };
 
   return (
-    <Stack spacing={4} sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 4 } }}>
+    <Stack
+      spacing={4}
+      sx={{
+        px: { xs: 2, md: 4 },
+        py: { xs: 2, md: 4 },
+        backgroundColor: "#fff",
+        borderRadius: "20px",
+      }}
+    >
       <Grid container spacing={4} justifyContent="center">
-        {/* Left Section (Ride Form & Navigation) */}
         <Grid
           item
           xs={12}
           sm={10}
           md={view === "search" ? 6 : 3}
           sx={{
-            textAlign: {
-              xs: "center",
-              md: "left",
-              border: "2px solid #d2d2d2",
-              padding: "10px",
-              borderRadius: "20px",
-            },
+            textAlign: { xs: "center", md: "left" },
+            border: "2px solid #d2d2d2",
+            padding: "10px",
+            borderRadius: "20px",
           }}
         >
           {view === "search" && (
@@ -150,12 +136,14 @@ export function RideSearch() {
               formData={formData}
               handleChange={handleChange}
               handleSubmit={handleSubmit}
+              handleFocus={handleFocus} // Pass focus handler
+              fromRef={fromRef} // Pass ref
+              toRef={toRef} // Pass ref
             />
           )}
           {viewRequestForm && <RequestService serviceType={serviceType} />}
         </Grid>
 
-        {/* Middle Section (Ride Results / Ride Details) - Hidden in "search" mode */}
         {view !== "search" && (
           <Grid item xs={12} sm={10} md={4}>
             {view === "results" && (
@@ -195,24 +183,24 @@ export function RideSearch() {
           </Grid>
         )}
 
-        {/* Right Section (Map) - Expands in "search" mode */}
         <Grid
           item
           xs={12}
           sm={10}
-          md={view === "search" ? 5 : 4} // Expands when in "search" mode
+          md={view === "search" ? 5 : 4}
           sx={{
             height: "450px",
-            maxWidth: "800px", // Increases max width when search mode
+            maxWidth: "800px",
             mx: "auto",
             animation: `${
               view === "search" ? fadeIn : zoomIn
-            } 0.8s ease-in-out`, // تفعيل الأنيميشن حسب الوضع الحالي
+            } 0.8s ease-in-out`,
           }}
         >
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
+            focusedInput={focusedInput} // Pass focused input
           />
         </Grid>
       </Grid>

@@ -78,6 +78,13 @@ const RootLayout = () => {
               headerTransparent: true,
             }}
           />
+          <Stack.Screen
+            name="request"
+            options={{
+              headerShown: false,
+              headerTransparent: true,
+            }}
+          />
         </Stack>
       </Provider>
     </GestureHandlerRootView>
