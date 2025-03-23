@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Image
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/slices/authSlice";
@@ -14,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/Feather";
 import CustomAlert from "../../components/CustomeComponents/CustomAlert";
+import Logo from "../../assets/logo.svg"; 
 
 export default function LoginForm() {
   const dispatch = useDispatch();
@@ -55,8 +55,9 @@ export default function LoginForm() {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/logo.jpg")} style={styles.logo} />
-      
+      {/* Use the imported SVG component */}
+      <Logo width={120} height={120} style={styles.logo} />
+
       <View style={styles.inputContainer}>
         <View style={styles.iconCircle}>
           <Icon name="phone" size={20} color="#FFB800" />
@@ -122,15 +123,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    resizeMode: "contain",
     marginBottom: 20,
-    zIndex: 1,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 40,
     zIndex: 1,
   },
   inputContainer: {

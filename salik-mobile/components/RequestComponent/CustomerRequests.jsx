@@ -9,6 +9,7 @@ import {
   Dimensions,
   Image,
   Alert,
+  Platform,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { sendRequestAction } from "../../redux/slices/requestServiceSlice";
@@ -16,7 +17,7 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import CustomText from "../CustomeComponents/CustomText"; // Assuming this is now correct
 const { width, height } = Dimensions.get("window");
-
+import BackButton from "../SharedComponents/BackButton";
 const CustomerRequests = () => {
   const [activeTab, setActiveTab] = useState("fuel");
   const [description, setDescription] = useState("");
@@ -89,6 +90,11 @@ const CustomerRequests = () => {
   };
 
   return (
+    <>
+    <View style={{marginBottom:Platform.OS === "ios" ? 0 : height * 0.02}}>
+            <BackButton />
+            </View>
+
     <View style={styles.container}>
       <View style={styles.tabContainer}>
         <Animated.View
@@ -146,6 +152,8 @@ const CustomerRequests = () => {
         </TouchableOpacity>
       </View>
     </View>
+    </>
+
   );
 };
 
@@ -155,33 +163,37 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     paddingHorizontal: width * 0.05,
     paddingVertical: height * 0.03,
+    marginTop: height * 0.07,
   },
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#e0e0e0",
-    borderRadius: 25,
+    borderRadius: Platform.OS === "ios" ? 36 : 26,
     width: width * 0.8,
-    height: height * 0.07,
+    height: Platform.OS === "ios" ? height * 0.06 : height * 0.07,
     position: "relative",
     overflow: "hidden",
     marginBottom: height * 0.03,
     alignSelf: "center",
+    
   },
   tabBackground: {
     position: "absolute",
     backgroundColor: "#f5c518",
     width: width * 0.4,
     height: "100%",
-    borderRadius: 25,
+    borderRadius: Platform.OS === "ios" ? 36 : 26,
   },
   tab: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    
   },
   tabText: {
-    fontSize: width * 0.04,
+    fontSize: Platform.OS === "ios" ? width * 0.03 : width * 0.04,
     fontWeight: "600",
+    marginRight: Platform.OS === "ios" ? width * 0.02 : width * 0.01,
   },
   activeTabText: {
     color: "#000",
