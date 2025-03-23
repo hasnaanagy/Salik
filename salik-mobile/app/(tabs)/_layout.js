@@ -11,6 +11,7 @@ const TabsLayout = () => {
         headerTitleStyle:{
                   fontFamily: 'Poppins_400Regular',
                     fontSize: 34,
+                    
     }}
     return (
        <Tabs tabBar={(props)=><TabBar {...props} />}>

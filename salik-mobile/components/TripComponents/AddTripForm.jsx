@@ -1,13 +1,17 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Alert,
   KeyboardAvoidingView,
-  ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
   RefreshControl,
+  Modal,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,16 +22,230 @@ import {
   updateRideAction,
 } from "../../redux/slices/RideSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { Ionicons } from "@expo/vector-icons";
+import Map from "../MapComponent/Map.jsx";
 import Header from "./Header";
 import FormInput from "./FormInput";
 import DateTimePickerButton from "./DateTimePickerButton";
 import SubmitButton from "./SubmitButton";
+import appColors from "../../constants/colors.js";
+import { GOOGLE_API_KEY } from "@env";
+
+// Memoized component for Departure Location field
+const DepartureLocationField = React.memo(
+  ({ form, updateForm, error, editable, openMapModal }) => {
+    const [inputValue, setInputValue] = useState(form.fromLocation);
+
+    useEffect(() => {
+      setInputValue(form.fromLocation);
+    }, [form.fromLocation]);
+
+    const handlePlaceSelect = (data) => {
+      const address = data.description;
+      setInputValue(address);
+      updateForm("fromLocation", address);
+    };
+
+    const handleTextChange = (text) => {
+      setInputValue(text);
+    };
+
+    return (
+      <>
+        <Text style={styles.label}>Departure Location</Text>
+        <View style={styles.inputWithIconContainer}>
+          <GooglePlacesAutocomplete
+            placeholder="Enter departure location"
+            onPress={handlePlaceSelect}
+            query={{
+              key: GOOGLE_API_KEY,
+              language: "en",
+            }}
+            styles={{
+              container: styles.autocompleteContainer,
+              textInput: [
+                styles.autocompleteInput,
+                error && styles.errorInput,
+              ],
+              listView: styles.autocompleteList,
+            }}
+            fetchDetails={true}
+            enablePoweredByContainer={false}
+            textInputProps={{
+              value: inputValue,
+              onChangeText: handleTextChange,
+              onBlur: () => updateForm("fromLocation", inputValue),
+              editable,
+            }}
+            listViewDisplayed={true}
+            keyboardShouldPersistTaps="handled"
+          />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => openMapModal("fromLocation")}
+            disabled={!editable}
+          >
+            <Ionicons name="location-outline" size={20} color={appColors.primary} />
+          </TouchableOpacity>
+        </View>
+        {error && <Text style={styles.errorText}>{error}</Text>}
+      </>
+    );
+  }
+);
+
+// Memoized component for Destination field
+const DestinationField = React.memo(
+  ({ form, updateForm, error, editable, openMapModal }) => {
+    const [inputValue, setInputValue] = useState(form.toLocation);
+
+    useEffect(() => {
+      setInputValue(form.toLocation);
+    }, [form.toLocation]);
+
+    const handlePlaceSelect = (data) => {
+      const address = data.description;
+      setInputValue(address);
+      updateForm("toLocation", address);
+    };
+
+    const handleTextChange = (text) => {
+      setInputValue(text);
+    };
+
+    return (
+      <>
+        <Text style={styles.label}>Destination</Text>
+        <View style={styles.inputWithIconContainer}>
+          <GooglePlacesAutocomplete
+            placeholder="Enter destination"
+            onPress={handlePlaceSelect}
+            query={{
+              key: GOOGLE_API_KEY,
+              language: "en",
+            }}
+            styles={{
+              container: styles.autocompleteContainer,
+              textInput: [
+                styles.autocompleteInput,
+                error && styles.errorInput,
+              ],
+              listView: styles.autocompleteList,
+            }}
+            fetchDetails={true}
+            enablePoweredByContainer={false}
+            textInputProps={{
+              value: inputValue,
+              onChangeText: handleTextChange,
+              onBlur: () => updateForm("toLocation", inputValue),
+              editable,
+            }}
+            listViewDisplayed={true}
+            keyboardShouldPersistTaps="handled"
+          />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => openMapModal("toLocation")}
+            disabled={!editable}
+          >
+            <Ionicons name="location-outline" size={20} color={appColors.primary} />
+          </TouchableOpacity>
+        </View>
+        {error && <Text style={styles.errorText}>{error}</Text>}
+      </>
+    );
+  }
+);
+
+// Memoized component for other form fields
+const OtherFields = React.memo(
+  ({ form, errors, focusedField, setFocusedField, updateForm, editable }) => (
+    <>
+      <Text style={styles.label}>Available Seats</Text>
+      <FormInput
+        placeholder="Enter available seats"
+        value={form.totalSeats}
+        onChangeText={(text) => updateForm("totalSeats", text)}
+        error={errors.totalSeats}
+        keyboardType="numeric"
+        onFocus={() => setFocusedField("totalSeats")}
+        onBlur={() => setFocusedField(null)}
+        focused={focusedField === "totalSeats"}
+        icon="people-outline"
+        autoFocus={false}
+        blurOnSubmit={false}
+      />
+
+      <Text style={styles.label}>Price</Text>
+      <FormInput
+        placeholder="Enter price"
+        value={form.price}
+        onChangeText={(text) => updateForm("price", text)}
+        error={errors.price}
+        keyboardType="numeric"
+        onFocus={() => setFocusedField("price")}
+        onBlur={() => setFocusedField(null)}
+        focused={focusedField === "price"}
+        icon="cash-outline"
+        autoFocus={false}
+        blurOnSubmit={false}
+      />
+
+      <Text style={styles.label}>Car Type</Text>
+      <FormInput
+        placeholder="Enter car type"
+        value={form.carType}
+        onChangeText={(text) => updateForm("carType", text)}
+        error={errors.carType}
+        editable={editable}
+        onFocus={() => setFocusedField("carType")}
+        onBlur={() => setFocusedField(null)}
+        focused={focusedField === "carType"}
+        icon="car-outline"
+        autoFocus={false}
+        blurOnSubmit={false}
+      />
+    </>
+  )
+);
+
+// Memoized component for Date and Time fields
+const DateTimeFields = React.memo(
+  ({ form, updateForm, disabled }) => (
+    <>
+      <Text style={styles.label}>Time</Text>
+      <DateTimePickerButton
+        value={form.time}
+        mode="time"
+        onChange={(time) => updateForm("time", time)}
+        displayFormat={(time) =>
+          time.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        }
+        disabled={disabled}
+      />
+
+      <Text style={styles.label}>Date</Text>
+      <DateTimePickerButton
+        value={form.date}
+        mode="date"
+        onChange={(date) => updateForm("date", date)}
+        displayFormat={(date) => date.toLocaleDateString()}
+        disabled={disabled}
+      />
+    </>
+  )
+);
 
 export default function AddTripForm() {
   const dispatch = useDispatch();
   const router = useRouter();
   const [alertVisible, setAlertVisible] = useState(false);
-  const [refreshing, setRefreshing] = useState(false); // State for RefreshControl
+  const [refreshing, setRefreshing] = useState(false);
   const { loading, success, error, isEditMode } = useSelector(
     (state) => state.rideService
   );
@@ -45,10 +263,12 @@ export default function AddTripForm() {
   });
   const [errors, setErrors] = useState({});
   const [focusedField, setFocusedField] = useState(null);
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [selectedLocationField, setSelectedLocationField] = useState(null);
 
   useEffect(() => {
     if (editRide) {
-      setForm({
+      const newForm = {
         fromLocation: editRide.fromLocation || "",
         toLocation: editRide.toLocation || "",
         totalSeats: editRide.totalSeats ? editRide.totalSeats.toString() : "",
@@ -58,7 +278,8 @@ export default function AddTripForm() {
         time: editRide.time
           ? new Date(`1970-01-01T${editRide.time.padStart(5, "0")}:00`)
           : new Date(),
-      });
+      };
+      setForm(newForm);
     }
   }, [editRide]);
 
@@ -96,7 +317,7 @@ export default function AddTripForm() {
     }
   }, [success, error, isEditMode, dispatch, router, alertVisible]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     let newErrors = {};
     if (!form.fromLocation) newErrors.fromLocation = "Required";
     if (!form.toLocation) newErrors.toLocation = "Required";
@@ -107,9 +328,9 @@ export default function AddTripForm() {
     if (!form.carType) newErrors.carType = "Required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [form]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!validateForm()) return;
     const rideData = {
       carType: form.carType,
@@ -129,18 +350,17 @@ export default function AddTripForm() {
     } else {
       dispatch(postRideData(rideData));
     }
-  };
+  }, [form, editRide, dispatch, validateForm]);
 
-  const updateForm = (key, value) => {
-    setForm({ ...form, [key]: value });
-    if (errors[key]) setErrors({ ...errors, [key]: undefined });
-  };
+  const updateForm = useCallback((key, value) => {
+    setForm((prevForm) => ({ ...prevForm, [key]: value }));
+    if (errors[key]) setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));
+  }, [errors]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Reset form to initial state (only if not in edit mode)
     if (!editRide) {
-      setForm({
+      const newForm = {
         fromLocation: "",
         toLocation: "",
         totalSeats: "",
@@ -148,112 +368,193 @@ export default function AddTripForm() {
         carType: "",
         date: new Date(),
         time: new Date(),
-      });
+      };
+      setForm(newForm);
       setErrors({});
       setFocusedField(null);
       dispatch(clearError());
       dispatch(resetSuccess());
     }
-    // Simulate a delay for the refresh animation
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
-  };
+  }, [editRide, dispatch]);
+
+  const openMapModal = useCallback((field) => {
+    setSelectedLocationField(field);
+    setMapModalVisible(true);
+  }, []);
+
+  const handleMapLocationSelect = useCallback((address) => {
+    updateForm(selectedLocationField, address);
+    setMapModalVisible(false);
+  }, [selectedLocationField, updateForm]);
+
+  const renderFormContent = useCallback(() => (
+    <View style={styles.formContainer}>
+      <Header title={editRide ? "Edit Trip Details" : "Add Trip Details"} />
+
+      <DepartureLocationField
+        form={form}
+        updateForm={updateForm}
+        error={errors.fromLocation}
+        editable={!editRide}
+        openMapModal={openMapModal}
+      />
+
+      <DestinationField
+        form={form}
+        updateForm={updateForm}
+        error={errors.toLocation}
+        editable={!editRide}
+        openMapModal={openMapModal}
+      />
+
+      <OtherFields
+        form={form}
+        errors={errors}
+        focusedField={focusedField}
+        setFocusedField={setFocusedField}
+        updateForm={updateForm}
+        editable={!editRide}
+      />
+
+      <DateTimeFields
+        form={form}
+        updateForm={updateForm}
+        disabled={!!editRide}
+      />
+
+      <SubmitButton
+        loading={loading}
+        onPress={handleSubmit}
+        isEditMode={!!editRide}
+      />
+    </View>
+  ), [
+    editRide,
+    errors,
+    focusedField,
+    form,
+    loading,
+    updateForm,
+    openMapModal,
+    handleSubmit,
+  ]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <FlatList
+          data={[{}]} // Dummy data to render the form content once
+          renderItem={() => null} // We don't need to render items, just the header
+          ListHeaderComponent={renderFormContent}
+          keyExtractor={(item, index) => index.toString()}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          contentContainerStyle={styles.flatListContent}
+        />
+
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={mapModalVisible}
+          onRequestClose={() => setMapModalVisible(false)}
         >
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, minHeight: 900 }}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          >
-            <View style={{ flex: 1, padding: 20 }}>
-              <Header title="Add Trip Details" />
-              <FormInput
-                placeholder="Enter departure location"
-                value={form.fromLocation}
-                onChangeText={(text) => updateForm("fromLocation", text)}
-                error={errors.fromLocation}
-                editable={!editRide}
-                onFocus={() => setFocusedField("fromLocation")}
-                onBlur={() => setFocusedField(null)}
-                focused={focusedField === "fromLocation"}
-              />
-              <FormInput
-                placeholder="Enter destination"
-                value={form.toLocation}
-                onChangeText={(text) => updateForm("toLocation", text)}
-                error={errors.toLocation}
-                editable={!editRide}
-                onFocus={() => setFocusedField("toLocation")}
-                onBlur={() => setFocusedField(null)}
-                focused={focusedField === "toLocation"}
-              />
-              <FormInput
-                placeholder="Enter available totalSeats"
-                value={form.totalSeats}
-                onChangeText={(text) => updateForm("totalSeats", text)}
-                error={errors.totalSeats}
-                keyboardType="numeric"
-                onFocus={() => setFocusedField("totalSeats")}
-                onBlur={() => setFocusedField(null)}
-                focused={focusedField === "totalSeats"}
-              />
-              <FormInput
-                placeholder="Enter price"
-                value={form.price}
-                onChangeText={(text) => updateForm("price", text)}
-                error={errors.price}
-                keyboardType="numeric"
-                onFocus={() => setFocusedField("price")}
-                onBlur={() => setFocusedField(null)}
-                focused={focusedField === "price"}
-              />
-              <FormInput
-                placeholder="Enter car type"
-                value={form.carType}
-                onChangeText={(text) => updateForm("carType", text)}
-                error={errors.carType}
-                editable={!editRide}
-                onFocus={() => setFocusedField("carType")}
-                onBlur={() => setFocusedField(null)}
-                focused={focusedField === "carType"}
-              />
-              <DateTimePickerButton
-                value={form.time}
-                mode="time"
-                onChange={(time) => updateForm("time", time)}
-                displayFormat={(time) =>
-                  time.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                }
-                disabled={!!editRide}
-              />
-              <DateTimePickerButton
-                value={form.date}
-                mode="date"
-                onChange={(date) => updateForm("date", date)}
-                displayFormat={(date) => date.toLocaleDateString()}
-                disabled={!!editRide}
-              />
-              <SubmitButton
-                loading={loading}
-                onPress={handleSubmit}
-                isEditMode={!!editRide}
-              />
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setMapModalVisible(false)}>
+                <Ionicons name="close" size={30} color="#333" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>
+                Select {selectedLocationField === "fromLocation" ? "Departure" : "Destination"} Location
+              </Text>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+            <Map onLocationSelect={handleMapLocationSelect} />
+          </View>
+        </Modal>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  container: {
+    flex: 1,
+  },
+  flatListContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+  formContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  inputWithIconContainer: {
+    position: "relative",
+    marginBottom: 20,
+  },
+  autocompleteContainer: {
+    flex: 1,
+  },
+  autocompleteInput: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingRight: 45, // Space for the icon
+    backgroundColor: "#fff",
+  },
+  autocompleteList: {
+    borderWidth: 0,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  iconButton: {
+    position: "absolute",
+    right: 15,
+    top: "50%",
+    transform: [{ translateY: -10 }],
+  },
+  errorInput: {
+    borderColor: "red",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  modalTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+});
+
