@@ -7,8 +7,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -64,11 +63,36 @@ const AddTripForm = () => {
   });
 
   const [pickupCoords, setPickupCoords] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(false); // <-- حالة ظهور الرسالة
+  const [successMessage, setSuccessMessage] = useState(false);
+  const [focusedInput, setFocusedInput] = useState("fromLocation"); // Track focused input
+
+  const fromRef = useRef(null); // Ref for "fromLocation"
+  const toRef = useRef(null); // Ref for "toLocation"
+
+  useEffect(() => {
+    if (fromRef.current && !rideId) {
+      fromRef.current.focus(); // Focus "fromLocation" on mount if not editing
+    }
+  }, [fromRef, rideId]);
 
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setValue("fromLocation", address);
+    setValue(focusedInput, address); // Set location in the focused input
+  };
+
+  const handleFocus = (inputName) => {
+    if (!rideId) {
+      // Only allow focus change if not editing
+      setFocusedInput(inputName);
+    }
+  };
+
+  const convertTo12HourFormat = (time) => {
+    const [hours, minutes] = time.split(":");
+    const hoursInt = parseInt(hours, 10);
+    const period = hoursInt >= 12 ? "PM" : "AM";
+    const hours12 = hoursInt % 12 || 12;
+    return `${hours12}:${minutes} ${period}`;
   };
 
   const onSubmit = async (data) => {
@@ -79,19 +103,17 @@ const AddTripForm = () => {
       totalSeats: parseInt(data.totalSeats, 10),
       price: parseInt(data.price, 10),
       date: data.date,
-      time: data.time,
+      time: convertTo12HourFormat(data.time),
     };
 
     if (rideId) {
-      // Editing existing ride
       dispatch(updateRideAction({ rideId, formattedData }));
     } else {
-      // Creating new ride
       dispatch(postRideData(formattedData));
     }
     setSuccessMessage(true);
     setTimeout(() => {
-      navigate("/activities");
+      // navigate("/activities");
     }, 2000);
   };
 
@@ -102,7 +124,7 @@ const AddTripForm = () => {
   }, [rideId, dispatch]);
 
   useEffect(() => {
-    if (rideId) {
+    if (rideId && ride) {
       setValue("fromLocation", ride?.fromLocation || "");
       setValue("toLocation", ride?.toLocation || "");
       setValue("carType", ride?.carType || "");
@@ -134,12 +156,33 @@ const AddTripForm = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
+                  inputRef={fromRef} // Add ref
                   label="Pickup Location"
                   fullWidth
                   margin="normal"
                   error={!!errors.fromLocation}
                   helperText={errors.fromLocation?.message}
                   disabled={!!rideId}
+                  onFocus={() => handleFocus("fromLocation")} // Track focus
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -149,12 +192,33 @@ const AddTripForm = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
+                  inputRef={toRef} // Add ref
                   label="Dropoff Location"
                   fullWidth
                   margin="normal"
                   error={!!errors.toLocation}
                   helperText={errors.toLocation?.message}
                   disabled={!!rideId}
+                  onFocus={() => handleFocus("toLocation")} // Track focus
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -170,6 +234,25 @@ const AddTripForm = () => {
                   error={!!errors.carType}
                   helperText={errors.carType?.message}
                   disabled={!!rideId}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -185,6 +268,25 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.totalSeats}
                   helperText={errors.totalSeats?.message}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -200,6 +302,25 @@ const AddTripForm = () => {
                   margin="normal"
                   error={!!errors.price}
                   helperText={errors.price?.message}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -217,6 +338,25 @@ const AddTripForm = () => {
                   error={!!errors.date}
                   helperText={errors.date?.message}
                   disabled={!!rideId}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -234,6 +374,25 @@ const AddTripForm = () => {
                   error={!!errors.time}
                   helperText={errors.time?.message}
                   disabled={!!rideId}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -261,6 +420,8 @@ const AddTripForm = () => {
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
+            focusedInput={focusedInput} // Pass focused input
+            disabled={!!rideId} // Disable map interaction if editing
           />
         </Grid>
       </Grid>

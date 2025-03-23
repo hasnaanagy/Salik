@@ -94,6 +94,7 @@ export const switchRole = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   await AsyncStorage.removeItem("token");
+  await AsyncStorage.removeItem("userType");
   return null;
 });
 
