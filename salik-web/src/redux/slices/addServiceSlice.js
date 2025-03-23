@@ -7,6 +7,15 @@ export const postRideData = createAsyncThunk(
     { carType, fromLocation, toLocation, totalSeats, price, date, time },
     { rejectWithValue }
   ) => {
+    console.log("API Call:", {
+      carType,
+      fromLocation,
+      toLocation,
+      totalSeats,
+      price,
+      date,
+      time,
+    }); // Debugging
     try {
       const response = await api.post(
         "/rides",
@@ -26,6 +35,7 @@ export const postRideData = createAsyncThunk(
           },
         }
       );
+      console.log("Response:", response.data); // Debugging
       return response.data;
     } catch (error) {
       console.error("Error response:", error); // Debugging

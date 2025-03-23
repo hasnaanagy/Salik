@@ -23,6 +23,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import logo from "../../../public/images/logonavbar.jpg";
+import egyptFlag from "../../../public/images/circle.png"; // Add the flag image
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser, switchRole } from "../../redux/slices/authSlice";
 
@@ -46,6 +47,22 @@ const colorShift = keyframes`
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Add scroll event listener to detect scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50;
+      setScrolled(isScrolled);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
@@ -84,14 +101,16 @@ export function Header() {
 
   return (
     <AppBar
-      position="sticky"
+      position={scrolled ? "fixed" : "static"}
       sx={{
-        background: "transparent",
-        backdropFilter: "blur(10px)",
+        background: scrolled ? "rgba(255, 255, 255, 0.95)" : "transparent",
+        backdropFilter: scrolled ? "blur(10px)" : "none",
         backgroundSize: "200% 200%",
-        animation: `${colorShift} 10s ease infinite`,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+        animation: scrolled ? "none" : `${colorShift} 10s ease infinite`,
+        boxShadow: scrolled ? "0 4px 12px rgba(0,0,0,0.2)" : "none",
         py: 1,
+        transition: "all 0.3s ease-in-out",
+        zIndex: 1000,
       }}
     >
       <Container maxWidth="lg">
@@ -116,8 +135,21 @@ export function Header() {
                 height={60}
                 style={{
                   borderRadius: "8px",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  // boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  transition: "transform 0.3s ease", // Transition for smooth animation
+                  transform: scrolled ? "scale(0.9)" : "scale(1)", // Default state based on scrolled
+                  "&:hover": {
+                    transform: "scale(1.1)", // Scale up on hover
+                  },
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.transform = "scale(1.1)")
+                } // Hover scale up
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.transform = scrolled
+                    ? "scale(0.9)"
+                    : "scale(1)")
+                } // Return to original scale
               />
             </NavLink>
 
@@ -135,7 +167,7 @@ export function Header() {
                   component={NavLink}
                   to={text === "Home" ? "/" : `/${text.toLowerCase()}`}
                   sx={{
-                    color: "#333",
+                    color: scrolled ? "#333" : "#333",
                     fontWeight: "600",
                     fontSize: "16px",
                     mx: 1.5,
@@ -163,6 +195,47 @@ export function Header() {
                 </Button>
               ))}
             </Box>
+          </Box>
+
+          {/* Links for Language and App Download */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {/* Language Selector */}
+            <Button
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: "#333",
+                fontWeight: "600",
+                textTransform: "none",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+              }}
+            >
+              <img
+                src={egyptFlag}
+                alt="Egypt Flag"
+                width={25}
+                height={25}
+                style={{ marginRight: "8px" }}
+              />
+              En
+            </Button>
+
+            {/* Download App Link */}
+            <Button
+              component="a"
+              href="/download"
+              sx={{
+                color: "#333",
+                fontWeight: "600",
+                textTransform: "none",
+                backgroundColor: "#ffb800",
+                borderRadius: "20px",
+                padding: "8px 16px",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+              }}
+            >
+              Download App
+            </Button>
           </Box>
 
           {/* User Profile */}
@@ -200,22 +273,48 @@ export function Header() {
                 {fullName}
               </Button>
             ) : (
-              <Button
-                component={NavLink}
-                to="/login"
-                sx={{
-                  color: "#333",
-                  fontWeight: "600",
-                  fontSize: "16px",
-                  textTransform: "none",
-                  px: 2,
-                  py: 0.5,
-                  borderRadius: "20px",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                Login
-              </Button>
+              <>
+                <Button
+                  component={NavLink}
+                  to="/login"
+                  sx={{
+                    color: "#333",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                    textTransform: "none",
+                    px: 2,
+                    py: 0.5,
+                    borderRadius: "20px",
+                    transition: "background-color 0.3s ease, color 0.3s ease", // Smooth transition
+                    "&:hover": {
+                      bgcolor: "#ffb800", // Background color on hover
+                      color: "#fff", // Optional: Change text color to white for contrast
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  component={NavLink}
+                  to="/signup"
+                  sx={{
+                    color: "#333",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                    textTransform: "none",
+                    px: 2,
+                    py: 0.5,
+                    borderRadius: "20px",
+                    transition: "background-color 0.3s ease, color 0.3s ease", // Smooth transition
+                    "&:hover": {
+                      bgcolor: "#ffb800", // Background color on hover
+                      color: "#fff", // Optional: Change text color to white for contrast
+                    },
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </>
             )}
 
             {/* User Dropdown Menu */}
@@ -309,8 +408,8 @@ export function Header() {
           <img
             src={logo}
             alt="Logo"
-            width={40}
-            height={40}
+            width={50}
+            height={50}
             style={{ borderRadius: "4px" }}
           />
         </Box>

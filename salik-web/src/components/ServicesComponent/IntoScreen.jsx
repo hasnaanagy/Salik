@@ -52,7 +52,8 @@ export function IntoScreen() {
         py: 5,
         px: { xs: 2, sm: 4, md: 6 },
         mt: "70px",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "#fff",
+        borderRadius: "20px",
       }}
     >
       {sections.map((section, index) => {

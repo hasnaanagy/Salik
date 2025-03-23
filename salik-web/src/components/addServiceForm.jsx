@@ -157,6 +157,25 @@ const AddServiceForm = () => {
                   error={!!errors.mechanicLocation}
                   helperText={errors.mechanicLocation?.message}
                   onBlur={() => handleAddressSearch(field.value)}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 />
               )}
             />
@@ -178,6 +197,25 @@ const AddServiceForm = () => {
                   margin="normal"
                   error={!!errors.mechanicType}
                   helperText={errors.mechanicType?.message}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.23)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0, 0, 0, 0.87)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#ffb800",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(0, 0, 0, 0.54)",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ffb800",
+                    },
+                  }}
                 >
                   <MenuItem value="mechanic">mechanic</MenuItem>
                   <MenuItem value="fuel">fuel</MenuItem>
@@ -242,6 +280,25 @@ const AddServiceForm = () => {
                       margin="normal"
                       error={!!errors.availableFrom}
                       helperText={errors.availableFrom?.message}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": {
+                            borderColor: "rgba(0, 0, 0, 0.23)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(0, 0, 0, 0.87)",
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: "#ffb800",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(0, 0, 0, 0.54)",
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "#ffb800",
+                        },
+                      }}
                     />
                   )}
                 />
@@ -259,6 +316,25 @@ const AddServiceForm = () => {
                       margin="normal"
                       error={!!errors.availableTo}
                       helperText={errors.availableTo?.message}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": {
+                            borderColor: "rgba(0, 0, 0, 0.23)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(0, 0, 0, 0.87)",
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: "#ffb800",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(0, 0, 0, 0.54)",
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "#ffb800",
+                        },
+                      }}
                     />
                   )}
                 />
