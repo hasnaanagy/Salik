@@ -1,8 +1,14 @@
-import React, { useEffect } from "react";
-import ProfileComponent from "../../components/UserComponents/profileComponent";
+import { View, Text } from 'react-native';
 
-const Profile = () => {
-return <ProfileComponent/> ;
-}
+const ProfileScreen = () => {
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 24 }}>
+        Profile Screen
+      </Text>
+     
+    </View>
+  );
+};
 
-export default Profile;
+export default ProfileScreen;
