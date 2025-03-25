@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
-  Text,
   View,
   TouchableOpacity,
   Animated,
@@ -15,25 +14,35 @@ import { useDispatch } from "react-redux";
 import { sendRequestAction } from "../../redux/slices/requestServiceSlice";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import CustomText from "../CustomeComponents/CustomText"; // Assuming this is now correct
-const { width, height } = Dimensions.get("window");
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
+import CustomText from "../CustomeComponents/CustomText";
 import BackButton from "../SharedComponents/BackButton";
+
+const { width, height } = Dimensions.get("window");
+
 const CustomerRequests = () => {
   const [activeTab, setActiveTab] = useState("fuel");
   const [description, setDescription] = useState("");
   const [userLocation, setUserLocation] = useState(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const dispatch = useDispatch();
   const router = useRouter();
 
   useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Location permission is required");
         return;
       }
-
       let location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         latitude: location.coords.latitude,
@@ -44,36 +53,30 @@ const CustomerRequests = () => {
 
   const handleTabSwitch = (tab) => {
     setActiveTab(tab);
-    Animated.timing(slideAnim, {
+    Animated.spring(slideAnim, {
       toValue: tab === "fuel" ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
     }).start();
   };
 
   const translateX = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, width * 0.4],
+    outputRange: [0, width * 0.45],
   });
 
   const handleSubmit = async () => {
-    if (!userLocation) {
-      Alert.alert("Error", "Location not available yet");
+    if (!userLocation || !description.trim()) {
+      Alert.alert("Error", "Please provide location and description");
       return;
     }
-
-    if (!description.trim()) {
-      Alert.alert("Error", "Please enter a description");
-      return;
-    }
-
     try {
       const serviceType = activeTab === "fuel" ? "fuel" : "mechanic";
       const locationData = {
-        type: "Point", // Add if required by your backend
+        type: "Point",
         coordinates: [userLocation.longitude, userLocation.latitude],
       };
-
       await dispatch(
         sendRequestAction({
           serviceType,
@@ -81,7 +84,6 @@ const CustomerRequests = () => {
           problem: description,
         })
       ).unwrap();
-
       setDescription("");
       router.push("/requests");
     } catch (error) {
@@ -91,52 +93,52 @@ const CustomerRequests = () => {
 
   return (
     <>
-      <View style={{ marginBottom: Platform.OS === "ios" ? 0 : height * 0.02 }}>
+      <View style={styles.backButtonContainer}>
         <BackButton />
       </View>
 
       <View style={styles.container}>
         <View style={styles.tabContainer}>
-          <Animated.View
-            style={[styles.tabBackground, { transform: [{ translateX }] }]}
-          />
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => handleTabSwitch("fuel")}
-          >
+          <Animated.View style={[styles.tabBackground, { transform: [{ translateX }] }]}>
+            <LinearGradient
+              colors={["#f5c518", "#ffd700"]}
+              style={styles.gradientTab}
+            />
+          </Animated.View>
+          <TouchableOpacity style={styles.tab} onPress={() => handleTabSwitch("fuel")}>
+            <MaterialIcons
+              name="local-gas-station"
+              size={width * 0.06}
+              color={activeTab === "fuel" ? "#000" : "#666"}
+            />
             <CustomText
               style={[
                 styles.tabText,
-                activeTab === "fuel"
-                  ? styles.activeTabText
-                  : styles.inactiveTabText,
+                activeTab === "fuel" ? styles.activeTabText : styles.inactiveTabText,
               ]}
             >
-              Fuel Request
+              Fuel
             </CustomText>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => handleTabSwitch("mechanic")}
-          >
+          <TouchableOpacity style={styles.tab} onPress={() => handleTabSwitch("mechanic")}>
+            <MaterialIcons
+              name="build"
+              size={width * 0.06}
+              color={activeTab === "mechanic" ? "#000" : "#666"}
+            />
             <CustomText
               style={[
                 styles.tabText,
-                activeTab === "mechanic"
-                  ? styles.activeTabText
-                  : styles.inactiveTabText,
+                activeTab === "mechanic" ? styles.activeTabText : styles.inactiveTabText,
               ]}
             >
-              Mechanic Request
+              Mechanic
             </CustomText>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.form}>
-          <Image
-            source={require("../../assets/help.png")}
-            style={styles.imageStyle}
-          />
+        <Animated.View style={[styles.form, { opacity: fadeAnim }]}>
+          <Image source={require("../../assets/help.png")} style={styles.imageStyle} />
           <TextInput
             style={styles.formTextArea}
             placeholder="Describe your problem"
@@ -147,53 +149,62 @@ const CustomerRequests = () => {
             numberOfLines={3}
             textAlignVertical="top"
           />
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <CustomText style={styles.buttonText}>Request Service</CustomText>
+          <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
+            <LinearGradient
+              colors={["#f5c518", "#ffd700"]}
+              style={styles.button}
+            >
+              <CustomText style={styles.buttonText}>Request Service</CustomText>
+            </LinearGradient>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     </>
-
   );
 };
 
 const styles = StyleSheet.create({
+  backButtonContainer: {
+    marginBottom: Platform.OS === "ios" ? height * 0.01 : height * 0.02,
+    paddingHorizontal: width * 0.05,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
     paddingHorizontal: width * 0.05,
     paddingVertical: height * 0.03,
-    marginTop: height * 0.07,
   },
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#e0e0e0",
-    borderRadius: Platform.OS === "ios" ? 36 : 26,
-    width: width * 0.8,
-    height: Platform.OS === "ios" ? height * 0.06 : height * 0.07,
+    borderRadius: 30,
+    width: width * 0.9,
+    height: height * 0.08,
     position: "relative",
     overflow: "hidden",
-    marginBottom: height * 0.03,
+    margin: height * 0.06,
     alignSelf: "center",
-
+    elevation: 2,
   },
   tabBackground: {
     position: "absolute",
-    backgroundColor: "#f5c518",
-    width: width * 0.4,
+    width: width * 0.45,
     height: "100%",
-    borderRadius: Platform.OS === "ios" ? 36 : 26,
+  },
+  gradientTab: {
+    flex: 1,
+    borderRadius: 30,
   },
   tab: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-
+    flexDirection: "row",
+    gap: 5,
   },
   tabText: {
-    fontSize: Platform.OS === "ios" ? width * 0.03 : width * 0.04,
-    fontWeight: "600",
-    marginRight: Platform.OS === "ios" ? width * 0.02 : width * 0.01,
+    fontSize: width * 0.045,
+    fontWeight: "700",
   },
   activeTabText: {
     color: "#000",
@@ -204,49 +215,51 @@ const styles = StyleSheet.create({
   form: {
     width: "100%",
     backgroundColor: "#fff",
-    borderRadius: 15,
+    borderRadius: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-    padding: width * 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
+    padding: width * 0.06,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
   formTextArea: {
     width: "100%",
-    padding: width * 0.03,
+    padding: width * 0.04,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    fontSize: width * 0.04,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    fontSize: width * 0.045,
     color: "#333",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#fafafa",
     textAlignVertical: "top",
-    marginBottom: height * 0.02,
-    height: height * 0.15,
+    marginBottom: height * 0.03,
+    height: height * 0.18,
   },
   button: {
     alignSelf: "center",
-    width: width * 0.5,
-    backgroundColor: "#f5c518",
-    paddingVertical: height * 0.015,
-    borderRadius: 25,
+    width: width * 0.6,
+    paddingVertical: height * 0.02,
+    borderRadius: 30,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 6,
   },
   buttonText: {
     color: "#000",
-    fontSize: width * 0.04,
-    fontWeight: "600",
+    fontSize: width * 0.045,
+    fontWeight: "700",
   },
   imageStyle: {
-    width: "65%",
-    height: "50%",
+    width: "70%",
+    height: height * 0.25,
     alignSelf: "center",
+    marginBottom: height * 0.03,
   },
 });
 

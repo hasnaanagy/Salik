@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/postService"; // Importing the axios instance
 
-// Async action to post mechanic data
-export const postMechanicData = createAsyncThunk(
+// Async action to post service data
+export const postServiceData = createAsyncThunk(
   "Service/postServiceData",
   async (
     { serviceType, location, addressOnly, workingDays, workingHours },
@@ -30,16 +30,16 @@ export const postMechanicData = createAsyncThunk(
     } catch (error) {
       console.error("Error response:", error.message); // Debugging
       return rejectWithValue(
-        error.response?.data?.message || "Failed to add mechanic service"
+        error.response?.data?.message || "Failed to add service"
       );
     }
   }
 );
 
-const mechanicSlice = createSlice({
-  name: "mechanicService",
+const serviceSlice = createSlice({
+  name: "service",
   initialState: {
-    mechanicInfo: {},
+    serviceInfo: {},
     loading: false,
     error: null,
     success: false,
@@ -54,22 +54,22 @@ const mechanicSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(postMechanicData.pending, (state) => {
+      .addCase(postServiceData.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.success = false;
       })
-      .addCase(postMechanicData.fulfilled, (state, action) => {
+      .addCase(postServiceData.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        state.mechanicInfo = action.payload;
+        state.serviceInfo = action.payload;
       })
-      .addCase(postMechanicData.rejected, (state, action) => {
+      .addCase(postServiceData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { clearError, resetSuccess } = mechanicSlice.actions;
-export default mechanicSlice.reducer;
+export const { clearError, resetSuccess } = serviceSlice.actions;
+export default serviceSlice.reducer;

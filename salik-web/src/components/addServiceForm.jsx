@@ -15,15 +15,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { postMechanicData, clearError } from "../redux/slices/addMechanicSlice";
+import { postServiceData, clearError } from "../redux/slices/postServiceSlice";
 import { useNavigate } from "react-router-dom";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { transformation } from "leaflet";
 
 // Validation schema
 const schema = yup.object().shape({
-  mechanicLocation: yup.string().required("Workshop location is required"),
-  mechanicType: yup.string().required("Mechanic type is required"),
+  serviceLocation: yup.string().required("Workshop location is required"),
+  serviceType: yup.string().required("Service type is required"),
   availableFrom: yup.string().required("Available from time is required"),
   availableTo: yup.string().required("Available to time is required"),
   workingDays: yup.array().min(1, "Select at least one working day"),
@@ -34,7 +34,7 @@ const AddServiceForm = () => {
   const dispatch = useDispatch();
 
   const { loading, error } = useSelector(
-    (state) => state.mechanicService || {}
+    (state) => state.serviceInfo || {}
   );
 
   const {
@@ -45,8 +45,8 @@ const AddServiceForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      mechanicLocation: "",
-      mechanicType: "",
+      serviceLocation: "",
+      serviceType: "",
       availableFrom: "",
       availableTo: "",
       workingDays: [],
@@ -60,7 +60,7 @@ const AddServiceForm = () => {
   // Handle location selection from the map
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setValue("mechanicLocation", address);
+    setValue("serviceLocation", address);
     setLocationError("");
   };
 
@@ -92,12 +92,12 @@ const AddServiceForm = () => {
     }
 
     const transformedData = {
-      serviceType: data.mechanicType,
+      serviceType: data.serviceType,
       location: {
         type: "Point",
         coordinates: [pickupCoords.lng, pickupCoords.lat],
       },
-      addressOnly: data.mechanicLocation,
+      addressOnly: data.serviceLocation,
       workingDays: data.workingDays,
       workingHours: {
         from: data.availableFrom + " AM",
@@ -108,8 +108,8 @@ const AddServiceForm = () => {
     if (transformation === undefined) {
       console.log(" Please set all the fields");
     } else {
-      dispatch(postMechanicData(transformedData));
-      setSuccessMessage(true); // <-- إظهار رسالة النجاح
+      dispatch(postServiceData(transformedData));
+      setSuccessMessage(true);
 
       setTimeout(() => {
         navigate("/");
@@ -131,7 +131,7 @@ const AddServiceForm = () => {
             Add Your Service
           </Typography>
 
-          {/* Server error as raw HTML (like mechanic form) */}
+          {/* Server error as raw HTML (like service form) */}
           {error && (
             <span
               style={{
@@ -146,7 +146,7 @@ const AddServiceForm = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Workshop Location */}
             <Controller
-              name="mechanicLocation"
+              name="serviceLocation"
               control={control}
               render={({ field }) => (
                 <TextField
@@ -154,8 +154,8 @@ const AddServiceForm = () => {
                   label="Workshop Location"
                   fullWidth
                   margin="normal"
-                  error={!!errors.mechanicLocation}
-                  helperText={errors.mechanicLocation?.message}
+                  error={!!errors.serviceLocation}
+                  helperText={errors.serviceLocation?.message}
                   onBlur={() => handleAddressSearch(field.value)}
                   sx={{
                     "& .MuiOutlinedInput-root": {
@@ -184,19 +184,19 @@ const AddServiceForm = () => {
               {locationError}
             </span>
 
-            {/* Mechanic Type */}
+            {/* Service Type */}
             <Controller
-              name="mechanicType"
+              name="serviceType"
               control={control}
               render={({ field }) => (
                 <TextField
                   select
                   {...field}
-                  label="Mechanic Type"
+                  label="Service Type"
                   fullWidth
                   margin="normal"
-                  error={!!errors.mechanicType}
-                  helperText={errors.mechanicType?.message}
+                  error={!!errors.serviceType}
+                  helperText={errors.serviceType?.message}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "& fieldset": {

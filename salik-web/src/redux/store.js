@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import addServiceReducer from "./slices/addServiceSlice";
-import addMechanicReducer from "./slices/addMechanicSlice";
+import serviceSlice from "./slices/postServiceSlice";
 import imageReducer from "./slices/imageSlice";
 import { reviewReducer } from "./slices/reviewsSlice";
 import { activityReducer } from "./slices/activitySlice";
@@ -12,8 +11,7 @@ import { rideReducer } from "./slices/RideSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    addService: addServiceReducer,
-    mechanicService: addMechanicReducer,
+    serviceSlice: serviceSlice,
     images: imageReducer,
     reviewsSlice: reviewReducer,
     ride: rideReducer,
