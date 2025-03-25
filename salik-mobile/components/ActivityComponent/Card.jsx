@@ -49,7 +49,18 @@ const Cards = ({ ride }) => {
       },
     });
   };
-  const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
+
+  // Safely handle rideDateTime
+  let rideTime = "N/A"; // Default value if rideDateTime is missing
+  if (ride?.rideDateTime) {
+    const rideTimeRaw = ride.rideDateTime.split("T")[1]?.slice(0, 5); // e.g., "06:00"
+    if (rideTimeRaw) {
+      const [hours, minutes] = rideTimeRaw.split(":");
+      const hourNum = parseInt(hours, 10);
+      rideTime = `${hourNum % 12 || 12}:${minutes} ${hourNum < 12 ? "AM" : "PM"}`;
+    }
+  }
+
   const handleLocationField = (data) =>
     data?.length > 10 ? ` ${data?.slice(0, 10)}... ` : data;
 
@@ -76,7 +87,7 @@ const Cards = ({ ride }) => {
 
             {/* Ride Date Section */}
             <Text style={styles.rideDate}>
-              {ride?.rideDateTime?.split("T")[0]}  |  {rideTime}
+              {ride?.rideDateTime?.split("T")[0] || "N/A"} | {rideTime}
             </Text>
             <Text style={styles.details}>
               Price: ${ride.price} | {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"} {user?.type === "customer" ? ride.bookedSeats : ride.totalSeats}
@@ -120,6 +131,7 @@ const Cards = ({ ride }) => {
   );
 };
 
+// Styles remain unchanged
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",

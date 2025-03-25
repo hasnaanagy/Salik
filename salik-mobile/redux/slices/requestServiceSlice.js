@@ -20,6 +20,7 @@ export const sendRequestAction = createAsyncThunk(
       return response;
     } catch (e) {
       console.log(e);
+      console.error("❌ API Error:", e.response?.data || e.message);
       return rejectWithValue(e.message);
     }
   }

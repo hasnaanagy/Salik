@@ -1,16 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyledTextField } from "../../custom/StyledTextField";
 import { Button, Grid, Snackbar, Alert } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
-import MyLocationIcon from "@mui/icons-material/MyLocation";
 import SquareIcon from "@mui/icons-material/Square";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 import { useNavigate } from "react-router-dom";
 
-export function RideForm({ formData, handleChange, handleSubmit }) {
+export function RideForm({
+  formData,
+  handleChange,
+  handleSubmit,
+  handleFocus,
+  fromRef,
+  toRef,
+}) {
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(false);
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (fromRef.current) {
+      fromRef.current.focus(); // Focus "fromLocation" on mount
+    }
+  }, [fromRef]);
 
   const handleSubmitWithAuthCheck = (e) => {
     e.preventDefault();
@@ -20,7 +32,7 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
       setTimeout(() => {
         navigate("/login");
       }, 5000);
-      return; // Stop form submission
+      return;
     }
 
     handleSubmit(e);
@@ -30,11 +42,13 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
     <>
       <form onSubmit={handleSubmitWithAuthCheck}>
         <StyledTextField
+          inputRef={fromRef} // Ref for "fromLocation"
           variant="outlined"
           name="fromLocation"
           placeholder="Pickup Location"
           value={formData.fromLocation}
           onChange={handleChange}
+          onFocus={() => handleFocus("fromLocation")} // Set focus to "fromLocation"
           required
           InputProps={{
             startAdornment: (
@@ -45,11 +59,13 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
           }}
         />
         <StyledTextField
+          inputRef={toRef} // Ref for "toLocation"
           variant="outlined"
           name="toLocation"
           placeholder="Dropoff Location"
           value={formData.toLocation}
           onChange={handleChange}
+          onFocus={() => handleFocus("toLocation")} // Set focus to "toLocation"
           required
           InputProps={{
             startAdornment: (
@@ -96,7 +112,6 @@ export function RideForm({ formData, handleChange, handleSubmit }) {
         </Button>
       </form>
 
-      {/* Snackbar for showing the login alert */}
       <Snackbar
         open={successMessage}
         autoHideDuration={4000}

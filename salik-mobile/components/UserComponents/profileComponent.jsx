@@ -1,3 +1,4 @@
+// components/UserComponents/ProfileComponent.jsx
 import React, { useEffect } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
@@ -5,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUser, logoutUser, switchRole } from "../../redux/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 
-const ProfileComponent = () => {
+const ProfileComponent = ({ navigation }) => {
     const router = useRouter();
     const dispatch = useDispatch();
     const { user, loading } = useSelector((state) => state.auth);
@@ -21,11 +22,11 @@ const ProfileComponent = () => {
 
     const handleSwitchRole = async () => {
         if (!user?.type) return;
-    
-        console.log("🔄 Previous Type:", user.type); 
-        
+
+        console.log("🔄 Previous Type:", user.type);
+
         const resultAction = await dispatch(switchRole());
-    
+
         if (switchRole.fulfilled.match(resultAction)) {
             const newType = resultAction.payload?.newRole;
             if (newType) {
@@ -37,14 +38,23 @@ const ProfileComponent = () => {
             Alert.alert("Error", "Failed to switch role.");
         }
     };
-    
+
     if (loading) {
-        return <ActivityIndicator size="large" color="#000" style={{ marginTop: 50 }} />;
+        return <ActivityIndicator size="large" color="#FFB800" style={{ marginTop: 50 }} />;
     }
 
     return (
         <View style={styles.container}>
+            {/* Header Section */}
             <View style={styles.header}>
+                <Text style={styles.headerTitle}>MENU</Text>
+                <TouchableOpacity onPress={() => navigation.closeDrawer()}>
+                    <Ionicons name="close-outline" size={24} color="#666" />
+                </TouchableOpacity>
+            </View>
+
+            {/* User Profile Section */}
+            <View style={styles.profileSection}>
                 {user?.profileImg ? (
                     <Image source={{ uri: user.profileImg }} style={styles.profileImage} />
                 ) : (
@@ -56,27 +66,65 @@ const ProfileComponent = () => {
                     <Text style={styles.name}>{user?.fullName || "User Name"}</Text>
                     <Text style={styles.phone}>{user?.phone || "No phone available"}</Text>
                 </View>
+                <TouchableOpacity style={styles.settingsIcon}>
+                    <Ionicons name="settings-outline" size={20} color="#FFB800" />
+                </TouchableOpacity>
             </View>
-            
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => router.push("/editProfile")}>
-                    <Ionicons name="person-outline" size={24} color="#000" />
-                    <Text style={styles.buttonText}>Edit Profile</Text>
+
+            {/* Menu Items */}
+            <View style={styles.menuContainer}>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => router.push("/editProfile")}
+                >
+                    <Ionicons name="person-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Edit Profile</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={() => alert("Appearance settings")}> 
-                    <Ionicons name="sunny-outline" size={24} color="#000" />
-                    <Text style={styles.buttonText}>Appearance</Text>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => alert("Appearance settings")}
+                >
+                    <Ionicons name="sunny-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Appearance</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={handleSwitchRole}>
-                    <Ionicons name="toggle-outline" size={24} color="#000" />
-                    <Text style={styles.buttonText}>Switch Role</Text>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleSwitchRole}
+                >
+                    <Ionicons name="toggle-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Switch Role</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={handleLogout}>
-                    <Ionicons name="log-out-outline" size={24} color="#000" />
-                    <Text style={styles.buttonText}>Log Out</Text>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => router.push("/help")}
+                >
+                    <Ionicons name="help-circle-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Help</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => router.push("/terms")}
+                >
+                    <Ionicons name="document-text-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Terms & Policies</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleLogout}
+                >
+                    <Ionicons name="log-out-outline" size={24} color="#FFB800" style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Log Out</Text>
+                    <Ionicons name="chevron-forward-outline" size={20} color="#ccc" style={styles.chevron} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -86,41 +134,46 @@ const ProfileComponent = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#f8f9fa",
+        backgroundColor: "#fff",
+        paddingTop: 40,
     },
     header: {
         flexDirection: "row",
+        justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 30,
-        padding: 15,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 3,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    profileSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
     },
     profileImage: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        borderWidth: 2,
-        borderColor: "#FFB800",
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         marginRight: 15,
     },
     placeholderImage: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         backgroundColor: "#ddd",
         alignItems: "center",
         justifyContent: "center",
         marginRight: 15,
     },
     placeholderText: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: "bold",
         color: "#555",
     },
@@ -128,40 +181,40 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     name: {
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: "bold",
-        color: "#222",
+        color: "#333",
     },
     phone: {
         fontSize: 14,
         color: "#666",
-        marginTop: 4,
+        marginTop: 2,
     },
-    buttonContainer: {
-        marginTop: 20,
+    settingsIcon: {
+        padding: 5,
     },
-    button: {
+    menuContainer: {
+        marginTop: 10,
+    },
+    menuItem: {
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 14,
-        paddingHorizontal: 15,
-        marginBottom: 12,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
     },
-    buttonText: {
+    menuIcon: {
+        width: 24,
+        height: 24,
+        marginRight: 15,
+    },
+    menuText: {
+        flex: 1,
         fontSize: 16,
-        marginLeft: 12,
-        fontWeight: "500",
         color: "#333",
     },
+    chevron: {
+        marginLeft: 10,
+    },
 });
-
-
 
 export default ProfileComponent;

@@ -49,7 +49,6 @@ export const searchRidesAction = createAsyncThunk(
       console.log("✅ API Response:", response);
       return response.rides;
     } catch (error) {
-      console.error("❌ API Error:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data || "Failed to search rides");
     }
   }

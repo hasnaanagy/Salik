@@ -4,7 +4,6 @@ import { FontAwesome5, AntDesign } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { setFocusedInput, setFromLocation, setToLocation } from "../../redux/slices/locationSlice";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import Map from "../MapComponent/Map"; // Import the Map component
 import { GOOGLE_API_KEY } from "@env";
 
 const LocationInputs = ({ fromLocation, toLocation, onLocationChange }) => {

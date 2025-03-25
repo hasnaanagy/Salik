@@ -5,12 +5,13 @@ import * as Location from "expo-location";
 import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { setFromLocation, setToLocation } from "../../redux/slices/locationSlice";
+import appColors from "../../constants/colors.js";
 
-const Map = () => {
+const Map = ({ onLocationSelect, style }) => {
   const [location, setLocation] = useState(null);
   const [region, setRegion] = useState(null);
-  const [address, setAddress] = useState(""); // تخزين العنوان
-  const dispatch = useDispatch(); // لاستخدام Redux
+  const [address, setAddress] = useState("");
+  const dispatch = useDispatch();
   const { focusedInput } = useSelector((state) => state.location);
   const mapRef = useRef(null);
 
@@ -57,33 +58,33 @@ const Map = () => {
     }
   };
 
-  // دالة لتحويل الإحداثيات إلى عنوان
   const fetchAddress = async (latitude, longitude) => {
     try {
       let addressArray = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (addressArray.length > 0) {
-        const formattedAddress = `${addressArray[0].name}, ${addressArray[0].city}`;
-        console.log(formattedAddress)
-        if (focusedInput == "fromLocation") {
-          dispatch(setFromLocation(formattedAddress));
-        } else {
-          dispatch(setToLocation(formattedAddress));
+        const formattedAddress = `${addressArray[0].name || ""}, ${addressArray[0].city || ""}`;
+        setAddress(formattedAddress);
+
+        // Update Redux state only if onLocationSelect is not provided (i.e., in search screen)
+        if (!onLocationSelect && focusedInput) {
+          if (focusedInput === "fromLocation") {
+            dispatch(setFromLocation(formattedAddress));
+          } else if (focusedInput === "toLocation") {
+            dispatch(setToLocation(formattedAddress));
+          }
         }
-        setAddress(formattedAddress); // Update the address state
       }
     } catch (error) {
       console.log("Error fetching address:", error);
     }
   };
 
-  // استدعاء `fetchAddress` عند تغيير `region`
   useEffect(() => {
     if (region) {
       fetchAddress(region.latitude, region.longitude);
     }
   }, [region]);
 
-  // تحديث الموقع عند تحريك الماركر
   const handleMarkerDragEnd = (e) => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     setRegion((prevRegion) => ({
@@ -93,7 +94,6 @@ const Map = () => {
     }));
   };
 
-  // تحديث الموقع عند الضغط على الخريطة
   const handleMapPress = (e) => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     setRegion((prevRegion) => ({
@@ -103,16 +103,22 @@ const Map = () => {
     }));
   };
 
+  const handleConfirmLocation = () => {
+    if (address && onLocationSelect) {
+      onLocationSelect(address);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {region && (
         <MapView
           ref={mapRef}
           style={styles.map}
           initialRegion={region}
-          onRegionChangeComplete={setRegion} // استدعاء عند انتهاء التحريك فقط
+          onRegionChangeComplete={setRegion}
           showsUserLocation={Platform.OS === "ios" ? false : true}
-          onPress={handleMapPress} // استدعاء عند الضغط على الخريطة
+          onPress={handleMapPress}
         >
           <Marker
             coordinate={{
@@ -125,9 +131,18 @@ const Map = () => {
         </MapView>
       )}
 
-      {/* عرض العنوان على الشاشة */}
       <View style={styles.addressContainer}>
-        <Text style={styles.addressText}>{address || "جاري جلب العنوان..."}</Text>
+        <Text style={styles.addressText}>
+          {address || (onLocationSelect ? "Select a location on the map..." : "Fetching address...")}
+        </Text>
+        {onLocationSelect && address && (
+          <TouchableOpacity
+            style={styles.confirmButton}
+            onPress={handleConfirmLocation}
+          >
+            <Text style={styles.confirmButtonText}>Confirm Location</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {Platform.OS === "ios" && (
@@ -140,8 +155,13 @@ const Map = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { width: "100%", height: "100%" },
+  container: {
+    flex: 1,
+  },
+  map: {
+    width: "100%",
+    height: "100%",
+  },
   addressContainer: {
     position: "absolute",
     bottom: 20,
@@ -153,7 +173,22 @@ const styles = StyleSheet.create({
     elevation: 5,
     alignItems: "center",
   },
-  addressText: { fontSize: 16, fontWeight: "bold" },
+  addressText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  confirmButton: {
+    backgroundColor: appColors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   myLocationButton: {
     position: "absolute",
     top: 60,

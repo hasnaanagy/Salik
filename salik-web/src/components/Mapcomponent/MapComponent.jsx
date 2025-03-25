@@ -18,14 +18,14 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
     click(e) {
       const newLocation = e.latlng;
       setPosition(newLocation);
-      map.flyTo(newLocation, 14, { animate: true }); // الخريطة تتحرك تلقائيًا
+      map.flyTo(newLocation, 14, { animate: true });
       reverseGeocode(newLocation.lat, newLocation.lng, onLocationSelect);
     },
   });
 
   useEffect(() => {
     if (position) {
-      map.flyTo(position, 14, { animate: true }); // تحريك الخريطة تلقائيًا
+      map.flyTo(position, 14, { animate: true });
     }
   }, [position, map]);
 
@@ -38,7 +38,6 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
   ) : null;
 }
 
-// Reverse Geocode Function
 const reverseGeocode = async (lat, lng, onLocationSelect) => {
   try {
     const response = await fetch(
@@ -54,14 +53,18 @@ const reverseGeocode = async (lat, lng, onLocationSelect) => {
   }
 };
 
-export default function MapComponent({ onLocationSelect, pickupCoords }) {
+export default function MapComponent({
+  onLocationSelect,
+  pickupCoords,
+  focusedInput,
+}) {
   const [position, setPosition] = useState(null);
   const [map, setMap] = useState(null);
 
   useEffect(() => {
     if (pickupCoords && map) {
       setPosition(pickupCoords);
-      map.flyTo([pickupCoords.lat, pickupCoords.lng], 14, { animate: true }); // حركة سلسة للخريطة
+      map.flyTo([pickupCoords.lat, pickupCoords.lng], 14, { animate: true });
     }
   }, [pickupCoords, map]);
 
@@ -75,7 +78,7 @@ export default function MapComponent({ onLocationSelect, pickupCoords }) {
           };
           setPosition(userLocation);
           if (map) {
-            map.flyTo(userLocation, 14, { animate: true }); // حركة الخريطة تلقائيًا
+            map.flyTo(userLocation, 14, { animate: true });
           }
           reverseGeocode(userLocation.lat, userLocation.lng, onLocationSelect);
         },
@@ -86,10 +89,16 @@ export default function MapComponent({ onLocationSelect, pickupCoords }) {
     }
   };
 
+  const handleSetLocation = () => {
+    if (position) {
+      reverseGeocode(position.lat, position.lng, onLocationSelect); // Updates the focused input
+    }
+  };
+
   return (
     <div style={{ position: "relative" }}>
       <MapContainer
-        center={position || [30.0444, 31.2357]} // القاهرة كموقع افتراضي
+        center={position || [30.0444, 31.2357]} // Default: Cairo
         zoom={12}
         style={{ height: "400px", width: "100%", position: "absolute" }}
         whenCreated={setMap}
@@ -116,11 +125,8 @@ export default function MapComponent({ onLocationSelect, pickupCoords }) {
           height: "50px",
         }}
       >
-        <MyLocationIcon
-          style={{ fontSize: "30px", backgroundColor: "transparent" }}
-        />
+        <MyLocationIcon style={{ fontSize: "30px" }} />
       </Button>
-         
     </div>
   );
 }
