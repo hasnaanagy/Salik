@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { postServiceData, clearError } from "../redux/slices/postServiceSlice";
+import { postServiceData, clearError } from "../redux/slices/serviceSlice";
 import { useNavigate } from "react-router-dom";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { transformation } from "leaflet";
@@ -34,7 +34,7 @@ const AddServiceForm = () => {
   const dispatch = useDispatch();
 
   const { loading, error } = useSelector(
-    (state) => state.serviceInfo || {}
+    (state) => state.serviceSlice || {}
   );
 
   const {

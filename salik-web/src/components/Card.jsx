@@ -3,7 +3,6 @@ import { Card, CardContent, Typography, Box, colors } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
   cancelRideAction,
-  deleteRideAction,
   fetchBooking,
   fetchProvidedRides,
 } from "../redux/slices/activitySlice";
@@ -13,9 +12,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { IconButton, Tooltip } from "@mui/material";
 import { data, useNavigate } from "react-router-dom";
+import { deleteRideAction } from "../redux/slices/RideSlice";
 const Cards = ({ ride }) => {
   const { user } = useSelector((state) => state.auth);
-  console.log("User type: ", user.type);
   const dispatch = useDispatch();
   const [cancelled, setCancelled] = useState(ride.status === "canceled");
   const navigate = useNavigate();
@@ -39,8 +38,8 @@ const Cards = ({ ride }) => {
     ride.status === "upcoming"
       ? "#FFB800"
       : ride.status === "completed"
-      ? "#4C585B"
-      : "#F44336";
+        ? "#4C585B"
+        : "#F44336";
   return (
     <Box
       display="flex"

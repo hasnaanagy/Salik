@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { postRideData } from "../redux/slices/addServiceSlice";
+import { postRideData } from "../redux/slices/RideSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getRideById, updateRideAction } from "../redux/slices/RideSlice";
@@ -43,7 +43,7 @@ const AddTripForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error } = useSelector((state) => state.addService);
+  const { loading, error } = useSelector((state) => state.serviceSlice);
   const {
     control,
     handleSubmit,

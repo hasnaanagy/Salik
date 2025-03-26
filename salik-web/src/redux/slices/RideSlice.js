@@ -65,6 +65,67 @@ export const updateRideAction = createAsyncThunk(
   }
 );
 
+
+export const postRideData = createAsyncThunk(
+  "rideService/postRideData",
+  async (
+    { carType, fromLocation, toLocation, totalSeats, price, date, time },
+    { rejectWithValue }
+  ) => {
+    console.log("API Call:", {
+      carType,
+      fromLocation,
+      toLocation,
+      totalSeats,
+      price,
+      date,
+      time,
+    }); // Debugging
+    try {
+      const response = await apiService.create(
+        "rides",
+        {
+          carType,
+          fromLocation,
+          toLocation,
+          totalSeats,
+          price,
+          date,
+          time,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Response:", response); // Debugging
+      return response.data;
+    } catch (error) {
+      console.error("Error response:", error); // Debugging
+      console.error("Error response:", error.message); // Debugging
+      return rejectWithValue(
+        error.response?.data || "Failed to add ride service"
+      );
+    }
+  }
+);
+// Delete a ride
+export const deleteRideAction = createAsyncThunk(
+  "rides/deleteRide",
+  async (rideId, { rejectWithValue }) => {
+    try {
+      const response = await apiService.delete(`rides`, rideId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error deleting ride."
+      );
+    }
+  }
+);
+
 const rideSlice = createSlice({
   name: "ride",
   initialState: {
@@ -114,6 +175,32 @@ const rideSlice = createSlice({
         state.ride = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Deleting a ride
+      .addCase(deleteRideAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteRideAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(postRideData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(postRideData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.ride = action.payload;
+      })
+      .addCase(postRideData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

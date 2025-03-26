@@ -40,23 +40,6 @@ export const cancelRideAction = createAsyncThunk(
     }
   }
 );
-
-// Delete a ride
-export const deleteRideAction = createAsyncThunk(
-  "rides/deleteRide",
-  async (rideId, { rejectWithValue }) => {
-    try {
-      const response = await apiService.delete(`rides`, rideId);
-      console.log(response);
-      return response;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Error deleting ride."
-      );
-    }
-  }
-);
-
 // Create slice
 const activitySlice = createSlice({
   name: "myrides",
@@ -114,18 +97,6 @@ const activitySlice = createSlice({
         state.canceled.push(action.meta.arg);
       })
       .addCase(cancelRideAction.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Deleting a ride
-      .addCase(deleteRideAction.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteRideAction.fulfilled, (state, action) => {
-        state.loading = false;
-      })
-      .addCase(deleteRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

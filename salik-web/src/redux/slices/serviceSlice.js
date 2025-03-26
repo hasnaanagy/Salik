@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/postService"; // Importing the axios instance
+import apiService from "../../api/apiService"; // Importing the axios instance
 
 // Async action to post service data
 export const postServiceData = createAsyncThunk(
@@ -9,8 +9,8 @@ export const postServiceData = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.post(
-        "/service",
+      const response = await apiService.create(
+        "service",
         {
           serviceType,
           location,
@@ -18,14 +18,8 @@ export const postServiceData = createAsyncThunk(
           workingDays,
           workingHours,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
       );
-      console.log("Response data:", response.data);
+      console.log("Response data:", response);
       return response.data;
     } catch (error) {
       console.error("Error response:", error.message); // Debugging
