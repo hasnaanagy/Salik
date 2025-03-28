@@ -11,20 +11,6 @@ export const fetchBooking = createAsyncThunk("rides/fetchBooking", async () => {
   }
 });
 
-// Fetch provided rides
-export const fetchProvidedRides = createAsyncThunk(
-  "rides/fetchProvidedRides",
-  async () => {
-    try {
-      const response = await apiService.getAll("rides/myrides");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.message || "An error occurred while fetching rides."
-      );
-    }
-  }
-);
 
 // Cancel a ride
 export const cancelRideAction = createAsyncThunk(
@@ -41,6 +27,23 @@ export const cancelRideAction = createAsyncThunk(
   }
 );
 
+//post booking
+
+//--------------------------------------------------------------
+// Fetch provided rides
+export const fetchProvidedRides = createAsyncThunk(
+  "rides/fetchProvidedRides",
+  async () => {
+    try {
+      const response = await apiService.getAll("rides/myrides");
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.message || "An error occurred while fetching rides."
+      );
+    }
+  }
+);
 // Delete a ride
 export const deleteRideAction = createAsyncThunk(
   "rides/deleteRide",

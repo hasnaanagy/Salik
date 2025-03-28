@@ -39,15 +39,19 @@ const DepartureLocationField = React.memo(
 
     useEffect(() => {
       setInputValue(form.fromLocation);
+      console.log("DepartureLocationField updated with:", form.fromLocation);
     }, [form.fromLocation]);
 
-    const handlePlaceSelect = (data) => {
+    const handlePlaceSelect = (data, details = null) => {
+      console.log("handlePlaceSelect triggered with data:", data);
       const address = data.description;
+      console.log("Selected Departure Address:", address, "Details:", details);
       setInputValue(address);
       updateForm("fromLocation", address);
     };
 
     const handleTextChange = (text) => {
+      console.log("Text changed to:", text); // Log text input changes
       setInputValue(text);
     };
 
@@ -57,7 +61,10 @@ const DepartureLocationField = React.memo(
         <View style={styles.inputWithIconContainer}>
           <GooglePlacesAutocomplete
             placeholder="Enter departure location"
-            onPress={handlePlaceSelect}
+            onPress={(data, details) => {
+              console.log("onPress called with:", data); // Direct log in onPress
+              handlePlaceSelect(data, details);
+            }}
             query={{
               key: GOOGLE_API_KEY,
               language: "en",
@@ -75,15 +82,22 @@ const DepartureLocationField = React.memo(
             textInputProps={{
               value: inputValue,
               onChangeText: handleTextChange,
-              onBlur: () => updateForm("fromLocation", inputValue),
+              onBlur: () => {
+                console.log("Blur with value:", inputValue);
+                updateForm("fromLocation", inputValue);
+              },
               editable,
             }}
-            listViewDisplayed={true}
-            keyboardShouldPersistTaps="handled"
+            listViewDisplayed="auto"
+            keyboardShouldPersistTaps="always" // Changed to always for better tap handling
+            onFail={(error) => console.log("Autocomplete error:", error)}
           />
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => openMapModal("fromLocation")}
+            onPress={() => {
+              console.log("Map icon pressed");
+              openMapModal("fromLocation");
+            }}
             disabled={!editable}
           >
             <Ionicons name="location-outline" size={20} color={appColors.primary} />
@@ -102,15 +116,19 @@ const DestinationField = React.memo(
 
     useEffect(() => {
       setInputValue(form.toLocation);
+      console.log("DestinationField updated with:", form.toLocation);
     }, [form.toLocation]);
 
-    const handlePlaceSelect = (data) => {
+    const handlePlaceSelect = (data, details = null) => {
+      console.log("handlePlaceSelect triggered with data:", data);
       const address = data.description;
+      console.log("Selected Destination Address:", address, "Details:", details);
       setInputValue(address);
       updateForm("toLocation", address);
     };
 
     const handleTextChange = (text) => {
+      console.log("Text changed to:", text);
       setInputValue(text);
     };
 
@@ -120,7 +138,10 @@ const DestinationField = React.memo(
         <View style={styles.inputWithIconContainer}>
           <GooglePlacesAutocomplete
             placeholder="Enter destination"
-            onPress={handlePlaceSelect}
+            onPress={(data, details) => {
+              console.log("onPress called with:", data);
+              handlePlaceSelect(data, details);
+            }}
             query={{
               key: GOOGLE_API_KEY,
               language: "en",
@@ -138,15 +159,22 @@ const DestinationField = React.memo(
             textInputProps={{
               value: inputValue,
               onChangeText: handleTextChange,
-              onBlur: () => updateForm("toLocation", inputValue),
+              onBlur: () => {
+                console.log("Blur with value:", inputValue);
+                updateForm("toLocation", inputValue);
+              },
               editable,
             }}
-            listViewDisplayed={true}
-            keyboardShouldPersistTaps="handled"
+            listViewDisplayed="auto"
+            keyboardShouldPersistTaps="always"
+            onFail={(error) => console.log("Autocomplete error:", error)}
           />
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => openMapModal("toLocation")}
+            onPress={() => {
+              console.log("Map icon pressed");
+              openMapModal("toLocation");
+            }}
             disabled={!editable}
           >
             <Ionicons name="location-outline" size={20} color={appColors.primary} />
@@ -449,14 +477,15 @@ export default function AddTripForm() {
         style={styles.container}
       >
         <FlatList
-          data={[{}]} // Dummy data to render the form content once
-          renderItem={() => null} // We don't need to render items, just the header
+          data={[{}]}
+          renderItem={() => null}
           ListHeaderComponent={renderFormContent}
           keyExtractor={(item, index) => index.toString()}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           contentContainerStyle={styles.flatListContent}
+          keyboardShouldPersistTaps="always" // Ensure taps propagate through FlatList
         />
 
         <Modal
@@ -517,7 +546,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 10,
     paddingHorizontal: 15,
-    paddingRight: 45, // Space for the icon
+    paddingRight: 45,
     backgroundColor: "#fff",
   },
   autocompleteList: {
@@ -557,4 +586,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
