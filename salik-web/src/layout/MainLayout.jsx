@@ -13,6 +13,7 @@ import Activity from "../pages/Activity";
 import Requests from "../components/Requests";
 import ProtectedRoute from "./ProtectedRoute"; // Import ProtectedRoute
 import Home2 from "../pages/Home2";
+import Services from "../pages/Services";
 
 export default function MainLayout() {
   return (
@@ -35,6 +36,8 @@ export default function MainLayout() {
             <Route path="/activities" element={<Activity />} />
             <Route path="/requests" element={<Requests />} />
             <Route path="/home2" element={<Home2 />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/servicesprovider" element={<Services />} />
           </Route>
         </Route>
       </Routes>

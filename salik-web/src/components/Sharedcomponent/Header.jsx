@@ -22,8 +22,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import logo from "../../../public/images/logonavbar.jpg";
-import egyptFlag from "../../../public/images/circle.png"; // Add the flag image
+import egyptFlag from "../../../public/images/circle.png";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser, switchRole } from "../../redux/slices/authSlice";
 
@@ -58,7 +59,6 @@ export function Header() {
 
     window.addEventListener("scroll", handleScroll);
 
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -66,6 +66,7 @@ export function Header() {
 
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+  console.log(user);
 
   useEffect(() => {
     dispatch(getUser());
@@ -75,6 +76,11 @@ export function Header() {
 
   const handleEditProfile = () => {
     navigate("/editProfile");
+    handleUserMenuClose();
+  };
+
+  const handleServices = () => {
+    navigate("/servicesprovider");
     handleUserMenuClose();
   };
 
@@ -88,7 +94,9 @@ export function Header() {
   const handleSwitchRole = async () => {
     await dispatch(switchRole());
     handleUserMenuClose();
-    dispatch(getUser());
+    dispatch(getUser()); // Refresh user data
+    // Trigger a page reload to ensure the UI updates
+    window.location.reload();
   };
 
   const handleUserMenuOpen = (event) => setUserMenuAnchor(event.currentTarget);
@@ -135,21 +143,20 @@ export function Header() {
                 height={60}
                 style={{
                   borderRadius: "8px",
-                  // boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                  transition: "transform 0.3s ease", // Transition for smooth animation
-                  transform: scrolled ? "scale(0.9)" : "scale(1)", // Default state based on scrolled
+                  transition: "transform 0.3s ease",
+                  transform: scrolled ? "scale(0.9)" : "scale(1)",
                   "&:hover": {
-                    transform: "scale(1.1)", // Scale up on hover
+                    transform: "scale(1.1)",
                   },
                 }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.1)")
-                } // Hover scale up
+                }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.transform = scrolled
                     ? "scale(0.9)"
                     : "scale(1)")
-                } // Return to original scale
+                }
               />
             </NavLink>
 
@@ -285,10 +292,10 @@ export function Header() {
                     px: 2,
                     py: 0.5,
                     borderRadius: "20px",
-                    transition: "background-color 0.3s ease, color 0.3s ease", // Smooth transition
+                    transition: "background-color 0.3s ease, color 0.3s ease",
                     "&:hover": {
-                      bgcolor: "#ffb800", // Background color on hover
-                      color: "#fff", // Optional: Change text color to white for contrast
+                      bgcolor: "#ffb800",
+                      color: "#fff",
                     },
                   }}
                 >
@@ -305,10 +312,10 @@ export function Header() {
                     px: 2,
                     py: 0.5,
                     borderRadius: "20px",
-                    transition: "background-color 0.3s ease, color 0.3s ease", // Smooth transition
+                    transition: "background-color 0.3s ease, color 0.3s ease",
                     "&:hover": {
-                      bgcolor: "#ffb800", // Background color on hover
-                      color: "#fff", // Optional: Change text color to white for contrast
+                      bgcolor: "#ffb800",
+                      color: "#fff",
                     },
                   }}
                 >
@@ -342,6 +349,19 @@ export function Header() {
                 <AccountCircleIcon sx={{ mr: 1.5, color: "#666" }} />
                 Manage Account
               </MenuItem>
+              {user?.type === "provider" && (
+                <MenuItem
+                  onClick={handleServices}
+                  sx={{
+                    py: 1.5,
+                    "&:hover": { bgcolor: "#f5f5f5" },
+                    fontSize: "15px",
+                  }}
+                >
+                  <MiscellaneousServicesIcon sx={{ mr: 1.5, color: "#666" }} />
+                  Services
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={handleSwitchRole}
                 sx={{

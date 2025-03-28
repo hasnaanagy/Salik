@@ -6,25 +6,19 @@ exports.createService = async (req, res) => {
   try {
     const { serviceType, location, workingDays, workingHours } = req.body;
 
-    const  userId  = req.user._id;
-
+    const userId = req.user._id;
 
     if (!serviceType || !workingDays || !workingHours) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Service type, working days, and working hours are required.",
-        });
+      return res.status(400).json({
+        message: "Service type, working days, and working hours are required.",
+      });
     }
 
     if (!location || (!location.coordinates && !location.description)) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "At least one location format (coordinates or description) is required.",
-        });
+      return res.status(400).json({
+        message:
+          "At least one location format (coordinates or description) is required.",
+      });
     }
 
     let locationData = null;
@@ -38,12 +32,10 @@ exports.createService = async (req, res) => {
         typeof location.coordinates[0] !== "number" ||
         typeof location.coordinates[1] !== "number"
       ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Invalid coordinates format. Expected [longitude, latitude].",
-          });
+        return res.status(400).json({
+          message:
+            "Invalid coordinates format. Expected [longitude, latitude].",
+        });
       }
 
       locationData = {
@@ -60,11 +52,9 @@ exports.createService = async (req, res) => {
     // Ensure provider does not create duplicate services
     const existingService = await Service.findOne({ userId, serviceType });
     if (existingService) {
-      return res
-        .status(400)
-        .json({
-          message: `You already have a ${serviceType} service. Delete the old one before creating a new one.`,
-        });
+      return res.status(400).json({
+        message: `You already have a ${serviceType} service. Delete the old one before creating a new one.`,
+      });
     }
 
     // Create new service
@@ -78,12 +68,10 @@ exports.createService = async (req, res) => {
     });
 
     await newService.save();
-    res
-      .status(201)
-      .json({
-        message: `${serviceType} service created successfully.`,
-        service: newService,
-      });
+    res.status(201).json({
+      message: `${serviceType} service created successfully.`,
+      service: newService,
+    });
   } catch (err) {
     res
       .status(500)
@@ -96,14 +84,14 @@ exports.updateService = async (req, res) => {
     const { serviceId } = req.params;
     const { location, workingDays, workingHours } = req.body;
 
-    const userId  = req.user._id;
-
+    const userId = req.user._id;
 
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ message: "Service not found" });
     }
-    if (service.userId.toString() !== userId) {
+    if (service.userId.toString() !== userId.toString()) {
+      console.log(service.userId.toString(), userId.toString());
       return res
         .status(403)
         .json({ message: "You can only update your own services" });
@@ -116,12 +104,10 @@ exports.updateService = async (req, res) => {
         typeof location.coordinates[0] !== "number" ||
         typeof location.coordinates[1] !== "number"
       ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Invalid coordinates format. Expected [longitude, latitude].",
-          });
+        return res.status(400).json({
+          message:
+            "Invalid coordinates format. Expected [longitude, latitude].",
+        });
       }
       service.location = {
         type: "Point",
@@ -152,7 +138,7 @@ exports.deleteService = async (req, res) => {
   try {
     const { serviceId } = req.params;
 
-    const userId  = req.user._id;
+    const userId = req.user._id;
 
     const service = await Service.findById(serviceId);
     if (!service) {
@@ -176,9 +162,7 @@ exports.deleteService = async (req, res) => {
 // Get all services of a provider
 exports.getServicesByProvider = async (req, res) => {
   try {
-
-    const userId  = req.user._id;
-
+    const userId = req.user._id;
 
     const services = await Service.find({ userId });
     if (services.length === 0) {
