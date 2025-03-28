@@ -1,6 +1,41 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiService from "../../api/apiService";
 
+export const createRide = createAsyncThunk(
+  "rideService/createRide",
+  async (
+    { carType, fromLocation, toLocation, totalSeats, price, date, time },
+    { rejectWithValue }
+  ) => {
+    console.log("API Call:", {
+      carType,
+      fromLocation,
+      toLocation,
+      totalSeats,
+      price,
+      date,
+      time,
+    }); // Debugging
+    try {
+      const response = await apiService.create("rides", {
+        carType,
+        fromLocation,
+        toLocation,
+        totalSeats,
+        price,
+        date,
+        time,
+      });
+      console.log("Response:", response); // Debugging
+      return response.data;
+    } catch (error) {
+      console.error("Error response:", error); // Debugging
+      return rejectWithValue(
+        error.response?.data || "Failed to add ride service"
+      );
+    }
+  }
+);
 export const fetchRideData = createAsyncThunk(
   "ride/fetchRideData",
   async ({ fromLocation, toLocation, date, time }, { rejectWithValue }) => {
@@ -44,12 +79,7 @@ export const getRideById = createAsyncThunk(
 );
 export const updateRideAction = createAsyncThunk(
   "ride/updateRideAction",
-  // async (rideId, newRide, { rejectWithValue }) => {
-  //   try {
-  //     console.log("Ride data received:", newRide);
-  //     console.log("rideId", rideId);
-  //     const response = await apiService.update(`rides/${rideId}`, newRide);
-  // "rides/updateRide",
+
   async ({ rideId, formattedData }, { rejectWithValue }) => {
     try {
       const response = await apiService.update(
@@ -60,6 +90,22 @@ export const updateRideAction = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Error updating ride."
+      );
+    }
+  }
+);
+
+// Delete a ride
+export const deleteRideAction = createAsyncThunk(
+  "rides/deleteRide",
+  async (rideId, { rejectWithValue }) => {
+    try {
+      const response = await apiService.delete(`rides`, rideId);
+      console.log(response);
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error deleting ride."
       );
     }
   }
@@ -81,6 +127,20 @@ const rideSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(createRide.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(createRide.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.ride = action.payload;
+      })
+      .addCase(createRide.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(fetchRideData.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -114,6 +174,18 @@ const rideSlice = createSlice({
         state.ride = action.payload.ride;
       })
       .addCase(updateRideAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Deleting a ride
+      .addCase(deleteRideAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteRideAction.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteRideAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

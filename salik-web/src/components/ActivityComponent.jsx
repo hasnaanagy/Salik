@@ -3,7 +3,7 @@ import { Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchBooking,
-  fetchProvidedRides,
+  fetchProviderRides,
 } from "../redux/slices/activitySlice";
 import Cards from "./Card";
 
@@ -18,7 +18,7 @@ const ActivityComponent = () => {
       await dispatch(fetchBooking());
     } else {
       console.log("Fetching provider rides");
-      await dispatch(fetchProvidedRides());
+      await dispatch(fetchProviderRides());
     }
   };
   useEffect(() => {

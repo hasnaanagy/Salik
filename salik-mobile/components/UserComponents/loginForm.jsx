@@ -106,7 +106,7 @@ export default function LoginForm() {
       )}
      
       <TouchableOpacity onPress={() => router.push("/signup")}>
-        <Text style={styles.link}>Don't have an account? Sign Up</Text>
+        <Text style={styles.link}> <Text style={styles.linkText}> Don't have an account? </Text>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -180,12 +180,15 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     zIndex: 1,
   },
+  linkText: {
+    color: "black",
+  },
   error: {
     color: "#FF4444",
     fontSize: 14,
     alignSelf: "flex-start",
     marginBottom: 5,
-    marginLeft: 50,
+    marginLeft: 17,
     zIndex: 1,
   },
   loading: {

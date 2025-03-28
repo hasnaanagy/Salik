@@ -11,9 +11,23 @@ export const fetchBooking = createAsyncThunk("rides/fetchBooking", async () => {
   }
 });
 
+// Fetch provided rides
+export const fetchProviderRides = createAsyncThunk(
+  "rides/fetchProviderRides",
+  async () => {
+    try {
+      const response = await apiService.getAll("rides/myrides");
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.message || "An error occurred while fetching rides."
+      );
+    }
+  }
+);
 
 // Cancel a ride
-export const cancelRideAction = createAsyncThunk(
+export const cancelBooking = createAsyncThunk(
   "rides/cancelRide",
   async (rideId, { rejectWithValue }) => {
     try {
@@ -26,36 +40,20 @@ export const cancelRideAction = createAsyncThunk(
     }
   }
 );
-
 //post booking
-
-//--------------------------------------------------------------
-// Fetch provided rides
-export const fetchProvidedRides = createAsyncThunk(
-  "rides/fetchProvidedRides",
-  async () => {
+export const bookRide = createAsyncThunk(
+  "bookRide",
+  async ({ rideId, counterSeats }, { rejectWithValue }) => {
+    console.log(rideId, counterSeats);
     try {
-      const response = await apiService.getAll("rides/myrides");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.message || "An error occurred while fetching rides."
-      );
-    }
-  }
-);
-// Delete a ride
-export const deleteRideAction = createAsyncThunk(
-  "rides/deleteRide",
-  async (rideId, { rejectWithValue }) => {
-    try {
-      const response = await apiService.delete(`rides`, rideId);
-      console.log(response);
-      return response;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Error deleting ride."
-      );
+      const response = await apiService.create(`rideBooking`, {
+        rideId,
+        bookedSeats: counterSeats,
+      });
+      return response; // Return the API response
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.response?.data?.message || "Booking failed");
     }
   }
 );
@@ -88,47 +86,48 @@ const activitySlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-
       // Fetching provided rides
-      .addCase(fetchProvidedRides.pending, (state) => {
+      .addCase(fetchProviderRides.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchProvidedRides.fulfilled, (state, action) => {
+      .addCase(fetchProviderRides.fulfilled, (state, action) => {
         state.loading = false;
         const { upcoming, completed, canceled } = action.payload || {};
         state.upcoming = upcoming || [];
         state.completed = completed || [];
         state.canceled = canceled || [];
       })
-      .addCase(fetchProvidedRides.rejected, (state, action) => {
+      .addCase(fetchProviderRides.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
+      // Booking a ride
+      .addCase(bookRide.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(bookRide.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = "Trip booked successfully!";
+      })
+      .addCase(bookRide.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
       // Canceling a ride
-      .addCase(cancelRideAction.pending, (state) => {
+      .addCase(cancelBooking.pending, (state) => {
         state.loading = true;
       })
-      .addCase(cancelRideAction.fulfilled, (state, action) => {
+      .addCase(cancelBooking.fulfilled, (state, action) => {
         state.loading = false;
         state.upcoming = state.upcoming.filter(
           (ride) => ride.id !== action.meta.arg
         );
         state.canceled.push(action.meta.arg);
       })
-      .addCase(cancelRideAction.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Deleting a ride
-      .addCase(deleteRideAction.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteRideAction.fulfilled, (state, action) => {
-        state.loading = false;
-      })
-      .addCase(deleteRideAction.rejected, (state, action) => {
+      .addCase(cancelBooking.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

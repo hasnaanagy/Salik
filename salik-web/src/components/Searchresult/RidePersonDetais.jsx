@@ -16,7 +16,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { bookRide } from "../../redux/slices/bookingSlice";
+import { bookRide } from "../../redux/slices/activitySlice";
 import { getAllReviewsAction } from "../../redux/slices/reviewsSlice";
 
 // Animation keyframes
@@ -118,10 +118,10 @@ export default function RidePersonDetails({ ride }) {
 
   // Booking state
   const {
-    isLoading: bookingLoading,
+    loading: bookingLoading,
     error: bookingError,
     successMessage,
-  } = useSelector((state) => state.booking);
+  } = useSelector((state) => state.activity);
 
   // Reviews state
   const {

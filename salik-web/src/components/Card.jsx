@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { Card, CardContent, Typography, Box, colors } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  cancelRideAction,
-  deleteRideAction,
+  cancelBooking,
   fetchBooking,
-  fetchProvidedRides,
+  fetchProviderRides,
 } from "../redux/slices/activitySlice";
 import { MainButton } from "../custom/MainButton";
 import car from "/images/car.png"; // Correct path
@@ -13,6 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { IconButton, Tooltip } from "@mui/material";
 import { data, useNavigate } from "react-router-dom";
+import { deleteRideAction } from "../redux/slices/RideSlice";
 const Cards = ({ ride }) => {
   const { user } = useSelector((state) => state.auth);
   console.log("User type: ", user.type);
@@ -20,13 +20,13 @@ const Cards = ({ ride }) => {
   const [cancelled, setCancelled] = useState(ride.status === "canceled");
   const navigate = useNavigate();
   const handleCancel = async () => {
-    await dispatch(cancelRideAction(ride._id));
+    await dispatch(cancelBooking(ride._id));
     setCancelled(true);
     dispatch(fetchBooking());
   };
   const handleDelete = async () => {
     await dispatch(deleteRideAction(ride._id));
-    dispatch(fetchProvidedRides());
+    dispatch(fetchProviderRides());
   };
   // Format ride date and time
   const rideDate = ride?.rideDateTime?.split("T")[0];
