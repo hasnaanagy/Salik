@@ -1,6 +1,7 @@
 import React from "react";
 import { RideSearch } from "../components/RideSearchHome/RideSearch";
 import ServicesHome from "../components/ServicesComponent/ServicesHome";
+import Home2 from "./Home2";
 import { IntoScreen } from "../components/ServicesComponent/IntoScreen";
 import { useSelector } from "react-redux";
 import { CircularProgress, Typography, Box } from "@mui/material";
@@ -27,9 +28,10 @@ export default function Home() {
   if (!user || !token) {
     return (
       <>
-        <RideSearch />
+        <Home2 />
+        {/* <RideSearch />
         <ServicesHome />
-        <IntoScreen />
+        <IntoScreen /> */}
       </>
     );
   }

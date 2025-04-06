@@ -17,10 +17,33 @@ import {
   Button,
   FormControl,
   InputLabel,
+  Box,
+  Chip,
+  Paper,
+  Divider,
+  Avatar,
+  Tabs,
+  Tab,
+  Skeleton,
+  Badge,
+  IconButton,
+  Tooltip,
+  Collapse,
+  Stack,
+  colors,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import BuildIcon from "@mui/icons-material/Build";
+import PersonIcon from "@mui/icons-material/Person";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
 
 const statusColors = {
@@ -28,6 +51,13 @@ const statusColors = {
   accepted: "#2196F3",
   confirmed: "#4CAF50",
   completed: "#673AB7",
+};
+
+const statusIcons = {
+  pending: <ScheduleIcon />,
+  accepted: <CheckCircleIcon />,
+  confirmed: <DoneAllIcon />,
+  completed: <BuildIcon />,
 };
 
 const Requests = ({ userType }) => {
@@ -39,6 +69,30 @@ const Requests = ({ userType }) => {
 
   const [selectedProvider, setSelectedProvider] = useState({});
   const [locations, setLocations] = useState({});
+  const [expandedCards, setExpandedCards] = useState({});
+  const [showStatusFilter, setShowStatusFilter] = useState(() => {
+    const saved = localStorage.getItem("showStatusFilter");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Save showStatusFilter to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("showStatusFilter", JSON.stringify(showStatusFilter));
+  }, [showStatusFilter]);
+
+  // Get all statuses from requests object
+  const statuses = Object.keys(requests);
+
+  // Set first status as default active tab or pending if it exists
+  const defaultTab =
+    statuses.indexOf("pending") !== -1 ? statuses.indexOf("pending") : 0;
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Function to refresh requests
+  const refreshRequests = () => {
+    dispatch(getAllResquestsAction());
+  };
+
   useEffect(() => {
     dispatch(getAllResquestsAction());
   }, [dispatch, user]);
@@ -91,166 +145,779 @@ const Requests = ({ userType }) => {
     dispatch(getAllResquestsAction());
   };
 
+  const toggleCardExpand = (requestId) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  };
+
+  // Function to truncate text
+  const truncateText = (text, maxLength = 50) => {
+    if (!text) return "";
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
+
+  // Format date and time
+  const formatDateTime = (dateString) => {
+    if (!dateString) return { date: "N/A", time: "N/A" };
+
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      time: date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+  };
+
+  // Loading state with skeleton
   if (isLoading) {
     return (
-      <Container sx={{ textAlign: "center", mt: 4 }}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Loading requests...
-        </Typography>
+      <Container maxWidth="lg" sx={{ py: 5 }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            Service Requests
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+            Loading your service requests...
+          </Typography>
+        </Box>
+
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item}>
+              <Card sx={{ borderRadius: "10px", boxShadow: 2 }}>
+                <CardContent>
+                  <Skeleton variant="text" width="60%" height={40} />
+                  <Skeleton
+                    variant="text"
+                    width="90%"
+                    height={30}
+                    sx={{ mt: 1 }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    width="100%"
+                    height={60}
+                    sx={{ mt: 1 }}
+                  />
+                  <Skeleton
+                    variant="rectangular"
+                    width="100%"
+                    height={40}
+                    sx={{ mt: 2, borderRadius: 1 }}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
 
+  // Empty state
   if (!requests || Object.values(requests).every((arr) => arr.length === 0)) {
     return (
-      <Container sx={{ textAlign: "center", mt: 4 }}>
-        <Typography variant="h6" color="textSecondary">
-          No requests found.
-        </Typography>
+      <Container maxWidth="lg" sx={{ py: 5 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            textAlign: "center",
+            borderRadius: 3,
+            bgcolor: "rgba(0,0,0,0.02)",
+          }}
+        >
+          <BuildIcon
+            sx={{ fontSize: 60, color: "#FFB800", opacity: 0.7, mb: 2 }}
+          />
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
+            No Service Requests Found
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            {user?.type === "customer"
+              ? "You haven't made any service requests yet."
+              : "There are no service requests available at the moment."}
+          </Typography>
+          {/* <Button
+            variant="contained"
+            onClick={refreshRequests}
+            startIcon={<RefreshIcon />}
+            sx={{
+              bgcolor: "#FFB800",
+              "&:hover": { bgcolor: "#E69F00" },
+            }}
+          >
+            Refresh
+          </Button> */}
+        </Paper>
       </Container>
     );
   }
 
   return (
-    <Container sx={{ mt: 5 }}>
-      <Typography
-        variant="h4"
-        sx={{ textAlign: "center", fontWeight: "bold", mb: 4 }}
+    <Container maxWidth="lg" sx={{ py: 5 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
       >
-        Service Requests
-      </Typography>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            Service Requests
+          </Typography>
+        </Box>
 
-      {Object.entries(requests).map(
-        ([status, reqList]) =>
-          reqList.length > 0 && (
-            <div key={status}>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: statusColors[status],
-                  fontWeight: "bold",
-                  mb: 2,
-                  mt: 3,
-                }}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)} Requests
-              </Typography>
-              <Grid container spacing={3}>
-                {reqList.map((req) => (
-                  <Grid item xs={12} sm={6} md={4} key={req._id}>
-                    <Card
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {/* Add filter toggle button */}
+          <Tooltip title="Filter by status">
+            <IconButton
+              onClick={() => setShowStatusFilter(!showStatusFilter)}
+              sx={{
+                bgcolor: showStatusFilter
+                  ? "rgba(0,0,0,0.08)"
+                  : "rgba(0,0,0,0.04)",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.08)" },
+                width: 40,
+                height: 40,
+              }}
+              aria-label={
+                showStatusFilter ? "Hide status filter" : "Show status filter"
+              }
+            >
+              <FilterListIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {/* Main content with right sidebar layout */}
+      <Grid container spacing={3}>
+        {/* Main content area - takes full width when filter is hidden, 9/12 when visible */}
+        <Grid item xs={12} md={showStatusFilter ? 9 : 12}>
+          <Grid container spacing={3}>
+            {requests[statuses[activeTab]]?.map((req) => (
+              <Grid item xs={12} sm={6} lg={4} key={req._id}>
+                <Card
+                  sx={{
+                    boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    transition: "all 0.3s ease",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 12px 20px rgba(0,0,0,0.12)",
+                    },
+                    border: "1px solid rgba(0,0,0,0.05)",
+                  }}
+                >
+                  {/* Status header - Improved design */}
+                  <Box
+                    sx={{
+                      bgcolor: statusColors[statuses[activeTab]],
+                      py: 2,
+                      px: 2.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: "rgba(255,255,255,0.2)",
+                          color: "white",
+                          width: 32,
+                          height: 32,
+                        }}
+                      >
+                        {statusIcons[statuses[activeTab]]}
+                      </Avatar>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          color: "white",
+                          fontWeight: "bold",
+                          ml: 1.5,
+                          textShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        {statuses[activeTab].charAt(0).toUpperCase() +
+                          statuses[activeTab].slice(1)}
+                      </Typography>
+                    </Box>
+
+                    <Chip
+                      label={req.serviceType}
+                      size="small"
                       sx={{
-                        boxShadow: 4,
-                        borderLeft: `6px solid ${statusColors[status]}`,
-                        borderRadius: "10px",
-                        transition: "transform 0.2s",
-                        "&:hover": { transform: "scale(1.03)" },
+                        bgcolor: "rgba(255,255,255,0.25)",
+                        color: "white",
+                        fontWeight: "bold",
+                        fontSize: "0.7rem",
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                  </Box>
+
+                  {/* Date and time section */}
+                  {req.createdAt && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: 2.5,
+                        py: 1.5,
+                        bgcolor: "rgba(0,0,0,0.02)",
+                        borderBottom: "1px solid rgba(0,0,0,0.05)",
                       }}
                     >
-                      <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                          {req.serviceType}
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <CalendarTodayIcon
+                          sx={{ fontSize: 16, color: "text.secondary", mr: 1 }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {formatDateTime(req.createdAt).date}
                         </Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <AccessTimeIcon
+                          sx={{ fontSize: 16, color: "text.secondary", mr: 1 }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {formatDateTime(req.createdAt).time}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
 
-                        {/* Converted Address */}
+                  <CardContent sx={{ flexGrow: 1, p: 0 }}>
+                    {/* Location section */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        p: 2.5,
+                        borderBottom: "1px solid rgba(0,0,0,0.05)",
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor: "rgba(255,0,0,0.1)",
+                          color: "red",
+                          mr: 2,
+                          width: 40,
+                          height: 40,
+                        }}
+                      >
+                        <RoomIcon />
+                      </Avatar>
+                      <Box>
                         <Typography
-                          variant="body2"
+                          variant="subtitle2"
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            mt: 1,
-                            color: "#555",
+                            fontWeight: "bold",
+                            color: "text.primary",
+                            mb: 0.5,
                           }}
                         >
-                          <RoomIcon
-                            fontSize="small"
-                            sx={{ mr: 1, color: "red" }}
-                          />
+                          Location
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            lineHeight: 1.5,
+                            maxWidth: "100%",
+                            wordBreak: "break-word",
+                          }}
+                        >
                           {locations[req._id] || "Fetching location..."}
                         </Typography>
+                      </Box>
+                    </Box>
 
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          📝 Problem: {req.problemDescription}
+                    {/* Problem description */}
+                    <Box sx={{ p: 2.5 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: "bold",
+                          mb: 1,
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <BuildIcon
+                          sx={{
+                            fontSize: 18,
+                            mr: 1,
+                            color: statusColors[statuses[activeTab]],
+                          }}
+                        />
+                        Problem Description
+                      </Typography>
+
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 1.5,
+                          bgcolor: "rgba(0,0,0,0.02)",
+                          borderRadius: 2,
+                          border: "1px solid rgba(0,0,0,0.05)",
+                          position: "relative",
+                          transition: "all 0.3s ease",
+                          cursor:
+                            req.problemDescription?.length > 80
+                              ? "pointer"
+                              : "default",
+                          "&:hover":
+                            req.problemDescription?.length > 80
+                              ? {
+                                  bgcolor: "rgba(0,0,0,0.03)",
+                                }
+                              : {},
+                        }}
+                        onClick={() =>
+                          req.problemDescription?.length > 80 &&
+                          toggleCardExpand(req._id)
+                        }
+                      >
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            lineHeight: 1.6,
+                            whiteSpace: "pre-line",
+                          }}
+                        >
+                          {expandedCards[req._id]
+                            ? req.problemDescription
+                            : truncateText(req.problemDescription, 80)}
                         </Typography>
 
-                        {/* Provider: Show "Accept" button for pending requests */}
-                        {user.type === "provider" && status === "pending" && (
-                          <Button
-                            variant="contained"
-                            sx={{ mt: 2, bgcolor: "#FFC107", color: "#000" }}
-                            fullWidth
-                            onClick={() => handleAcceptRequest(req._id)}
+                        {req.problemDescription?.length > 80 && (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              mt: 1,
+                              pt: 1,
+                              borderTop: expandedCards[req._id]
+                                ? "1px solid rgba(0,0,0,0.05)"
+                                : "none",
+                            }}
                           >
-                            Accept Request
-                          </Button>
+                            <Button
+                              size="small"
+                              endIcon={
+                                expandedCards[req._id] ? (
+                                  <ExpandLessIcon />
+                                ) : (
+                                  <ExpandMoreIcon />
+                                )
+                              }
+                              sx={{
+                                textTransform: "none",
+                                color: statusColors[statuses[activeTab]],
+                                fontWeight: "medium",
+                                fontSize: "0.8rem",
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCardExpand(req._id);
+                              }}
+                            >
+                              {expandedCards[req._id]
+                                ? "Show less"
+                                : "Show more"}
+                            </Button>
+                          </Box>
                         )}
+                      </Paper>
+                    </Box>
 
-                        {/* Customer: Show provider selection for accepted requests */}
-                        {user.type === "customer" &&
-                          status === "accepted" &&
-                          req.acceptedProviders?.length > 0 && (
-                            <>
-                              <Typography
-                                variant="subtitle1"
-                                sx={{ mt: 2, fontWeight: "bold" }}
+                    {/* Provider selection for customers */}
+                    {user.type === "customer" &&
+                      statuses[activeTab] === "accepted" &&
+                      req.acceptedProviders?.length > 0 && (
+                        <Box sx={{ px: 2.5, pb: 2.5 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              fontWeight: "bold",
+                              mb: 1.5,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <PersonIcon
+                              sx={{
+                                fontSize: 18,
+                                mr: 1,
+                                color: statusColors.accepted,
+                              }}
+                            />
+                            Available Providers ({req.acceptedProviders.length})
+                          </Typography>
+
+                          <Paper
+                            elevation={0}
+                            sx={{
+                              p: 1.5,
+                              bgcolor: "rgba(0,0,0,0.02)",
+                              borderRadius: 2,
+                              border: "1px solid rgba(0,0,0,0.05)",
+                            }}
+                          >
+                            <FormControl fullWidth size="small" sx={{ mb: 0 }}>
+                              <InputLabel>Select Provider</InputLabel>
+                              <Select
+                                value={selectedProvider[req._id] || ""}
+                                onChange={(e) =>
+                                  setSelectedProvider({
+                                    ...selectedProvider,
+                                    [req._id]: e.target.value,
+                                  })
+                                }
+                                sx={{
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "rgba(0,0,0,0.1)",
+                                  },
+                                }}
                               >
-                                Select a Provider:
-                              </Typography>
-                              <FormControl fullWidth sx={{ mt: 1 }}>
-                                <InputLabel>Available Providers</InputLabel>
-                                <Select
-                                  value={selectedProvider[req._id] || ""}
-                                  onChange={(e) =>
-                                    setSelectedProvider({
-                                      ...selectedProvider,
-                                      [req._id]: e.target.value,
-                                    })
-                                  }
-                                >
-                                  {req.acceptedProviders.map((provider) => (
-                                    <MenuItem
-                                      key={provider._id}
-                                      value={provider._id}
+                                {req.acceptedProviders.map((provider) => (
+                                  <MenuItem
+                                    key={provider._id}
+                                    value={provider._id}
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                      }}
                                     >
-                                      {provider.fullName} ({provider.phone})
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                sx={{ mt: 2 }}
-                                fullWidth
-                                onClick={() => handleConfirmProvider(req._id)}
-                                disabled={!selectedProvider[req._id]}
-                              >
-                                <CheckCircleIcon sx={{ mr: 1 }} /> Confirm
-                                Provider
-                              </Button>
-                            </>
-                          )}
+                                      <Avatar
+                                        sx={{
+                                          width: 28,
+                                          height: 28,
+                                          mr: 1.5,
+                                          bgcolor: statusColors.accepted,
+                                        }}
+                                      >
+                                        <PersonIcon fontSize="small" />
+                                      </Avatar>
+                                      <Stack direction="column" spacing={0}>
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight="medium"
+                                        >
+                                          {provider.fullName}
+                                        </Typography>
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          {provider.phone}
+                                        </Typography>
+                                      </Stack>
+                                    </Box>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Paper>
+                        </Box>
+                      )}
+                  </CardContent>
 
-                        {/* Customer: Show "Mark as Completed" button for confirmed requests */}
-                        {user.type === "customer" && status === "confirmed" && (
-                          <Button
-                            variant="contained"
-                            sx={{ mt: 2, bgcolor: "#4CAF50" }}
-                            fullWidth
-                            onClick={() => handleCompleteRequest(req._id)}
-                          >
-                            <DoneAllIcon sx={{ mr: 1 }} /> Mark as Completed
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+                  {/* Action buttons */}
+                  <Box
+                    sx={{
+                      p: 2.5,
+                      bgcolor: "rgba(0,0,0,0.02)",
+                      borderTop: "1px solid rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    {user.type === "provider" &&
+                      statuses[activeTab] === "pending" && (
+                        <Button
+                          variant="contained"
+                          startIcon={<CheckCircleIcon />}
+                          sx={{
+                            bgcolor: statusColors.pending,
+                            color: "white",
+                            py: 1.2,
+                            fontWeight: "bold",
+                            boxShadow: "0 4px 8px rgba(255,193,7,0.3)",
+                            "&:hover": {
+                              bgcolor: "#E6A800",
+                              boxShadow: "0 6px 10px rgba(255,193,7,0.4)",
+                            },
+                          }}
+                          fullWidth
+                          onClick={() => handleAcceptRequest(req._id)}
+                        >
+                          Accept Request
+                        </Button>
+                      )}
+
+                    {user.type === "customer" &&
+                      statuses[activeTab] === "accepted" &&
+                      req.acceptedProviders?.length > 0 && (
+                        <Button
+                          variant="contained"
+                          startIcon={<CheckCircleIcon />}
+                          sx={{
+                            bgcolor: statusColors.accepted,
+                            py: 1.2,
+                            fontWeight: "bold",
+                            boxShadow: "0 4px 8px rgba(33,150,243,0.3)",
+                            "&:hover": {
+                              bgcolor: "#1976D2",
+                              boxShadow: "0 6px 10px rgba(33,150,243,0.4)",
+                            },
+                          }}
+                          fullWidth
+                          onClick={() => handleConfirmProvider(req._id)}
+                          disabled={!selectedProvider[req._id]}
+                        >
+                          Confirm Provider
+                        </Button>
+                      )}
+
+                    {user.type === "customer" &&
+                      statuses[activeTab] === "confirmed" && (
+                        <Button
+                          variant="contained"
+                          startIcon={<DoneAllIcon />}
+                          sx={{
+                            bgcolor: statusColors.confirmed,
+                            py: 1.2,
+                            fontWeight: "bold",
+                            boxShadow: "0 4px 8px rgba(76,175,80,0.3)",
+                            "&:hover": {
+                              bgcolor: "#3D8B40",
+                              boxShadow: "0 6px 10px rgba(76,175,80,0.4)",
+                            },
+                          }}
+                          fullWidth
+                          onClick={() => handleCompleteRequest(req._id)}
+                        >
+                          Mark as Completed
+                        </Button>
+                      )}
+
+                    {statuses[activeTab] === "completed" && (
+                      <Box sx={{ textAlign: "center" }}>
+                        <Chip
+                          icon={
+                            <DoneAllIcon
+                              sx={{
+                                color: statusColors.completed || "#673AB7",
+                              }}
+                            />
+                          }
+                          label="This request has been completed"
+                          sx={{
+                            bgcolor: `${statusColors.completed || "#673AB7"}10`,
+                            color: statusColors.completed || "#673AB7",
+                            fontWeight: "medium",
+                            border: `1px solid ${
+                              statusColors.completed || "#673AB7"
+                            }30`,
+                            py: 1,
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                </Card>
               </Grid>
-            </div>
-          )
-      )}
+            ))}
+          </Grid>
+
+          {/* Empty state for tabs */}
+          {(!requests[statuses[activeTab]] ||
+            requests[statuses[activeTab]].length === 0) && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 5,
+                textAlign: "center",
+                borderRadius: 3,
+                bgcolor: "rgba(0,0,0,0.02)",
+                border: "1px dashed rgba(0,0,0,0.1)",
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 60,
+                  height: 60,
+                  bgcolor: `${statusColors[statuses[activeTab]]}20`,
+                  color: statusColors[statuses[activeTab]],
+                  mx: "auto",
+                  mb: 2,
+                }}
+              >
+                {statusIcons[statuses[activeTab]]}
+              </Avatar>
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                No {statuses[activeTab]} requests found
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {statuses[activeTab] === "pending"
+                  ? "There are no pending requests at the moment."
+                  : statuses[activeTab] === "accepted"
+                  ? "No requests have been accepted yet."
+                  : statuses[activeTab] === "confirmed"
+                  ? "No requests have been confirmed yet."
+                  : "No requests have been completed yet."}
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={refreshRequests}
+                startIcon={<RefreshIcon />}
+                sx={{
+                  borderColor: statusColors[statuses[activeTab]],
+                  color: statusColors[statuses[activeTab]],
+                  "&:hover": {
+                    borderColor: statusColors[statuses[activeTab]],
+                    bgcolor: `${statusColors[statuses[activeTab]]}10`,
+                  },
+                }}
+              >
+                Refresh
+              </Button>
+            </Paper>
+          )}
+        </Grid>
+
+        {/* Right sidebar with tabs - hidden when showStatusFilter is false */}
+        <Grid item xs={12} md={3}>
+          <Collapse in={showStatusFilter} timeout={300}>
+            <Paper
+              sx={{
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                overflow: "hidden",
+                position: "sticky",
+                top: 20,
+              }}
+            >
+              <Box sx={{ p: 2, borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Request Status
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Filter by current status
+                </Typography>
+              </Box>
+
+              {/* Vertical tabs instead of horizontal */}
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                {statuses.map((status, index) => (
+                  <Button
+                    key={status}
+                    onClick={() => setActiveTab(index)}
+                    sx={{
+                      py: 2,
+                      px: 3,
+                      justifyContent: "flex-start",
+                      borderRadius: 0,
+                      borderLeft:
+                        activeTab === index
+                          ? `4px solid ${statusColors[status]}`
+                          : "4px solid transparent",
+                      bgcolor:
+                        activeTab === index
+                          ? `${statusColors[status]}10`
+                          : "transparent",
+                      color:
+                        activeTab === index
+                          ? statusColors[status]
+                          : "text.secondary",
+                      "&:hover": {
+                        bgcolor: `${statusColors[status]}10`,
+                      },
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Avatar
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            mr: 1.5,
+                            bgcolor:
+                              activeTab === index
+                                ? statusColors[status]
+                                : "rgba(0,0,0,0.08)",
+                            color:
+                              activeTab === index ? "white" : "text.secondary",
+                          }}
+                        >
+                          {statusIcons[status]}
+                        </Avatar>
+                        <Typography
+                          sx={{
+                            fontWeight: activeTab === index ? "bold" : "medium",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={requests[status].length}
+                        size="small"
+                        sx={{
+                          bgcolor:
+                            activeTab === index
+                              ? statusColors[status]
+                              : "rgba(0,0,0,0.08)",
+                          color:
+                            activeTab === index ? "white" : "text.secondary",
+                          fontWeight: "bold",
+                          minWidth: 28,
+                          height: 24,
+                        }}
+                      />
+                    </Box>
+                  </Button>
+                ))}
+              </Box>
+            </Paper>
+          </Collapse>
+        </Grid>
+      </Grid>
     </Container>
   );
 };
