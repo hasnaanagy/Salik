@@ -10,14 +10,20 @@ import {
   Image,
   Alert,
   Platform,
+  ScrollView,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { sendRequestAction } from "../../redux/slices/requestServiceSlice";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import CustomText from "../CustomeComponents/CustomText"; // Assuming this is now correct
-const { width, height } = Dimensions.get("window");
+import CustomText from "../CustomeComponents/CustomText";
 import BackButton from "../SharedComponents/BackButton";
+
+const { width, height } = Dimensions.get("window");
+
 const CustomerRequests = () => {
   const [activeTab, setActiveTab] = useState("fuel");
   const [description, setDescription] = useState("");
@@ -70,7 +76,7 @@ const CustomerRequests = () => {
     try {
       const serviceType = activeTab === "fuel" ? "fuel" : "mechanic";
       const locationData = {
-        type: "Point", // Add if required by your backend
+        type: "Point",
         coordinates: [userLocation.longitude, userLocation.latitude],
       };
 
@@ -90,74 +96,86 @@ const CustomerRequests = () => {
   };
 
   return (
-    <>
-    <View style={{marginBottom:Platform.OS === "ios" ? 0 : height * 0.02}}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ marginBottom: Platform.OS === "ios" ? 0 : height * 0.02 }}>
             <BackButton />
+          </View>
+
+          <View style={styles.container}>
+            <View style={styles.tabContainer}>
+              <Animated.View
+                style={[styles.tabBackground, { transform: [{ translateX }] }]}
+              />
+              <TouchableOpacity
+                style={styles.tab}
+                onPress={() => handleTabSwitch("fuel")}
+              >
+                <CustomText
+                  style={[
+                    styles.tabText,
+                    activeTab === "fuel"
+                      ? styles.activeTabText
+                      : styles.inactiveTabText,
+                  ]}
+                >
+                  Fuel Request
+                </CustomText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.tab}
+                onPress={() => handleTabSwitch("mechanic")}
+              >
+                <CustomText
+                  style={[
+                    styles.tabText,
+                    activeTab === "mechanic"
+                      ? styles.activeTabText
+                      : styles.inactiveTabText,
+                  ]}
+                >
+                  Mechanic Request
+                </CustomText>
+              </TouchableOpacity>
             </View>
 
-    <View style={styles.container}>
-      <View style={styles.tabContainer}>
-        <Animated.View
-          style={[styles.tabBackground, { transform: [{ translateX }] }]}
-        />
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => handleTabSwitch("fuel")}
-        >
-          <CustomText
-            style={[
-              styles.tabText,
-              activeTab === "fuel"
-                ? styles.activeTabText
-                : styles.inactiveTabText,
-            ]}
-          >
-            Fuel Request
-          </CustomText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => handleTabSwitch("mechanic")}
-        >
-          <CustomText
-            style={[
-              styles.tabText,
-              activeTab === "mechanic"
-                ? styles.activeTabText
-                : styles.inactiveTabText,
-            ]}
-          >
-            Mechanic Request
-          </CustomText>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.form}>
-        <Image
-          source={require("../../assets/help.png")}
-          style={styles.imageStyle}
-        />
-        <TextInput
-          style={styles.formTextArea}
-          placeholder="Describe your problem"
-          placeholderTextColor="#999"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={3}
-          textAlignVertical="top"
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <CustomText style={styles.buttonText}>Request Service</CustomText>
-        </TouchableOpacity>
-      </View>
-    </View>
-    </>
-
+            <View style={styles.form}>
+              <Image
+                source={require("../../assets/help.png")}
+                style={styles.imageStyle}
+              />
+              <TextInput
+                style={styles.formTextArea}
+                placeholder="Describe your problem"
+                placeholderTextColor="#999"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                <CustomText style={styles.buttonText}>Request Service</CustomText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -175,7 +193,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: height * 0.03,
     alignSelf: "center",
-    
   },
   tabBackground: {
     position: "absolute",
@@ -188,7 +205,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    
   },
   tabText: {
     fontSize: Platform.OS === "ios" ? width * 0.03 : width * 0.04,

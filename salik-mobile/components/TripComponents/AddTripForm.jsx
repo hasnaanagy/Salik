@@ -32,6 +32,27 @@ import SubmitButton from "./SubmitButton";
 import appColors from "../../constants/colors.js";
 import { GOOGLE_API_KEY } from "@env";
 
+// Utility function to format time in 'hh:mm AM/PM' format
+const formatTimeToHHMMAMPM = (date) => {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM/PM
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  return `${formattedHours}:${formattedMinutes} ${ampm}`;
+};
+
+// Utility function to parse 'hh:mm AM/PM' string into a Date object
+const parseTimeFromHHMMAMPM = (timeStr) => {
+  const [time, period] = timeStr.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
+
 // Memoized component for Departure Location field
 const DepartureLocationField = React.memo(
   ({ form, updateForm, error, editable, openMapModal }) => {
@@ -51,7 +72,7 @@ const DepartureLocationField = React.memo(
     };
 
     const handleTextChange = (text) => {
-      console.log("Text changed to:", text); // Log text input changes
+      console.log("Text changed to:", text);
       setInputValue(text);
     };
 
@@ -62,7 +83,7 @@ const DepartureLocationField = React.memo(
           <GooglePlacesAutocomplete
             placeholder="Enter departure location"
             onPress={(data, details) => {
-              console.log("onPress called with:", data); // Direct log in onPress
+              console.log("onPress called with:", data);
               handlePlaceSelect(data, details);
             }}
             query={{
@@ -89,7 +110,7 @@ const DepartureLocationField = React.memo(
               editable,
             }}
             listViewDisplayed="auto"
-            keyboardShouldPersistTaps="always" // Changed to always for better tap handling
+            keyboardShouldPersistTaps="always"
             onFail={(error) => console.log("Autocomplete error:", error)}
           />
           <TouchableOpacity
@@ -247,13 +268,7 @@ const DateTimeFields = React.memo(
         value={form.time}
         mode="time"
         onChange={(time) => updateForm("time", time)}
-        displayFormat={(time) =>
-          time.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })
-        }
+        displayFormat={formatTimeToHHMMAMPM} // Use the utility function for display
         disabled={disabled}
       />
 
@@ -304,7 +319,7 @@ export default function AddTripForm() {
         carType: editRide.carType || "",
         date: editRide.date ? new Date(editRide.date) : new Date(),
         time: editRide.time
-          ? new Date(`1970-01-01T${editRide.time.padStart(5, "0")}:00`)
+          ? parseTimeFromHHMMAMPM(editRide.time) // Parse the 'hh:mm AM/PM' format
           : new Date(),
       };
       setForm(newForm);
@@ -333,7 +348,7 @@ export default function AddTripForm() {
     }
     if (error && !alertVisible) {
       setAlertVisible(true);
-      Alert.alert("Error", ` ❌ ${error.message}`, [
+      Alert.alert("Error", `❌ ${error.message}`, [
         {
           text: "OK",
           onPress: () => {
@@ -367,12 +382,9 @@ export default function AddTripForm() {
       totalSeats: parseInt(form.totalSeats, 10),
       price: parseFloat(form.price),
       date: form.date.toISOString().split("T")[0],
-      time: form.time.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      time: formatTimeToHHMMAMPM(form.time), // Use the utility function for submission
     };
+    console.log("Submitting ride data:", rideData); // Log the data being sent
     if (editRide) {
       dispatch(updateRideAction({ id: editRide._id, form: rideData }));
     } else {
@@ -485,7 +497,7 @@ export default function AddTripForm() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           contentContainerStyle={styles.flatListContent}
-          keyboardShouldPersistTaps="always" // Ensure taps propagate through FlatList
+          keyboardShouldPersistTaps="always"
         />
 
         <Modal
