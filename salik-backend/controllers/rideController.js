@@ -15,26 +15,29 @@ exports.createRide = async (req, res) => {
       return res.status(403).json({ message: "Only Providers can create rides." });
     }
 
+    // Check if both national ID and driving license are verified
+    if (!user.nationalIdVerified || !user.licenseVerified) {
+      return res.status(403).json({
+        message: "Your national ID and driving license must be verified by an admin before creating a ride.",
+      });
+    }
+
     const { carType, fromLocation, toLocation, totalSeats, price, date, time } = req.body;
 
     if (!carType || !fromLocation || !toLocation || !totalSeats || !price || !date || !time) {
       return res.status(400).json({ message: "All fields including 'time' are required." });
     }
 
-    // Validate time format (Only 12-hour AM/PM format is allowed)
     if (!moment(time, "h:mm A", true).isValid()) {
       return res.status(400).json({ message: "Invalid time format. Please use 'hh:mm AM/PM' format." });
     }
 
-    // Convert AM/PM format to 24-hour format before storing
     const rideDateTime = moment(`${date} ${time}`, "YYYY-MM-DD h:mm A").toDate();
 
-    // Check if ride time conversion is valid
     if (isNaN(rideDateTime.getTime())) {
       return res.status(400).json({ message: "Invalid date or time format." });
     }
 
-    // Check if the provider already has a ride at the same date and time
     const existingRide = await Ride.findOne({
       providerId: user._id,
       rideDateTime,
@@ -62,6 +65,8 @@ exports.createRide = async (req, res) => {
     res.status(500).json({ message: "Error creating ride", error: err.message });
   }
 };
+
+// Other controllers remain unchanged...
 
 // Search rides
 

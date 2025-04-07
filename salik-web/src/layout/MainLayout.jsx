@@ -14,6 +14,7 @@ import Requests from "../components/Requests";
 import ProtectedRoute from "./ProtectedRoute"; // Import ProtectedRoute
 import Home2 from "../pages/Home2";
 import Services from "../pages/Services";
+import Dashboard from "../pages/Dashboard";
 
 export default function MainLayout() {
   return (
@@ -22,6 +23,7 @@ export default function MainLayout() {
         {/* Public Routes - Accessible by everyone */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<SharedLayout />}>
           <Route index element={<Home />} />
 
@@ -36,7 +38,6 @@ export default function MainLayout() {
             <Route path="/activities" element={<Activity />} />
             <Route path="/requests" element={<Requests />} />
             <Route path="/home2" element={<Home2 />} />
-            <Route path="/services" element={<Services />} />
             <Route path="/servicesprovider" element={<Services />} />
           </Route>
         </Route>

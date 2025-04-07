@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import { loginUser, clearError } from "../redux/slices/authSlice"; // Import loginUser action
 import { useNavigate } from "react-router-dom";
-
 import { loginUser } from "../redux/slices/authSlice";
-
 import {
   FormControl,
   Box,
@@ -18,69 +15,68 @@ import { StyledOutlinedInput, StyledInputLabel } from "../custom/MainInput";
 import { MainButton } from "../custom/MainButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "../styles/styles.module.css";
-import { validateField } from "../validation/validation"; // Add this import statement
+import { validateField } from "../validation/validation";
+
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error, user, token } = useSelector((state) => state.auth);
 
   const [successMessage, setSuccessMessage] = useState("");
+  const [formData, setFormData] = useState({
+    phone: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  
+
     const result = await dispatch(loginUser(formData));
-  
+
     if (loginUser.fulfilled.match(result)) {
       if (result.payload.token) {
-        // Show success message
         setSuccessMessage("✅ Login successful!");
         setErrors({ general: "" });
-        
-     
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
       }
     } else {
       console.error("Login error:", result.payload);
       setErrors({ general: result.payload || "Invalid credentials" });
     }
   };
-  
-  
-  
 
-  const [formData, setFormData] = useState({
-    phone: "",
-    password: "",
-  });
-
-  const [errors, setErrors] = useState({});
-  const [passwordVisible, setPasswordVisible] = useState(false);
+  // Navigate based on user type after successful login
+  useEffect(() => {
+    if (token && user) {
+      console.log("User after login:", user); // Debug log
+      setTimeout(() => {
+        if (user.userType === "admin") { // Use user.userType instead of user.type
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      }, 2000);
+    }
+  }, [token, user, navigate]); // Depend on token and user
 
   const handlePasswordToggle = () => {
     setPasswordVisible((prev) => !prev);
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
+
     setFormData((prevState) => {
       const updatedFormData = { ...prevState, [name]: value };
-      
       const error = validateField(name, value, updatedFormData);
       setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
-      
       return updatedFormData;
     });
   };
-  
-
-  
-
 
   return (
-    <form  onSubmit={handleLogin} noValidate autoComplete="off">
+    <form onSubmit={handleLogin} noValidate autoComplete="off">
       <Box className={styles.formBox}>
         {["phone", "password"].map((field) => (
           <FormControl key={field} error={!!errors[field]}>
@@ -115,23 +111,20 @@ export default function Login() {
           </FormControl>
         ))}
 
-        {/* Submit Button */}
         <MainButton
-                type="submit"
-                style={{ width:'100%'}}
-                disabled={loading}
+          type="submit"
+          style={{ width: "100%" }}
+          disabled={loading}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
         </MainButton>
       </Box>
-     {errors.general && <Alert severity="error">{errors.general}</Alert>}
-
+      {errors.general && <Alert severity="error">{errors.general}</Alert>}
       {successMessage && (
-  <Alert severity="success" style={{ marginTop: 20 }}>
-    {successMessage}
-  </Alert>
-)}
-
+        <Alert severity="success" style={{ marginTop: 20 }}>
+          {successMessage}
+        </Alert>
+      )}
     </form>
   );
 }
