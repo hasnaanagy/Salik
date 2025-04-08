@@ -19,7 +19,10 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
       const newLocation = e.latlng;
       setPosition(newLocation);
       map.flyTo(newLocation, 14, { animate: true });
-      reverseGeocode(newLocation.lat, newLocation.lng, onLocationSelect);
+      // Pass the location to the parent component
+      if (onLocationSelect) {
+        reverseGeocode(newLocation.lat, newLocation.lng, onLocationSelect);
+      }
     },
   });
 

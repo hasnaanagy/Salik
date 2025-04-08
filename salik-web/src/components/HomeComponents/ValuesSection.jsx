@@ -108,8 +108,8 @@ const ValuesSection = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 5000,
-    prevArrow: <SlickArrowLeft />,
-    nextArrow: <SlickArrowRight />,
+    // prevArrow: <SlickArrowLeft />,
+    // nextArrow: <SlickArrowRight />,
     responsive: [
       {
         breakpoint: 1024,

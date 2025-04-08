@@ -14,7 +14,8 @@ const rideRoutes = require("./routes/rideRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const rideBookingsRoutes = require("./routes/rideBookingRoutes");
-const requestRoutes = require("./routes/requestRoutes"); // Ensure requestRoutes is a function
+const requestRoutes = require("./routes/requestRoutes");
+const serviceReviewRoutes = require("./routes/serviceReviewRoutes"); // Add this line
 
 const app = express();
 const server = http.createServer(app);
@@ -37,7 +38,8 @@ app.use("/api/rides", rideRoutes);
 app.use("/api/service", serviceRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/rideBooking", rideBookingsRoutes);
-app.use("/api/request", requestRoutes(io)); // Ensure requestRoutes is a function
+app.use("/api/request", requestRoutes(io));
+app.use("/api/serviceReviews", serviceReviewRoutes); // Add this line
 
 // WebSocket Handling
 io.on("connection", (socket) => {

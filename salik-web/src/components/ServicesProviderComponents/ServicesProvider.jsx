@@ -25,6 +25,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -192,11 +193,90 @@ const ServicesProvider = () => {
         </Box>
       )}
 
-      {/* Error State */}
+      {/* Error State - Improved UI */}
       {!loading && error && (
-        <Typography color="error" textAlign="center" sx={{ my: 2 }}>
-          Failed to load services. Please try again later.
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 6,
+            px: 3,
+            my: 4,
+            borderRadius: "16px",
+            backgroundColor: "rgba(244, 67, 54, 0.05)",
+            border: "1px solid rgba(244, 67, 54, 0.2)",
+            maxWidth: "600px",
+            mx: "auto",
+            animation: `${fadeIn} 0.5s ease forwards`,
+          }}
+        >
+          <Box
+            sx={{
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(244, 67, 54, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 3,
+            }}
+          >
+            <DeleteIcon
+              sx={{
+                fontSize: "40px",
+                color: "#f44336",
+              }}
+            />
+          </Box>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            textAlign="center"
+            color="#d32f2f"
+            sx={{ mb: 2 }}
+          >
+            Oops! Something went wrong
+          </Typography>
+          <Typography
+            variant="body1"
+            textAlign="center"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            {error || "We couldn't load your services. Please try again later."}
+          </Typography>
+          <Box
+            component="button"
+            onClick={() => dispatch(getProviderServices())}
+            sx={{
+              backgroundColor: "#f44336",
+              color: "#fff",
+              border: "none",
+              borderRadius: "30px",
+              padding: "10px 24px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "#f57f17",
+                transform: "translateY(-2px)",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+              },
+              "&:active": {
+                transform: "translateY(0)",
+              },
+            }}
+          >
+            <RefreshIcon sx={{ fontSize: "20px" }} />
+            Try Again
+          </Box>
+        </Box>
       )}
 
       {/* Success State */}

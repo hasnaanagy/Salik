@@ -3,19 +3,19 @@ import apiService from "../../api/apiService";
 
 const initialState = {
   requests: [],
+  services: [], // Add services to initial state
   error: null,
   isLoading: false,
 };
 
-
 export const sendRequestAction = createAsyncThunk(
   "requests/sendRequestAction",
-  async ({serviceType,location,problem}, { rejectWithValue }) => {
+  async ({ serviceType, location, problem }, { rejectWithValue }) => {
     try {
       const response = await apiService.create(`request`, {
         serviceType,
-        location,       
-        problemDescription:problem
+        location,
+        problemDescription: problem,
       });
       console.log(response);
       return response;
@@ -25,52 +25,66 @@ export const sendRequestAction = createAsyncThunk(
     }
   }
 );
-
 export const getAllResquestsAction = createAsyncThunk(
-    "requests/getAllResquestsAction",
-    async (_,{ rejectWithValue }) => {
-      try {
-        const response = await apiService.getAll("request");
-        console.log(response);
-        return response.requests;
-      } catch (e) {
-        return rejectWithValue(e.message);
-      }
+  "requests/getAllResquestsAction",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getAll("request");
+      console.log(response);
+      return response.requests;
+    } catch (e) {
+      return rejectWithValue(e.message);
     }
-  );
-  export const updateRequestStateAction = createAsyncThunk(
-    "requests/updateRequestStateAction",
-    async ({action,requestId}, { rejectWithValue }) => {
-      try {
-        const response = await apiService.patch(`request`, {
-          action,
-          requestId
-        });
-        console.log(response);
-        return response;
-      } catch (e) {
-        console.log(e);
-        return rejectWithValue(e.message);
-      }
+  }
+);
+export const updateRequestStateAction = createAsyncThunk(
+  "requests/updateRequestStateAction",
+  async ({ action, requestId }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.patch(`request`, {
+        action,
+        requestId,
+      });
+      console.log(response);
+      return response;
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
     }
-  );
-  export const confirmRequestAction = createAsyncThunk(
-    "requests/confirmRequestAction",
-    async ({requestId,action,providerId}, { rejectWithValue }) => {
-      try {
-        const response = await apiService.patch(`request`, {
-          requestId,
-          action,
-          providerId
-        });
-        console.log(response);
-        return response;
-      } catch (e) {
-        console.log(e);
-        return rejectWithValue(e.message);
-      }
+  }
+);
+export const confirmRequestAction = createAsyncThunk(
+  "requests/confirmRequestAction",
+  async ({ requestId, action, providerId }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.patch(`request`, {
+        requestId,
+        action,
+        providerId,
+      });
+      console.log(response);
+      return response;
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
     }
-  );
+  }
+);
+export const getAllFilterServices = createAsyncThunk(
+  "requests/getAllFilterServices",
+  async ({ latitude, longitude, serviceType }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getAll(
+        `service/search?latitude=${latitude}&longitude=${longitude}&serviceType=${serviceType}`
+      );
+      console.log(response);
+      return response.services || []; // Ensure we return an empty array if no services
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
+    }
+  }
+);
 const requestSlice = createSlice({
   name: "requests",
   initialState,
@@ -108,15 +122,28 @@ const requestSlice = createSlice({
       state.error = action.payload;
     });
     builder.addCase(updateRequestStateAction.pending, (state, action) => {
-        state.isLoading = true;
-      });
-      builder.addCase(updateRequestStateAction.fulfilled, (state, action) => {
-        state.isLoading = false;
-      });
-      builder.addCase(updateRequestStateAction.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      });
+      state.isLoading = true;
+    });
+    builder.addCase(updateRequestStateAction.fulfilled, (state, action) => {
+      state.isLoading = false;
+    });
+    builder.addCase(updateRequestStateAction.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    });
+    builder.addCase(getAllFilterServices.pending, (state, action) => {
+      state.isLoading = true;
+    });
+    // Make sure the reducer properly handles the services state
+    builder.addCase(getAllFilterServices.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.services = action.payload;
+      state.error = null; // Clear any previous errors
+    });
+    builder.addCase(getAllFilterServices.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    });
   },
 });
 

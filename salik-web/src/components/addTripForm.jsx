@@ -407,7 +407,7 @@ const AddTripForm = () => {
               }}
               disabled={loading}
             >
-              {loading ? "Submitting..." : "Confirm Pickup"}
+              {loading ? "Submitting..." : "Add Trip"}
             </Button>
           </form>
         </Grid>
