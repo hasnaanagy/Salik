@@ -3,37 +3,30 @@ const User = require("../models/User");
 
 // Add review controller
 exports.addReview = async (req, res) => {
-  const { rating, comment } = req.body;
+  const { rating, comment, serviceType } = req.body;
   const providerId = req.params.id;
   try {
-    // Check if the provider exists and is of type "provider"
     const provider = await User.findById(providerId);
     if (!provider) {
       return res.status(400).json({ message: "Invalid provider ID" });
     }
 
-    // Check if the user adding the review is a customer
-    const customer = await User.findById(req.user._id); // req.userId comes from token
+    const customer = await User.findById(req.user._id);
     if (!customer || customer.type !== "customer") {
-      return res
-        .status(403)
-        .json({ message: "Only customers can add reviews" });
+      return res.status(403).json({ message: "Only customers can add reviews" });
     }
 
-    // Create a new review
     const newReview = new Review({
       customerId: req.user._id,
       providerId,
       rating,
       comment,
+      serviceType, // Add serviceType from request body
     });
 
-    // Save the review to the database
     await newReview.save();
 
-    res
-      .status(201)
-      .json({ message: "Review added successfully", review: newReview });
+    res.status(201).json({ message: "Review added successfully", review: newReview });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error, please try again" });
@@ -42,12 +35,18 @@ exports.addReview = async (req, res) => {
 
 exports.getProviderReviews = async (req, res) => {
   const { providerId } = req.params;
+  const { serviceType } = req.query; // Optional query param: "ride", "fuel", or "mechanic"
 
   try {
-    const reviews = await Review.find({ providerId })
-      .populate("customerId", "fullName profileImg  ") // Include customer details in response
-      .populate("providerId", "fullName profileImg phone nationalId") // Include provider details in response
-      .sort({ createdAt: -1 }); // Sort reviews by newest first
+    const query = { providerId };
+    if (serviceType) {
+      query.serviceType = serviceType; // Filter by service type if provided
+    }
+
+    const reviews = await Review.find(query)
+      .populate("customerId", "fullName profileImg")
+      .populate("providerId", "fullName profileImg phone nationalId")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ reviews });
   } catch (error) {

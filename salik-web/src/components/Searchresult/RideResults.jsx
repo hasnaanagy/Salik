@@ -8,7 +8,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { Alert } from "@mui/joy";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
-// Animation keyframes
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -20,7 +19,6 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-// Function to format the date
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     weekday: "long",
@@ -30,7 +28,6 @@ const formatDate = (dateString) => {
   });
 };
 
-// Function to get icon based on vehicle type
 const getVehicleIcon = (vehicleType) => {
   return vehicleType === "car" ? "/images/car.png" : "/public/images/car.png";
 };
@@ -69,7 +66,6 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
     );
   }
 
-  // Group rides by date
   const groupedRides = rideData
     ? rideData.rides.reduce((acc, ride) => {
         const rideDate = formatDate(ride.rideDateTime);
@@ -122,14 +118,7 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                   animationDelay: `${index * 0.1}s`,
                 }}
               >
-                {/* Time Indicator */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    minWidth: { xs: 70, md: 90 },
-                  }}
-                >
+                <Box sx={{ display: "flex", alignItems: "center", minWidth: { xs: 70, md: 90 } }}>
                   <Box
                     sx={{
                       width: 14,
@@ -143,11 +132,7 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                   />
                   <Typography
                     level="body-sm"
-                    sx={{
-                      fontSize: { xs: "14px", md: "16px" },
-                      fontWeight: "500",
-                      color: "#555",
-                    }}
+                    sx={{ fontSize: { xs: "14px", md: "16px" }, fontWeight: "500", color: "#555" }}
                   >
                     {new Date(ride.rideDateTime).toLocaleTimeString("en-US", {
                       hour: "2-digit",
@@ -157,7 +142,6 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                   </Typography>
                 </Box>
 
-                {/* Ride Card */}
                 <Card
                   variant="outlined"
                   sx={{
@@ -191,35 +175,24 @@ export function RideResults({ loading, error, rideData, selectedRide }) {
                     <CardContent sx={{ p: 1.5 }}>
                       <Typography
                         level="title-md"
-                        sx={{
-                          fontSize: { xs: "16px", md: "18px" },
-                          fontWeight: "600",
-                          color: "#333",
-                        }}
+                        sx={{ fontSize: { xs: "16px", md: "18px" }, fontWeight: "600", color: "#333" }}
                       >
-                        {ride.providerId.fullName
-                          .toLowerCase()
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                        {ride.providerId?.fullName
+                          ?.toLowerCase()
+                          .replace(/\b\w/g, (char) => char.toUpperCase()) || "Unknown Provider"}
                       </Typography>
                       <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
                         <Typography
                           level="body-sm"
-                          sx={{
-                            fontSize: { xs: "14px", md: "15px" },
-                            color: "#666",
-                          }}
+                          sx={{ fontSize: { xs: "14px", md: "15px" }, color: "#666" }}
                         >
                           Price: <strong>${ride.price}</strong>
                         </Typography>
                         <Typography
                           level="body-sm"
-                          sx={{
-                            fontSize: { xs: "14px", md: "15px" },
-                            color: "#666",
-                          }}
+                          sx={{ fontSize: { xs: "14px", md: "15px" }, color: "#666" }}
                         >
-                          Seats:{" "}
-                          <strong>{ride.totalSeats - ride.bookedSeats}</strong>
+                          Seats: <strong>{ride.totalSeats - ride.bookedSeats}</strong>
                         </Typography>
                       </Stack>
                     </CardContent>
