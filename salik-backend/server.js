@@ -14,6 +14,7 @@ const serviceRoutes = require("./routes/serviceRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const rideBookingsRoutes = require("./routes/rideBookingRoutes");
 const requestRoutes = require("./routes/requestRoutes");
+const serviceReviewRoutes = require("./routes/serviceReviewRoutes"); // Add this line
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,7 @@ app.use("/api/service", serviceRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/rideBooking", rideBookingsRoutes);
 app.use("/api/request", requestRoutes(io));
+app.use("/api/serviceReviews", serviceReviewRoutes); // Add this line
 
 // WebSocket Handling
 io.on("connection", (socket) => {
@@ -58,9 +60,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("confirm-provider", ({ customerId, providerId, requestId }) => {
-    console.log(`Customer ${customerId} confirmed Provider ${providerId} for Request ${requestId}`);
+    console.log(
+      `Customer ${customerId} confirmed Provider ${providerId} for Request ${requestId}`
+    );
     if (connectedProviders.has(providerId)) {
-      connectedProviders.get(providerId).emit("request-confirmed", { requestId, customerId });
+      connectedProviders
+        .get(providerId)
+        .emit("request-confirmed", { requestId, customerId });
     }
   });
 

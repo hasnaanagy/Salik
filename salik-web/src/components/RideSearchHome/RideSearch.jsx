@@ -3,20 +3,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Grid, Stack, Typography } from "@mui/material";
 import { RideIcons } from "./RideIcons";
 import { RideForm } from "./RideForm";
+import { RequestService } from "../RequestService";
+import { ServiceProviderResults } from "../ServiceProviderResults";
 import { RideResults } from "../Searchresult/RideResults";
 import MapComponent from "../Mapcomponent/MapComponent";
 import RidePersonDetais from "../Searchresult/RidePersonDetais";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { keyframes } from "@mui/system";
-import { RequestService } from "../RequestService";
 import { fetchRideData } from "../../redux/slices/RideSlice";
 
 export function RideSearch() {
   const [viewRequestForm, setViewRequestForm] = useState(false);
   const [serviceType, setServiceType] = useState(null);
-  const dispatch = useDispatch();
-  const { data: rideData, loading, error } = useSelector((state) => state.ride);
-
   const [view, setView] = useState("search");
   const [selectedRide, setSelectedRide] = useState(null);
   const [formData, setFormData] = useState({
@@ -25,10 +23,18 @@ export function RideSearch() {
     date: "",
     time: "",
   });
-  const [focusedInput, setFocusedInput] = useState("fromLocation"); // Track focused input
+  const [focusedInput, setFocusedInput] = useState("fromLocation");
+  const [pickupCoords, setPickupCoords] = useState(null);
+  const [providers, setProviders] = useState([]);
 
-  const fromRef = useRef(null); // Ref for "fromLocation"
-  const toRef = useRef(null); // Ref for "toLocation"
+  const dispatch = useDispatch();
+  const { data: rideData, loading, error } = useSelector((state) => state.ride);
+  const { isLoading: providersLoading, error: providersError } = useSelector(
+    (state) => state.requestSlice // Fixed typo
+  );
+
+  const fromRef = useRef(null);
+  const toRef = useRef(null);
 
   const fadeIn = keyframes`
     from { opacity: 0; transform: translateY(20px); }
@@ -40,8 +46,6 @@ export function RideSearch() {
     to { opacity: 1; transform: scale(1); }
   `;
 
-  const [pickupCoords, setPickupCoords] = useState(null);
-
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -50,17 +54,23 @@ export function RideSearch() {
   };
 
   const handleFocus = (inputName) => {
-    setFocusedInput(inputName); // Update focused input
+    setFocusedInput(inputName);
   };
 
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setFormData((prev) => ({ ...prev, [focusedInput]: address })); // Set location in focused input
+    setFormData((prev) => ({ ...prev, [focusedInput]: address }));
   };
 
   const handleSubmit = () => {
+    console.log("Submitting formData:", formData);
+    console.log("ServiceType before submit:", serviceType);
+    if (!serviceType) setServiceType("Ride"); // Fallback to "Ride" if not set
     setView("results");
-    dispatch(fetchRideData(formData));
+    dispatch(fetchRideData(formData)).then((result) => {
+      console.log("Dispatch result:", result);
+      console.log("Ride state after dispatch:", { rideData, loading, error });
+    });
   };
 
   const handleRideClick = (ride) => {
@@ -75,7 +85,14 @@ export function RideSearch() {
 
   const handleBackToSearch = () => {
     setSelectedRide(null);
+    setProviders([]);
+    setServiceType(null); // Reset serviceType when going back
     setView("search");
+  };
+
+  const handleProvidersFound = (services) => {
+    setProviders(services);
+    setView("results");
   };
 
   return (
@@ -136,12 +153,19 @@ export function RideSearch() {
               formData={formData}
               handleChange={handleChange}
               handleSubmit={handleSubmit}
-              handleFocus={handleFocus} // Pass focus handler
-              fromRef={fromRef} // Pass ref
-              toRef={toRef} // Pass ref
+              handleFocus={handleFocus}
+              fromRef={fromRef}
+              toRef={toRef}
             />
           )}
-          {viewRequestForm && <RequestService serviceType={serviceType} />}
+          {viewRequestForm && (
+            <RequestService
+              serviceType={serviceType}
+              onLocationSelect={handleLocationSelect}
+              selectedLocation={pickupCoords}
+              onProvidersFound={handleProvidersFound}
+            />
+          )}
         </Grid>
 
         {view !== "search" && (
@@ -157,12 +181,22 @@ export function RideSearch() {
                     sx={{ mr: 1, color: "#FFB800" }}
                   />
                 </Button>
-                <RideResults
-                  rideData={rideData}
-                  loading={loading}
-                  error={error}
-                  selectedRide={handleRideClick}
-                />
+                {console.log("Rendering results, serviceType:", serviceType)}
+                {serviceType === "Ride" ? (
+                  <RideResults
+                    loading={loading}
+                    error={error}
+                    rideData={rideData}
+                    selectedRide={handleRideClick}
+                  />
+                ) : (
+                  <ServiceProviderResults
+                    loading={providersLoading}
+                    error={providersError}
+                    services={providers}
+                    onSelectProvider={handleRideClick}
+                  />
+                )}
               </>
             )}
 
@@ -200,7 +234,7 @@ export function RideSearch() {
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
-            focusedInput={focusedInput} // Pass focused input
+            focusedInput={focusedInput}
           />
         </Grid>
       </Grid>

@@ -210,7 +210,10 @@ exports.searchServices = async (req, res) => {
       query.serviceType = serviceType;
     }
 
-    const services = await Service.find(query);
+    const services = await Service.find(query).populate(
+      "userId",
+      "fullName phone profileImg"
+    );
 
     if (services.length === 0) {
       return res.status(404).json({ message: "No services found." });

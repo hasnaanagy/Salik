@@ -45,7 +45,7 @@ export const deleteReviewAction = createAsyncThunk(
   "reviews/deleteReviewAction",
   async (reviewId, { rejectWithValue }) => {
     try {
-      console.log(" delete",reviewId)
+      console.log(" delete", reviewId);
       const response = await apiService.delete("reviews", reviewId);
       return response;
     } catch (e) {
@@ -57,6 +57,8 @@ export const deleteReviewAction = createAsyncThunk(
 export const updateReviewAction = createAsyncThunk(
   "reviews/updateReviewAction",
   async ({ reviewId, rating, comment }, { rejectWithValue }) => {
+    console.log(reviewId);
+    console.log(rating, comment);
     try {
       const response = await apiService.update(`reviews/${reviewId}`, {
         rating,
