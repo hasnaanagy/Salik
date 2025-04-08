@@ -1,16 +1,18 @@
 import React, { useEffect } from "react";
-import { Grid, Typography } from "@mui/material";
+import { Grid, Typography, Box } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchBooking,
   fetchProviderRides,
 } from "../redux/slices/activitySlice";
 import Cards from "./Card";
+import ActivityStyles from "../styles/ActivityStyle"; // Adjust the path if needed
 
 const ActivityComponent = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const userType = user?.type;
+
   // Fetch rides based on user type
   const fetchActivity = async () => {
     if (userType === "customer") {
@@ -21,6 +23,7 @@ const ActivityComponent = () => {
       await dispatch(fetchProviderRides());
     }
   };
+
   useEffect(() => {
     fetchActivity();
   }, [dispatch, userType]);
@@ -38,34 +41,60 @@ const ActivityComponent = () => {
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>{error}</Typography>;
 
+  // Check if there are no rides at all
+  const hasNoRides =
+    upcoming.length === 0 && completed.length === 0 && canceled.length === 0;
+
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={10} md={8} lg={6}>
-        <Typography variant="h3" sx={{ marginBottom: 5 }}>
-          Upcoming
-        </Typography>
-        {upcoming.length > 0 ? (
-          upcoming.map((ride) => <Cards key={ride._id} ride={ride} />)
+    <Grid sx={ActivityStyles.container}>
+      <Grid item sx={ActivityStyles.gridItem}>
+        {hasNoRides ? (
+          <Box sx={ActivityStyles.noRidesBox}>
+            <Typography variant="h5" sx={ActivityStyles.noRidesText}>
+              No Activities Yet
+            </Typography>
+          </Box>
         ) : (
-          <Typography>No upcoming rides</Typography>
-        )}
+          <>
+            <Typography variant="h3" sx={ActivityStyles.sectionTitle}>
+              Upcoming
+            </Typography>
+            {upcoming.length > 0 ? (
+              upcoming.map((ride) => <Cards key={ride._id} ride={ride} />)
+            ) : (
+              <Typography sx={ActivityStyles.emptySectionText}>
+                No upcoming rides
+              </Typography>
+            )}
 
-        <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
-          Past
-        </Typography>
-        {completed.length > 0 ? (
-          completed.map((ride) => <Cards key={ride._id} ride={ride} />)
-        ) : (
-          <Typography>No Past rides</Typography>
-        )}
+            <Typography
+              variant="h3"
+              sx={ActivityStyles.sectionTitleWithTopMargin}
+            >
+              Past
+            </Typography>
+            {completed.length > 0 ? (
+              completed.map((ride) => <Cards key={ride._id} ride={ride} />)
+            ) : (
+              <Typography sx={ActivityStyles.emptySectionText}>
+                No past rides
+              </Typography>
+            )}
 
-        <Typography variant="h3" sx={{ marginBottom: 5, marginTop: 5 }}>
-          Canceled
-        </Typography>
-        {canceled.length > 0 ? (
-          canceled.map((ride) => <Cards key={ride._id} ride={ride} />)
-        ) : (
-          <Typography>No Canceled rides</Typography>
+            <Typography
+              variant="h3"
+              sx={ActivityStyles.sectionTitleWithTopMargin}
+            >
+              Canceled
+            </Typography>
+            {canceled.length > 0 ? (
+              canceled.map((ride) => <Cards key={ride._id} ride={ride} />)
+            ) : (
+              <Typography sx={ActivityStyles.emptySectionText}>
+                No canceled rides
+              </Typography>
+            )}
+          </>
         )}
       </Grid>
     </Grid>

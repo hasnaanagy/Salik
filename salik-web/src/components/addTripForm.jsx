@@ -9,32 +9,11 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { createRide } from "../redux/slices/RideSlice";
+import { useForm } from "react-hook-form";
+import { createRide, getRideById, updateRideAction } from "../redux/slices/RideSlice";
 import MapComponent from "./Mapcomponent/MapComponent";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getRideById, updateRideAction } from "../redux/slices/RideSlice";
-
-const schema = yup.object().shape({
-  fromLocation: yup.string().required("Pickup location is required"),
-  toLocation: yup.string().required("Dropoff location is required"),
-  carType: yup.string().required("Car type is required"),
-  totalSeats: yup
-    .number()
-    .typeError("Seats must be a number")
-    .min(1, "Seats must be at least 1")
-    .max(28, "Seats cannot exceed 28")
-    .required("Seats are required"),
-  price: yup
-    .number()
-    .typeError("Price must be a number")
-    .min(0, "Price cannot be negative")
-    .required("Price is required"),
-  date: yup.string().required("Date is required"),
-  time: yup.string().required("Time is required"),
-});
+import { textFieldStyles, buttonStyles, containerStyles } from "../styles/AddTripStyle";
 
 const AddTripForm = () => {
   const { ride } = useSelector((state) => state.ride) || {};
@@ -45,12 +24,11 @@ const AddTripForm = () => {
 
   const { loading, error } = useSelector((state) => state.ride);
   const {
-    control,
+    register,
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(schema),
     defaultValues: {
       fromLocation: "",
       toLocation: "",
@@ -64,25 +42,24 @@ const AddTripForm = () => {
 
   const [pickupCoords, setPickupCoords] = useState(null);
   const [successMessage, setSuccessMessage] = useState(false);
-  const [focusedInput, setFocusedInput] = useState("fromLocation"); // Track focused input
+  const [focusedInput, setFocusedInput] = useState("fromLocation");
 
-  const fromRef = useRef(null); // Ref for "fromLocation"
-  const toRef = useRef(null); // Ref for "toLocation"
+  const fromRef = useRef(null);
+  const toRef = useRef(null);
 
   useEffect(() => {
     if (fromRef.current && !rideId) {
-      fromRef.current.focus(); // Focus "fromLocation" on mount if not editing
+      fromRef.current.focus();
     }
   }, [fromRef, rideId]);
 
   const handleLocationSelect = (lat, lng, address) => {
     setPickupCoords({ lat, lng });
-    setValue(focusedInput, address); // Set location in the focused input
+    setValue(focusedInput, address, { shouldValidate: true });
   };
 
   const handleFocus = (inputName) => {
     if (!rideId) {
-      // Only allow focus change if not editing
       setFocusedInput(inputName);
     }
   };
@@ -136,7 +113,7 @@ const AddTripForm = () => {
   }, [ride, rideId, setValue]);
 
   return (
-    <Container maxWidth="lg" style={{ padding: "50px", marginBottom: "50px" }}>
+    <Container maxWidth="lg" sx={containerStyles}>
       <Grid container spacing={4} alignItems="center">
         <Grid item xs={12} md={6}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -150,278 +127,125 @@ const AddTripForm = () => {
             </Typography>
           )}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
-              name="fromLocation"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  inputRef={fromRef} // Add ref
-                  label="Pickup Location"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.fromLocation}
-                  helperText={errors.fromLocation?.message}
-                  disabled={!!rideId}
-                  onFocus={() => handleFocus("fromLocation")} // Track focus
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("fromLocation", {
+                required: "Pickup location is required",
+              })}
+              inputRef={fromRef}
+              label="Pickup Location"
+              fullWidth
+              margin="normal"
+              error={!!errors.fromLocation}
+              helperText={errors.fromLocation?.message}
+              disabled={!!rideId}
+              onFocus={() => handleFocus("fromLocation")}
+              sx={textFieldStyles}
+              InputLabelProps={{ shrink: true }} // Fix: Ensure label shrinks
             />
-            <Controller
-              name="toLocation"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  inputRef={toRef} // Add ref
-                  label="Dropoff Location"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.toLocation}
-                  helperText={errors.toLocation?.message}
-                  disabled={!!rideId}
-                  onFocus={() => handleFocus("toLocation")} // Track focus
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("toLocation", {
+                required: "Dropoff location is required",
+              })}
+              inputRef={toRef}
+              label="Dropoff Location"
+              fullWidth
+              margin="normal"
+              error={!!errors.toLocation}
+              helperText={errors.toLocation?.message}
+              disabled={!!rideId}
+              onFocus={() => handleFocus("toLocation")}
+              sx={textFieldStyles}
+              InputLabelProps={{ shrink: true }} // Fix: Ensure label shrinks
             />
-            <Controller
-              name="carType"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Car Type"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.carType}
-                  helperText={errors.carType?.message}
-                  disabled={!!rideId}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("carType", {
+                required: "Car type is required",
+              })}
+              label="Car Type"
+              fullWidth
+              margin="normal"
+              error={!!errors.carType}
+              helperText={errors.carType?.message}
+              disabled={!!rideId}
+              sx={textFieldStyles}
+              InputLabelProps={{ shrink: true }} // Optional: Added for consistency
             />
-            <Controller
-              name="totalSeats"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Total Seats"
-                  type="number"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.totalSeats}
-                  helperText={errors.totalSeats?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("totalSeats", {
+                required: "Seats are required",
+                valueAsNumber: true,
+                min: { value: 1, message: "Seats must be at least 1" },
+                max: { value: 28, message: "Seats cannot exceed 28" },
+              })}
+              label="Total Seats"
+              type="number"
+              fullWidth
+              margin="normal"
+              error={!!errors.totalSeats}
+              helperText={errors.totalSeats?.message}
+              sx={textFieldStyles}
+              InputLabelProps={{ shrink: true }} // Optional: Added for consistency
             />
-            <Controller
-              name="price"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Price"
-                  type="number"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.price}
-                  helperText={errors.price?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("price", {
+                required: "Price is required",
+                valueAsNumber: true,
+                min: { value: 0, message: "Price cannot be negative" },
+              })}
+              label="Price"
+              type="number"
+              fullWidth
+              margin="normal"
+              error={!!errors.price}
+              helperText={errors.price?.message}
+              sx={textFieldStyles}
+              InputLabelProps={{ shrink: true }} // Optional: Added for consistency
             />
-            <Controller
-              name="date"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Date"
-                  type="date"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.date}
-                  helperText={errors.date?.message}
-                  disabled={!!rideId}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("date", {
+                required: "Date is required",
+              })}
+              label="Date"
+              type="date"
+              fullWidth
+              margin="normal"
+              InputLabelProps={{ shrink: true }} // Already present
+              error={!!errors.date}
+              helperText={errors.date?.message}
+              disabled={!!rideId}
+              sx={textFieldStyles}
             />
-            <Controller
-              name="time"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Time"
-                  type="time"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.time}
-                  helperText={errors.time?.message}
-                  disabled={!!rideId}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
-                />
-              )}
+            <TextField
+              {...register("time", {
+                required: "Time is required",
+              })}
+              label="Time"
+              type="time"
+              fullWidth
+              margin="normal"
+              InputLabelProps={{ shrink: true }} // Already present
+              error={!!errors.time}
+              helperText={errors.time?.message}
+              disabled={!!rideId}
+              sx={textFieldStyles}
             />
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#ffb800",
-                color: "black",
-              }}
+              sx={buttonStyles}
               disabled={loading}
             >
               {loading ? "Submitting..." : "Confirm Pickup"}
             </Button>
           </form>
         </Grid>
-        <Grid
-          item
-          xs={12}
-          md={6}
-          style={{ height: "400px", position: "relative" }}
-        >
+        <Grid item xs={12} md={6} sx={{ height: "400px", position: "relative" }}>
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
-            focusedInput={focusedInput} // Pass focused input
-            disabled={!!rideId} // Disable map interaction if editing
+            focusedInput={focusedInput}
+            disabled={!!rideId}
           />
         </Grid>
       </Grid>

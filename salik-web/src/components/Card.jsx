@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Card, CardContent, Typography, Box, colors } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
   cancelBooking,
@@ -8,152 +15,137 @@ import {
 } from "../redux/slices/activitySlice";
 import { MainButton } from "../custom/MainButton";
 import car from "/images/car.png"; // Correct path
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { IconButton, Tooltip } from "@mui/material";
-import { data, useNavigate } from "react-router-dom";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router-dom";
 import { deleteRideAction } from "../redux/slices/RideSlice";
+import CardStyles from "../styles/CardStyle"; // Adjust the path if needed
+
 const Cards = ({ ride }) => {
   const { user } = useSelector((state) => state.auth);
-  console.log("User type: ", user.type);
   const dispatch = useDispatch();
-  const [cancelled, setCancelled] = useState(ride.status === "canceled");
   const navigate = useNavigate();
+  const [cancelled, setCancelled] = useState(ride.status === "canceled");
+
   const handleCancel = async () => {
     await dispatch(cancelBooking(ride._id));
     setCancelled(true);
     dispatch(fetchBooking());
   };
+
   const handleDelete = async () => {
     await dispatch(deleteRideAction(ride._id));
     dispatch(fetchProviderRides());
   };
-  // Format ride date and time
-  const rideDate = ride?.rideDateTime?.split("T")[0];
-  const rideTime = ride?.rideDateTime?.split("T")[1]?.slice(0, 5);
-  const handleLocationField = (data) => {
-    var location = data?.length > 13 ? `${data?.slice(0, 13)}...` : data;
-    return location;
+
+  const handleEdit = () => {
+    navigate(`/addTrip`, { state: { rideId: ride._id } });
   };
-  const colors =
+
+  // Format ride date and time
+  let rideTime = "N/A";
+  if (ride?.rideDateTime) {
+    const rideTimeRaw = ride.rideDateTime.split("T")[1]?.slice(0, 5);
+    if (rideTimeRaw) {
+      const [hours, minutes] = rideTimeRaw.split(":");
+      const hourNum = parseInt(hours, 10);
+      rideTime = `${hourNum % 12 || 12}:${minutes} ${hourNum < 12 ? "AM" : "PM"}`;
+    }
+  }
+  const rideDate = ride?.rideDateTime?.split("T")[0] || "N/A";
+
+  const handleLocationField = (data) =>
+    data?.length > 10 ? `${data?.slice(0, 10)}...` : data;
+
+  const statusColor =
     ride.status === "upcoming"
       ? "#FFB800"
       : ride.status === "completed"
-      ? "#4C585B"
-      : "#F44336";
-  return (
-    <Box
-      display="flex"
-      alignItems="center"
-      gap={2}
-      mb={2}
-      sx={{
-        "&:hover": {
-          transform: "scale(1.05) translateX(20px)",
-          transition: "0.3s",
-        },
-      }}
-    >
-      {/* Left side */}
-      <Box display="flex" alignItems="center">
-        <Box
-          sx={{
-            width: 12,
-            height: 12,
-            bgcolor: colors,
-            borderRadius: "50%",
-            marginRight: 1,
-            boxShadow: 1,
-          }}
-        />
-        <Typography variant="body2" color="textSecondary">
-          {rideDate} {rideTime}
-        </Typography>
-      </Box>
+        ? "#4C585B"
+        : "#F44336";
 
-      {/* Ride Card */}
-      <Card
+  return (
+    <Box sx={CardStyles.container}>
+      {/* Status Dot */}
+      <Box
         sx={{
-          width: "fit-content",
-          display: "flex",
-          alignItems: "center",
-          padding: 1,
+          ...CardStyles.statusDot,
+          bgcolor: statusColor,
+          boxShadow: `0 0 6px ${statusColor}`,
+          ...(ride.status === "upcoming" && CardStyles.pulseAnimation),
         }}
-      >
-        <CardContent
-          sx={{ display: "flex", alignItems: "center", width: "100%" }}
-        >
-          <img src={car} style={{ width: 50, marginRight: 20 }} alt="Car" />
+      />
+
+      {/* Card */}
+      <Card sx={CardStyles.card}>
+        <CardContent sx={CardStyles.cardContent}>
+          {/* Car Image */}
+          <Box component="img" src={car} alt="Car" sx={CardStyles.carImage} />
 
           {/* Ride Details */}
-          <Box flexGrow={1}>
-            <Typography variant="subtitle1">
+          <Box sx={CardStyles.rideDetails}>
+            <Typography variant="h6" sx={CardStyles.title}>
               {handleLocationField(ride.fromLocation)} to{" "}
               {handleLocationField(ride.toLocation)}
             </Typography>
-            <Typography variant="body2">
-              Price: {ride.price} $ &nbsp; &nbsp;
-              {user.type === "customer" ? "Booked Seats:" : "Total Seats:"}
-              {user.type === "customer" ? ride.bookedSeats : ride.totalSeats}
+            <Typography
+              variant="body2"
+              sx={{ ...CardStyles.dateTime, color: statusColor }}
+            >
+              {rideDate} | {rideTime}
+            </Typography>
+            <Typography variant="body2" sx={CardStyles.details}>
+              Price: <strong>${ride.price}</strong> |{" "}
+              {user.type === "customer" ? "Booked:" : "Total:"}{" "}
+              <strong>
+                {user.type === "customer" ? ride.bookedSeats : ride.totalSeats}
+              </strong>
             </Typography>
             {user.type === "provider" && (
-              <Typography variant="body2">
-                Available Seats : {ride.totalSeats - ride.bookedSeats}
+              <Typography variant="body2" sx={CardStyles.details}>
+                Available:{" "}
+                <strong>{ride.totalSeats - ride.bookedSeats}</strong>
               </Typography>
             )}
           </Box>
 
-          {/* Cancel Button */}
-          {ride.status === "upcoming" && user.type === "customer" && (
-            <MainButton
-              variant="contained"
-              disabled={cancelled}
-              sx={{
-                backgroundColor: "#FFB800",
-                color: "white",
-                pointerEvents: "auto",
-                "&:hover": {
-                  backgroundColor: colors,
-                },
-              }}
-              onClick={handleCancel}
-            >
-              Cancel
-            </MainButton>
-          )}
-
-          {/* Edit Button (for providers) */}
-          {ride.status === "upcoming" && user.type === "provider" && (
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <IconButton
-                onClick={() =>
-                  navigate(`/addTrip`, { state: { rideId: ride._id } })
-                }
+          {/* Action Buttons */}
+          <Box sx={CardStyles.actionButtons}>
+            {ride.status === "upcoming" && user.type === "customer" && (
+              <MainButton
+                variant="contained"
+                disabled={cancelled}
+                onClick={handleCancel}
                 sx={{
-                  color: "#ffb800", // Blue color for edit
-                  transition: "0.3s",
-                  "&:hover": { color: "#0D47A1", transform: "scale(1.2)" },
+                  ...CardStyles.cancelButton,
+                  "&:hover": { background: statusColor },
                 }}
               >
-                <Tooltip title="Edit">
-                  <EditIcon />
-                </Tooltip>
-              </IconButton>
+                Cancel
+              </MainButton>
+            )}
 
-              <IconButton
-                onClick={handleDelete}
-                sx={{
-                  color: "#F44336", // Red color for delete
-                  transition: "0.3s",
-                  "&:hover": { color: "#B71C1C", transform: "scale(1.2)" },
-                }}
-              >
-                <Tooltip title="Delete">
-                  <DeleteIcon />
-                </Tooltip>
-              </IconButton>
-            </Box>
-          )}
+            {ride.status === "upcoming" && user.type === "provider" && (
+              <>
+                <IconButton
+                  onClick={handleEdit}
+                  sx={{ ...CardStyles.iconButton, ...CardStyles.editButton }}
+                >
+                  <Tooltip title="Edit">
+                    <EditIcon fontSize="small" />
+                  </Tooltip>
+                </IconButton>
+                <IconButton
+                  onClick={handleDelete}
+                  sx={{ ...CardStyles.iconButton, ...CardStyles.deleteButton }}
+                >
+                  <Tooltip title="Delete">
+                    <DeleteIcon fontSize="small" />
+                  </Tooltip>
+                </IconButton>
+              </>
+            )}
+          </Box>
         </CardContent>
       </Card>
     </Box>

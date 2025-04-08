@@ -13,24 +13,20 @@ import {
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   createService,
   updateService,
   clearError,
 } from "../redux/slices/serviceSlice";
-import { useNavigate, useLocation } from "react-router-dom";
 import MapComponent from "./Mapcomponent/MapComponent";
-
-// Validation schema
-const schema = yup.object().shape({
-  mechanicLocation: yup.string().required("Workshop location is required"),
-  mechanicType: yup.string().required("Mechanic type is required"),
-  availableFrom: yup.string().required("Available from time is required"),
-  availableTo: yup.string().required("Available to time is required"),
-  workingDays: yup.array().min(1, "Select at least one working day"),
-});
+import {
+  containerStyles,
+  textFieldStyles,
+  mechanicTypeStyles,
+  timeFieldStyles,
+  buttonStyles,
+} from "../styles/AddServiceStyle";
 
 const AddServiceForm = () => {
   const navigate = useNavigate();
@@ -54,7 +50,6 @@ const AddServiceForm = () => {
     formState: { errors },
     setValue,
   } = useForm({
-    resolver: yupResolver(schema),
     defaultValues: {
       mechanicLocation: "",
       mechanicType: "",
@@ -72,10 +67,9 @@ const AddServiceForm = () => {
   // Pre-fill form if in edit mode
   useEffect(() => {
     if (isEdit && serviceToEdit) {
-      // Only set mechanicLocation if addressOnly is not the fallback message
       const locationToSet =
         serviceToEdit.addressOnly &&
-        serviceToEdit.addressOnly !== "Location not specified"
+          serviceToEdit.addressOnly !== "Location not specified"
           ? serviceToEdit.addressOnly
           : "";
       setValue("mechanicLocation", locationToSet);
@@ -119,7 +113,7 @@ const AddServiceForm = () => {
 
   // Handle manual address search
   const handleAddressSearch = async (address) => {
-    if (!address) return; // Avoid empty searches
+    if (!address) return;
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -165,7 +159,6 @@ const AddServiceForm = () => {
     };
 
     if (isEdit) {
-      // Update service
       dispatch(
         updateService({
           serviceId: serviceToEdit._id,
@@ -175,26 +168,17 @@ const AddServiceForm = () => {
         .unwrap()
         .then(() => {
           setSuccessMessage(true);
-          setTimeout(() => {
-            navigate("/servicesprovider");
-          }, 2000);
+          setTimeout(() => navigate("/servicesprovider"), 2000);
         })
-        .catch((err) => {
-          setErrorMessage(true);
-        });
+        .catch(() => setErrorMessage(true));
     } else {
-      // Create service
       dispatch(createService(transformedData))
         .unwrap()
         .then(() => {
           setSuccessMessage(true);
-          setTimeout(() => {
-            navigate("/servicesprovider");
-          }, 2000);
+          setTimeout(() => navigate("/servicesprovider"), 2000);
         })
-        .catch((err) => {
-          setErrorMessage(true);
-        });
+        .catch(() => setErrorMessage(true));
     }
   };
 
@@ -205,7 +189,7 @@ const AddServiceForm = () => {
   }, [dispatch]);
 
   return (
-    <Container maxWidth="lg" style={{ padding: "50px" }}>
+    <Container maxWidth="lg" sx={containerStyles}>
       <Grid container spacing={4} alignItems="center">
         <Grid item xs={12} md={6}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -217,6 +201,7 @@ const AddServiceForm = () => {
             <Controller
               name="mechanicLocation"
               control={control}
+              rules={{ required: "Workshop location is required" }}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -226,37 +211,17 @@ const AddServiceForm = () => {
                   error={!!errors.mechanicLocation}
                   helperText={errors.mechanicLocation?.message}
                   onBlur={() => handleAddressSearch(field.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                  }}
+                  sx={textFieldStyles}
                 />
               )}
             />
-
-            <span style={{ color: "red", fontSize: "14px" }}>
-              {locationError}
-            </span>
+            <span style={{ color: "red", fontSize: "14px" }}>{locationError}</span>
 
             {/* Mechanic Type */}
             <Controller
               name="mechanicType"
               control={control}
+              rules={{ required: "Mechanic type is required" }}
               render={({ field }) => (
                 <TextField
                   select
@@ -270,34 +235,8 @@ const AddServiceForm = () => {
                       ? "Service type cannot be changed."
                       : errors.mechanicType?.message
                   }
-                  disabled={isEdit} // Disable the field in edit mode
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.23)",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0, 0, 0, 0.87)",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ffb800",
-                      },
-                      "&.Mui-disabled": {
-                        backgroundColor: "#f5f5f5", // Light gray background when disabled
-                        color: "rgba(0, 0, 0, 0.87)", // Ensure text is still readable
-                        WebkitTextFillColor: "rgba(0, 0, 0, 0.87)", // Fix for Safari
-                      },
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(0, 0, 0, 0.54)",
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#ffb800",
-                    },
-                    "& .MuiInputLabel-root.Mui-disabled": {
-                      color: "rgba(0, 0, 0, 0.54)", // Ensure label is readable when disabled
-                    },
-                  }}
+                  disabled={isEdit}
+                  sx={mechanicTypeStyles}
                 >
                   <MenuItem value="mechanic">mechanic</MenuItem>
                   <MenuItem value="fuel">fuel</MenuItem>
@@ -309,17 +248,21 @@ const AddServiceForm = () => {
             <Controller
               name="workingDays"
               control={control}
+              rules={{
+                validate: (value) =>
+                  value.length > 0 || "Select at least one working day",
+              }}
               render={({ field }) => (
                 <div>
                   <Typography variant="subtitle1">Working Days</Typography>
                   {[
+                    "Saturday",
+                    "Sunday",
                     "Monday",
                     "Tuesday",
                     "Wednesday",
                     "Thursday",
                     "Friday",
-                    "Saturday",
-                    "Sunday",
                   ].map((day) => (
                     <FormControlLabel
                       key={day}
@@ -339,7 +282,7 @@ const AddServiceForm = () => {
                   ))}
                   {errors.workingDays && (
                     <Typography color="error">
-                      {errors.workingDays.message}
+                      {ousingDays.message}
                     </Typography>
                   )}
                 </div>
@@ -352,6 +295,7 @@ const AddServiceForm = () => {
                 <Controller
                   name="availableFrom"
                   control={control}
+                  rules={{ required: "Available from time is required" }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -361,25 +305,7 @@ const AddServiceForm = () => {
                       margin="normal"
                       error={!!errors.availableFrom}
                       helperText={errors.availableFrom?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "& fieldset": {
-                            borderColor: "rgba(0, 0, 0, 0.23)",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "rgba(0, 0, 0, 0.87)",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#ffb800",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(0, 0, 0, 0.54)",
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color: "#ffb800",
-                        },
-                      }}
+                      sx={timeFieldStyles}
                     />
                   )}
                 />
@@ -388,6 +314,7 @@ const AddServiceForm = () => {
                 <Controller
                   name="availableTo"
                   control={control}
+                  rules={{ required: "Available to time is required" }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -397,25 +324,7 @@ const AddServiceForm = () => {
                       margin="normal"
                       error={!!errors.availableTo}
                       helperText={errors.availableTo?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "& fieldset": {
-                            borderColor: "rgba(0, 0, 0, 0.23)",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "rgba(0, 0, 0, 0.87)",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#ffb800",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(0, 0, 0, 0.54)",
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color: "#ffb800",
-                        },
-                      }}
+                      sx={timeFieldStyles}
                     />
                   )}
                 />
@@ -427,29 +336,20 @@ const AddServiceForm = () => {
               type="submit"
               variant="contained"
               fullWidth
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#ffb800",
-                color: "black",
-              }}
+              sx={buttonStyles}
               disabled={loading}
             >
               {loading
                 ? "Submitting..."
                 : isEdit
-                ? "Edit Service"
-                : "Add Service"}
+                  ? "Edit Service"
+                  : "Add Service"}
             </Button>
           </form>
         </Grid>
 
         {/* Map Section */}
-        <Grid
-          item
-          xs={12}
-          md={6}
-          style={{ height: "400px", position: "relative" }}
-        >
+        <Grid item xs={12} md={6} sx={{ height: "400px", position: "relative" }}>
           <MapComponent
             onLocationSelect={handleLocationSelect}
             pickupCoords={pickupCoords}
@@ -469,9 +369,7 @@ const AddServiceForm = () => {
           severity="success"
           sx={{ width: "100%" }}
         >
-          {isEdit
-            ? "Service updated successfully!"
-            : "Service added successfully!"}
+          {isEdit ? "Service updated successfully!" : "Service added successfully!"}
         </Alert>
       </Snackbar>
 
@@ -487,10 +385,7 @@ const AddServiceForm = () => {
           severity="error"
           sx={{ width: "100%" }}
         >
-          {error ||
-            `An error occurred while ${
-              isEdit ? "updating" : "adding"
-            } the service.`}
+          {error || `An error occurred while ${isEdit ? "updating" : "adding"} the service.`}
         </Alert>
       </Snackbar>
     </Container>
