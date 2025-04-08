@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Rating,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Rating,
 } from "@mui/material";
-import { useDispatch } from 'react-redux';
-import { addReviewsAction, getAllReviewsAction, updateReviewAction } from '../../redux/slices/reviewsSlice';
+import { useDispatch } from "react-redux";
+import { addReviewsAction, getAllReviewsAction, updateReviewAction } from "../../redux/slices/reviewsSlice";
 
 export default function ReviewModal({ open, setOpen, review, providerId }) {
   const [rating, setRating] = useState(0);
@@ -18,7 +24,7 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
       setRating(0);
       setReviewText("");
     }
-  }, [review, open]);  // Added `open` dependency to reset when modal opens for a new review
+  }, [review, open]);
 
   const handleClose = () => {
     setOpen(false);
@@ -32,19 +38,31 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
       return;
     }
 
+    const serviceType = "ride"; // Hardcoded to "ride"
+
     if (review) {
-      await dispatch(updateReviewAction({ reviewId: review._id, rating, comment: reviewText }));
+      await dispatch(updateReviewAction({ 
+        reviewId: review._id, 
+        rating, 
+        comment: reviewText, 
+        serviceType 
+      }));
     } else {
-      await dispatch(addReviewsAction({ providerId, rating, comment: reviewText }));
+      await dispatch(addReviewsAction({ 
+        providerId, 
+        rating, 
+        comment: reviewText, 
+        serviceType 
+      }));
     }
 
-    dispatch(getAllReviewsAction(providerId));
+    dispatch(getAllReviewsAction({ providerId, serviceType: "ride" }));
     handleClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{review ? "Edit Review" : "Write a Review"}</DialogTitle>
+      <DialogTitle>{review ? "Edit Ride Review" : "Write a Ride Review"}</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Rating
           name="user-rating"
@@ -52,7 +70,7 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
           onChange={(event, newValue) => setRating(newValue)}
         />
         <TextField
-          label="Your Review"
+          label="Your Ride Review"
           multiline
           rows={3}
           value={reviewText}
@@ -64,7 +82,11 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
         <Button onClick={handleClose} color="black">
           Cancel
         </Button>
-        <Button onClick={handleSubmit} variant="contained" sx={{ backgroundColor: "#ffb800", color: "black" }}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{ backgroundColor: "#ffb800", color: "black" }}
+        >
           Submit
         </Button>
       </DialogActions>

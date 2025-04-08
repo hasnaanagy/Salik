@@ -248,7 +248,7 @@ const Requests = ({ userType }) => {
               ? "You haven't made any service requests yet."
               : "There are no service requests available at the moment."}
           </Typography>
-          <Button
+          {/* <Button
             variant="contained"
             onClick={refreshRequests}
             startIcon={<RefreshIcon />}
@@ -258,7 +258,7 @@ const Requests = ({ userType }) => {
             }}
           >
             Refresh
-          </Button>
+          </Button> */}
         </Paper>
       </Container>
     );

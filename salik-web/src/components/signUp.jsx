@@ -49,7 +49,6 @@ export default function SignUp() {
       
     } catch (err) {
       console.error("Signup error:", err);
-  
       
       setErrors({ general: err.message || "Signup failed. Please try again." });
     }

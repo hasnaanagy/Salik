@@ -5,6 +5,7 @@ import Home2 from "./Home2";
 import { IntoScreen } from "../components/ServicesComponent/IntoScreen";
 import { useSelector } from "react-redux";
 import { CircularProgress, Typography, Box } from "@mui/material";
+import Dashboard from "./Dashboard";
 
 export default function Home() {
   const { user, loading, error } = useSelector((state) => state.auth);
@@ -39,12 +40,13 @@ export default function Home() {
   // ✅ عرض المحتوى بناءً على نوع المستخدم
   return (
     <>
-      {user.type === "provider" ? (
+      {user.type === "provider" && (
         <>
           <ServicesHome />
           <IntoScreen />
         </>
-      ) : (
+      )}
+      {user.type === "customer" && (
         <>
           <RideSearch />
           <IntoScreen />

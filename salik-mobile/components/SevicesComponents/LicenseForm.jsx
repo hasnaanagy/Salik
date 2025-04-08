@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
@@ -72,13 +73,15 @@ export default function LicenceForm() {
 
   return (
     <View style={styles.container}>
+      <View style={{ marginTop:Platform.OS === "ios" ? 60 : 0,}}>
+        <View style={styles.header}>
       <TouchableOpacity
         onPress={() => router.push("/")}
-        style={styles.backButton}
       >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
       <Text style={styles.title}>Please Upload Licence</Text>
+      </View>
       <TouchableOpacity
         style={styles.uploadBox}
         onPress={() => pickImage("nationalIdImage")}
@@ -111,6 +114,7 @@ export default function LicenceForm() {
           {loading ? "Uploading..." : "Upload"}
         </Text>
       </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -152,6 +156,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   uploadButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-
-  backButton: { position: "absolute", top: 18, left: 15, zIndex: 10 },
+  header:{
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent:"start",
+  }
 });

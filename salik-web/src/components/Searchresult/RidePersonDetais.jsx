@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Typography,
@@ -19,7 +19,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { bookRide } from "../../redux/slices/activitySlice";
 import { getAllReviewsAction } from "../../redux/slices/reviewsSlice";
 
-// Animation keyframes
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -37,7 +36,6 @@ const starPulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-// Dynamic Stars Component with Rating Display
 const DynamicStars = ({ rating, maxRating = 5 }) => {
   const stars = [];
   const fullStars = Math.floor(rating);
@@ -89,15 +87,6 @@ const DynamicStars = ({ rating, maxRating = 5 }) => {
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
       {stars}
-      <Typography
-        sx={{
-          fontSize: { xs: "12px", sm: "14px" },
-          color: "#666",
-          ml: 1,
-        }}
-      >
-        {/* ({rating.toFixed(1)} / {maxRating}) */}
-      </Typography>
     </Stack>
   );
 };
@@ -116,14 +105,12 @@ export default function RidePersonDetails({ ride }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const dispatch = useDispatch();
 
-  // Booking state
   const {
     loading: bookingLoading,
     error: bookingError,
     successMessage,
   } = useSelector((state) => state.activity);
 
-  // Reviews state
   const {
     reviews,
     isLoading: reviewsLoading,
@@ -131,34 +118,21 @@ export default function RidePersonDetails({ ride }) {
   } = useSelector((state) => state.reviewsSlice);
 
   useEffect(() => {
+    console.log("Provider ID:", ride?.providerId?._id);
     if (ride?.providerId?._id) {
-      dispatch(getAllReviewsAction(ride.providerId._id));
+      dispatch(getAllReviewsAction({ providerId: ride.providerId._id, serviceType: "ride" }));
     }
   }, [dispatch, ride]);
 
-  useEffect(() => {
-    if (successMessage) {
-      setTimeout(() => {
-        // Optionally reset success message here if needed
-      }, 3000);
-    }
-  }, [successMessage]);
-
-  const handleBookRide = () => {
-    setAnimateButton(true);
-    dispatch(bookRide({ rideId: ride._id, counterSeats: passengerCount })).then(
-      () => setAnimateButton(false)
-    );
-  };
-
-  // Calculate average rating from reviews
   const calculateAverageRating = () => {
     if (!reviews || reviews.length === 0) return 0;
-    const totalRating = reviews.reduce(
+    const rideReviews = reviews.filter((review) => review.serviceType === "ride");
+    if (rideReviews.length === 0) return 0;
+    const totalRating = rideReviews.reduce(
       (sum, review) => sum + (review.rating || 0),
       0
     );
-    return totalRating / reviews.length;
+    return totalRating / rideReviews.length;
   };
 
   const averageRating = calculateAverageRating();
@@ -166,6 +140,13 @@ export default function RidePersonDetails({ ride }) {
   console.log("Ride Details:", ride);
   console.log("Reviews:", reviews);
   console.log("Average Rating:", averageRating);
+
+  const handleBookRide = () => {
+    setAnimateButton(true);
+    dispatch(bookRide({ rideId: ride._id, counterSeats: passengerCount })).then(
+      () => setAnimateButton(false)
+    );
+  };
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", p: { xs: 2, md: 0 } }}>
@@ -192,7 +173,6 @@ export default function RidePersonDetails({ ride }) {
           background: "linear-gradient(135deg, #fff, #f9f9f9)",
         }}
       >
-        {/* Driver Info */}
         <Link state={{ providerId: ride.providerId }} to="/reviews">
           <Box
             sx={{
@@ -251,8 +231,7 @@ export default function RidePersonDetails({ ride }) {
               >
                 {ride?.providerId?.fullName
                   ?.toLowerCase()
-                  .replace(/\b\w/g, (char) => char.toUpperCase()) ||
-                  "Unknown Driver"}
+                  .replace(/\b\w/g, (char) => char.toUpperCase()) || "Unknown Driver"}
               </Typography>
               <Box sx={{ mt: 0.5 }}>
                 {reviewsLoading ? (
@@ -261,47 +240,31 @@ export default function RidePersonDetails({ ride }) {
                   </Typography>
                 ) : reviewsError ? (
                   <Typography sx={{ fontSize: "14px", color: "#d32f2f" }}>
-                    Error loading reviews
+                    Error loading reviews: {reviewsError}
                   </Typography>
                 ) : averageRating > 0 ? (
                   <DynamicStars rating={averageRating} />
                 ) : (
                   <Typography
-                    sx={{
-                      fontSize: "14px",
-                      color: "#666",
-                      fontStyle: "italic",
-                    }}
+                    sx={{ fontSize: "14px", color: "#666", fontStyle: "italic" }}
                   >
-                    No reviews yet
+                    No ride reviews yet
                   </Typography>
                 )}
               </Box>
             </Box>
 
-            <NavigateNextIcon
-              sx={{
-                fontSize: isMobile ? "24px" : "28px",
-                color: "#666",
-              }}
-            />
+            <NavigateNextIcon sx={{ fontSize: isMobile ? "24px" : "28px", color: "#666" }} />
           </Box>
         </Link>
 
-        {/* Car Type */}
         <Typography
           level="body-md"
-          sx={{
-            mt: 2,
-            fontWeight: "600",
-            fontSize: { xs: "15px", sm: "16px" },
-            color: "#555",
-          }}
+          sx={{ mt: 2, fontWeight: "600", fontSize: { xs: "15px", sm: "16px" }, color: "#555" }}
         >
           Car Type: <span style={{ fontWeight: "400" }}>{ride?.carType}</span>
         </Typography>
 
-        {/* Passenger Count & Price */}
         <Stack
           direction="row"
           alignItems="center"
@@ -313,12 +276,7 @@ export default function RidePersonDetails({ ride }) {
             type="number"
             value={passengerCount}
             onChange={(e) =>
-              setPassengerCount(
-                Math.max(
-                  1,
-                  Math.min(ride.totalSeats || 10, Number(e.target.value))
-                )
-              )
+              setPassengerCount(Math.max(1, Math.min(ride.totalSeats || 10, Number(e.target.value))))
             }
             slotProps={{ input: { min: 1, max: ride.totalSeats || 10 } }}
             sx={{
@@ -332,40 +290,25 @@ export default function RidePersonDetails({ ride }) {
           />
           <Box sx={{ flexGrow: 1 }} />
           <Typography
-            sx={{
-              fontSize: { xs: "15px", sm: "16px" },
-              fontWeight: "500",
-              color: "#333",
-            }}
+            sx={{ fontSize: { xs: "15px", sm: "16px" }, fontWeight: "500", color: "#333" }}
           >
             EGP {ride?.price?.toFixed(2) || "N/A"} $
           </Typography>
         </Stack>
 
-        {/* Date & Time */}
         <Stack
           direction="row"
           justifyContent="space-between"
-          sx={{
-            mt: 2,
-            p: 1.5,
-            bgcolor: "#f5f5f5",
-            borderRadius: "8px",
-          }}
+          sx={{ mt: 2, p: 1.5, bgcolor: "#f5f5f5", borderRadius: "8px" }}
         >
-          <Typography
-            sx={{ fontSize: { xs: "14px", sm: "16px" }, color: "#555" }}
-          >
+          <Typography sx={{ fontSize: { xs: "14px", sm: "16px" }, color: "#555" }}>
             Date: {ride?.rideDateTime?.split("T")[0]}
           </Typography>
-          <Typography
-            sx={{ fontSize: { xs: "14px", sm: "16px" }, color: "#555" }}
-          >
+          <Typography sx={{ fontSize: { xs: "14px", sm: "16px" }, color: "#555" }}>
             Time: {ride?.rideDateTime?.split("T")[1]?.slice(0, 5)}
           </Typography>
         </Stack>
 
-        {/* Buttons */}
         <Stack
           direction={isMobile ? "column" : "row"}
           spacing={2}
@@ -390,17 +333,11 @@ export default function RidePersonDetails({ ride }) {
                 boxShadow: "0 6px 16px rgba(255,184,0,0.3)",
                 border: "2px solid #ffb800",
               },
-              "&:disabled": {
-                bgcolor: "#ffb800",
-                opacity: 0.7,
-                boxShadow: "none",
-              },
+              "&:disabled": { bgcolor: "#ffb800", opacity: 0.7, boxShadow: "none" },
             }}
             onClick={handleBookRide}
             disabled={bookingLoading}
-            startDecorator={
-              bookingLoading && <CircularProgress size="sm" color="neutral" />
-            }
+            startDecorator={bookingLoading && <CircularProgress size="sm" color="neutral" />}
             aria-label="Book ride"
           >
             {bookingLoading ? "Booking" : "Book Now"}
@@ -417,11 +354,7 @@ export default function RidePersonDetails({ ride }) {
               border: "2px solid #ffb800",
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               transition: "all 0.2s",
-              "&:hover": {
-                bgcolor: "#ffb800",
-                color: "#000",
-                boxShadow: "0 6px 16px rgba(255,184,0,0.3)",
-              },
+              "&:hover": { bgcolor: "#ffb800", color: "#000", boxShadow: "0 6px 16px rgba(255,184,0,0.3)" },
             }}
             aria-label="Call driver"
           >
@@ -429,22 +362,13 @@ export default function RidePersonDetails({ ride }) {
           </Button>
         </Stack>
 
-        {/* Feedback Messages */}
         {bookingError && (
-          <Alert
-            variant="soft"
-            color="danger"
-            sx={{ mt: 2, borderRadius: "8px" }}
-          >
+          <Alert variant="soft" color="danger" sx={{ mt: 2, borderRadius: "8px" }}>
             {bookingError}
           </Alert>
         )}
         {successMessage && (
-          <Alert
-            variant="soft"
-            color="success"
-            sx={{ mt: 2, borderRadius: "8px" }}
-          >
+          <Alert variant="soft" color="success" sx={{ mt: 2, borderRadius: "8px" }}>
             {successMessage}
           </Alert>
         )}
