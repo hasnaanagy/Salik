@@ -9,9 +9,19 @@ import {
   Rating,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { addReviewsAction, getAllReviewsAction, updateReviewAction } from "../../redux/slices/reviewsSlice";
+import {
+  addReviewsAction,
+  getAllReviewsAction,
+  updateReviewAction,
+} from "../../redux/slices/reviewsSlice";
 
-export default function ReviewModal({ open, setOpen, review, providerId }) {
+export default function ReviewModal({
+  open,
+  setOpen,
+  review,
+  providerId,
+  serviceType,
+}) {
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const dispatch = useDispatch();
@@ -38,31 +48,42 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
       return;
     }
 
-    const serviceType = "ride"; // Hardcoded to "ride"
-
-    if (review) {
-      await dispatch(updateReviewAction({ 
-        reviewId: review._id, 
-        rating, 
-        comment: reviewText, 
-        serviceType 
-      }));
-    } else {
-      await dispatch(addReviewsAction({ 
-        providerId, 
-        rating, 
-        comment: reviewText, 
-        serviceType 
-      }));
+    if (!serviceType) {
+      console.error("Service type is missing!");
+      return;
     }
 
-    dispatch(getAllReviewsAction({ providerId, serviceType: "ride" }));
+    if (review) {
+      await dispatch(
+        updateReviewAction({
+          reviewId: review._id,
+          rating,
+          comment: reviewText,
+          serviceType,
+        })
+      );
+    } else {
+      await dispatch(
+        addReviewsAction({
+          providerId,
+          rating,
+          comment: reviewText,
+          serviceType,
+        })
+      );
+    }
+
+    dispatch(getAllReviewsAction({ providerId, serviceType }));
     handleClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{review ? "Edit Ride Review" : "Write a Ride Review"}</DialogTitle>
+      <DialogTitle>
+        {review
+          ? `Edit ${serviceType} Review`
+          : `Write a ${serviceType} Review`}
+      </DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Rating
           name="user-rating"
@@ -70,7 +91,7 @@ export default function ReviewModal({ open, setOpen, review, providerId }) {
           onChange={(event, newValue) => setRating(newValue)}
         />
         <TextField
-          label="Your Ride Review"
+          label={`Your ${serviceType} Review`}
           multiline
           rows={3}
           value={reviewText}

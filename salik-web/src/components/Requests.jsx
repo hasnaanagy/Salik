@@ -30,7 +30,6 @@ import {
   Tooltip,
   Collapse,
   Stack,
-  colors,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -44,7 +43,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import StarIcon from "@mui/icons-material/Star";
 import axios from "axios";
+import ReviewModal from "./ReviewsComponents/ReviewModal";
+import {
+  addReviewsAction,
+  getAllReviewsAction,
+} from "../redux/slices/reviewsSlice";
 
 const statusColors = {
   pending: "#FFC107",
@@ -66,6 +71,7 @@ const Requests = ({ userType }) => {
     (state) => state.requestSlice || {}
   );
   const { user } = useSelector((state) => state.auth);
+  const { reviews } = useSelector((state) => state.reviews || { reviews: [] });
 
   const [selectedProvider, setSelectedProvider] = useState({});
   const [locations, setLocations] = useState({});
@@ -74,21 +80,19 @@ const Requests = ({ userType }) => {
     const saved = localStorage.getItem("showStatusFilter");
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [providerRatings, setProviderRatings] = useState({}); // { [providerId]: { [serviceType]: rating } }
 
-  // Save showStatusFilter to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("showStatusFilter", JSON.stringify(showStatusFilter));
   }, [showStatusFilter]);
 
-  // Get all statuses from requests object
   const statuses = Object.keys(requests);
-
-  // Set first status as default active tab or pending if it exists
   const defaultTab =
     statuses.indexOf("pending") !== -1 ? statuses.indexOf("pending") : 0;
   const [activeTab, setActiveTab] = useState(defaultTab);
 
-  // Function to refresh requests
   const refreshRequests = () => {
     dispatch(getAllResquestsAction());
   };
@@ -97,7 +101,40 @@ const Requests = ({ userType }) => {
     dispatch(getAllResquestsAction());
   }, [dispatch, user]);
 
-  // Convert coordinates to address
+  // Fetch reviews for accepted providers and calculate average ratings based on serviceType
+  useEffect(() => {
+    const acceptedRequests = requests["accepted"] || [];
+    acceptedRequests.forEach((req) => {
+      const serviceType = req.serviceType; // e.g., "mechanic" or "fuel"
+      req.acceptedProviders?.forEach((provider) => {
+        dispatch(
+          getAllReviewsAction({
+            providerId: provider._id,
+            serviceType: serviceType, // Filter reviews by serviceType
+          })
+        ).then((result) => {
+          if (result.meta.requestStatus === "fulfilled") {
+            const providerReviews = result.payload.reviews || [];
+            const avgRating =
+              providerReviews.length > 0
+                ? providerReviews.reduce(
+                    (sum, review) => sum + review.rating,
+                    0
+                  ) / providerReviews.length
+                : 0;
+            setProviderRatings((prev) => ({
+              ...prev,
+              [provider._id]: {
+                ...prev[provider._id],
+                [serviceType]: avgRating.toFixed(1), // Store rating under serviceType
+              },
+            }));
+          }
+        });
+      });
+    });
+  }, [dispatch, requests]);
+
   const getAddressFromCoordinates = async (lat, lng, requestId) => {
     try {
       const apiKey = "2d4b78c5799a4d8292da41dce45cadde";
@@ -116,7 +153,7 @@ const Requests = ({ userType }) => {
     Object.entries(requests).forEach(([status, reqList]) => {
       reqList.forEach((req) => {
         if (req.location?.coordinates) {
-          const [lng, lat] = req.location.coordinates; // GeoJSON format (lng, lat)
+          const [lng, lat] = req.location.coordinates;
           getAddressFromCoordinates(lat, lng, req._id);
         }
       });
@@ -145,14 +182,15 @@ const Requests = ({ userType }) => {
     dispatch(getAllResquestsAction());
   };
 
-  const toggleCardExpand = (requestId) => {
-    setExpandedCards((prev) => ({
-      ...prev,
-      [requestId]: !prev[requestId],
-    }));
+  const handleAddReview = (request) => {
+    setSelectedRequest(request);
+    setOpenReviewModal(true);
   };
 
-  // Function to truncate text
+  const handleMarkAsCompletedWithReview = (request) => {
+    handleAddReview(request);
+  };
+
   const truncateText = (text, maxLength = 50) => {
     if (!text) return "";
     return text.length > maxLength
@@ -160,10 +198,8 @@ const Requests = ({ userType }) => {
       : text;
   };
 
-  // Format date and time
   const formatDateTime = (dateString) => {
     if (!dateString) return { date: "N/A", time: "N/A" };
-
     const date = new Date(dateString);
     return {
       date: date.toLocaleDateString("en-US", {
@@ -178,7 +214,6 @@ const Requests = ({ userType }) => {
     };
   };
 
-  // Loading state with skeleton
   if (isLoading) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -190,7 +225,6 @@ const Requests = ({ userType }) => {
             Loading your service requests...
           </Typography>
         </Box>
-
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <Grid item xs={12} sm={6} md={4} key={item}>
@@ -224,7 +258,6 @@ const Requests = ({ userType }) => {
     );
   }
 
-  // Empty state
   if (!requests || Object.values(requests).every((arr) => arr.length === 0)) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -248,17 +281,6 @@ const Requests = ({ userType }) => {
               ? "You haven't made any service requests yet."
               : "There are no service requests available at the moment."}
           </Typography>
-          {/* <Button
-            variant="contained"
-            onClick={refreshRequests}
-            startIcon={<RefreshIcon />}
-            sx={{
-              bgcolor: "#FFB800",
-              "&:hover": { bgcolor: "#E69F00" },
-            }}
-          >
-            Refresh
-          </Button> */}
         </Paper>
       </Container>
     );
@@ -279,9 +301,7 @@ const Requests = ({ userType }) => {
             Service Requests
           </Typography>
         </Box>
-
         <Box sx={{ display: "flex", gap: 1 }}>
-          {/* Add filter toggle button */}
           <Tooltip title="Filter by status">
             <IconButton
               onClick={() => setShowStatusFilter(!showStatusFilter)}
@@ -303,9 +323,7 @@ const Requests = ({ userType }) => {
         </Box>
       </Box>
 
-      {/* Main content with right sidebar layout */}
       <Grid container spacing={3}>
-        {/* Main content area - takes full width when filter is hidden, 9/12 when visible */}
         <Grid item xs={12} md={showStatusFilter ? 9 : 12}>
           <Grid container spacing={3}>
             {requests[statuses[activeTab]]?.map((req) => (
@@ -327,7 +345,6 @@ const Requests = ({ userType }) => {
                     border: "1px solid rgba(0,0,0,0.05)",
                   }}
                 >
-                  {/* Status header - Improved design */}
                   <Box
                     sx={{
                       bgcolor: statusColors[statuses[activeTab]],
@@ -363,7 +380,6 @@ const Requests = ({ userType }) => {
                           statuses[activeTab].slice(1)}
                       </Typography>
                     </Box>
-
                     <Chip
                       label={req.serviceType}
                       size="small"
@@ -378,7 +394,6 @@ const Requests = ({ userType }) => {
                     />
                   </Box>
 
-                  {/* Date and time section */}
                   {req.createdAt && (
                     <Box
                       sx={{
@@ -411,7 +426,6 @@ const Requests = ({ userType }) => {
                   )}
 
                   <CardContent sx={{ flexGrow: 1, p: 0 }}>
-                    {/* Location section */}
                     <Box
                       sx={{
                         display: "flex",
@@ -456,7 +470,6 @@ const Requests = ({ userType }) => {
                       </Box>
                     </Box>
 
-                    {/* Problem description */}
                     <Box sx={{ p: 2.5 }}>
                       <Typography
                         variant="subtitle2"
@@ -476,7 +489,6 @@ const Requests = ({ userType }) => {
                         />
                         Problem Description
                       </Typography>
-
                       <Paper
                         elevation={0}
                         sx={{
@@ -492,9 +504,7 @@ const Requests = ({ userType }) => {
                               : "default",
                           "&:hover":
                             req.problemDescription?.length > 80
-                              ? {
-                                  bgcolor: "rgba(0,0,0,0.03)",
-                                }
+                              ? { bgcolor: "rgba(0,0,0,0.03)" }
                               : {},
                         }}
                         onClick={() =>
@@ -505,16 +515,12 @@ const Requests = ({ userType }) => {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{
-                            lineHeight: 1.6,
-                            whiteSpace: "pre-line",
-                          }}
+                          sx={{ lineHeight: 1.6, whiteSpace: "pre-line" }}
                         >
                           {expandedCards[req._id]
                             ? req.problemDescription
                             : truncateText(req.problemDescription, 80)}
                         </Typography>
-
                         {req.problemDescription?.length > 80 && (
                           <Box
                             sx={{
@@ -556,7 +562,6 @@ const Requests = ({ userType }) => {
                       </Paper>
                     </Box>
 
-                    {/* Provider selection for customers */}
                     {user.type === "customer" &&
                       statuses[activeTab] === "accepted" &&
                       req.acceptedProviders?.length > 0 && (
@@ -579,7 +584,6 @@ const Requests = ({ userType }) => {
                             />
                             Available Providers ({req.acceptedProviders.length})
                           </Typography>
-
                           <Paper
                             elevation={0}
                             sx={{
@@ -593,12 +597,17 @@ const Requests = ({ userType }) => {
                               <InputLabel>Select Provider</InputLabel>
                               <Select
                                 value={selectedProvider[req._id] || ""}
-                                onChange={(e) =>
+                                onChange={(e) => {
                                   setSelectedProvider({
                                     ...selectedProvider,
                                     [req._id]: e.target.value,
-                                  })
-                                }
+                                  });
+                                  // Fetch ratings when a provider is selected
+                                  fetchProviderRatingsByServiceType(
+                                    e.target.value,
+                                    req.serviceType
+                                  );
+                                }}
                                 sx={{
                                   "& .MuiOutlinedInput-notchedOutline": {
                                     borderColor: "rgba(0,0,0,0.1)",
@@ -614,32 +623,84 @@ const Requests = ({ userType }) => {
                                       sx={{
                                         display: "flex",
                                         alignItems: "center",
+                                        width: "100%",
+                                        justifyContent: "space-between",
                                       }}
                                     >
-                                      <Avatar
+                                      <Box
                                         sx={{
-                                          width: 28,
-                                          height: 28,
-                                          mr: 1.5,
-                                          bgcolor: statusColors.accepted,
+                                          display: "flex",
+                                          alignItems: "center",
                                         }}
                                       >
-                                        <PersonIcon fontSize="small" />
-                                      </Avatar>
-                                      <Stack direction="column" spacing={0}>
-                                        <Typography
-                                          variant="body2"
-                                          fontWeight="medium"
+                                        <Avatar
+                                          sx={{
+                                            width: 28,
+                                            height: 28,
+                                            mr: 1.5,
+                                            bgcolor: statusColors.accepted,
+                                          }}
                                         >
-                                          {provider.fullName}
-                                        </Typography>
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          {provider.phone}
-                                        </Typography>
-                                      </Stack>
+                                          <PersonIcon fontSize="small" />
+                                        </Avatar>
+                                        <Stack direction="column" spacing={0}>
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="medium"
+                                          >
+                                            {provider.fullName}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {provider.phone}
+                                          </Typography>
+                                        </Stack>
+                                      </Box>
+                                      {/* Display rating specific to this service type */}
+                                      {providerRatings[provider._id]?.[
+                                        req.serviceType
+                                      ] ? (
+                                        <Chip
+                                          icon={
+                                            <StarIcon
+                                              sx={{
+                                                fontSize: 16,
+                                                color: "#FFB300",
+                                              }}
+                                            />
+                                          }
+                                          label={`${
+                                            providerRatings[provider._id][
+                                              req.serviceType
+                                            ]
+                                          } `}
+                                          size="small"
+                                          sx={{
+                                            bgcolor: "rgba(255,179,0,0.1)",
+                                            color: "#FFB300",
+                                            fontWeight: "bold",
+                                          }}
+                                        />
+                                      ) : (
+                                        <Chip
+                                          icon={
+                                            <StarIcon
+                                              sx={{
+                                                fontSize: 16,
+                                                color: "#FFB300",
+                                              }}
+                                            />
+                                          }
+                                          label={`No ${req.serviceType} ratings`}
+                                          size="small"
+                                          sx={{
+                                            bgcolor: "rgba(0,0,0,0.05)",
+                                            color: "text.secondary",
+                                          }}
+                                        />
+                                      )}
                                     </Box>
                                   </MenuItem>
                                 ))}
@@ -650,7 +711,6 @@ const Requests = ({ userType }) => {
                       )}
                   </CardContent>
 
-                  {/* Action buttons */}
                   <Box
                     sx={{
                       p: 2.5,
@@ -721,14 +781,22 @@ const Requests = ({ userType }) => {
                             },
                           }}
                           fullWidth
-                          onClick={() => handleCompleteRequest(req._id)}
+                          onClick={() => handleMarkAsCompletedWithReview(req)}
                         >
                           Mark as Completed
                         </Button>
                       )}
 
                     {statuses[activeTab] === "completed" && (
-                      <Box sx={{ textAlign: "center" }}>
+                      <Box
+                        sx={{
+                          textAlign: "center",
+                          display: "flex",
+                          gap: 1,
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <Chip
                           icon={
                             <DoneAllIcon
@@ -756,7 +824,6 @@ const Requests = ({ userType }) => {
             ))}
           </Grid>
 
-          {/* Empty state for tabs */}
           {(!requests[statuses[activeTab]] ||
             requests[statuses[activeTab]].length === 0) && (
             <Paper
@@ -812,7 +879,6 @@ const Requests = ({ userType }) => {
           )}
         </Grid>
 
-        {/* Right sidebar with tabs - hidden when showStatusFilter is false */}
         <Grid item xs={12} md={3}>
           <Collapse in={showStatusFilter} timeout={300}>
             <Paper
@@ -832,8 +898,6 @@ const Requests = ({ userType }) => {
                   Filter by current status
                 </Typography>
               </Box>
-
-              {/* Vertical tabs instead of horizontal */}
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 {statuses.map((status, index) => (
                   <Button
@@ -856,9 +920,7 @@ const Requests = ({ userType }) => {
                         activeTab === index
                           ? statusColors[status]
                           : "text.secondary",
-                      "&:hover": {
-                        bgcolor: `${statusColors[status]}10`,
-                      },
+                      "&:hover": { bgcolor: `${statusColors[status]}10` },
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -918,8 +980,32 @@ const Requests = ({ userType }) => {
           </Collapse>
         </Grid>
       </Grid>
+
+      {selectedRequest && (
+        <ReviewModal
+          open={openReviewModal}
+          setOpen={(isOpen) => {
+            setOpenReviewModal(isOpen);
+            if (!isOpen) {
+              handleCompleteRequest(selectedRequest._id);
+            }
+          }}
+          providerId={
+            selectedRequest.providerId?._id ||
+            selectedRequest.acceptedProviders?.[0]?._id
+          }
+          serviceType={selectedRequest.serviceType}
+        />
+      )}
     </Container>
   );
+
+  function toggleCardExpand(requestId) {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  }
 };
 
 export default Requests;

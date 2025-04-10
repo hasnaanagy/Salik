@@ -106,7 +106,10 @@ export function Header() {
   const fullName = user?.fullName || "Guest";
   const profileImg = user?.profileImg || "https://via.placeholder.com/150";
   const currentRole = user?.type || "customer";
-  const tabs=currentRole==="customer"? ["Home", "Activities", "Requests"]: ["Home", "Services", "Activities", "Requests"];
+  const tabs =
+    currentRole === "customer"
+      ? ["Home", "Activities", "Requests"]
+      : ["Home", "Services", "Activities", "Requests"];
   return (
     <AppBar
       position={scrolled ? "fixed" : "static"}
