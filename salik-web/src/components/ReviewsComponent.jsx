@@ -8,7 +8,9 @@ import ReviewCard from "./ReviewsComponents/ReviewCard";
 
 export default function ReviewsComponent({ providerId }) {
   const dispatch = useDispatch();
-  const { reviews, error, isLoading } = useSelector((state) => state.reviewsSlice);
+  const { reviews, error, isLoading } = useSelector(
+    (state) => state.reviewsSlice
+  );
   const [open, setOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
 
@@ -25,7 +27,14 @@ export default function ReviewsComponent({ providerId }) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "40px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: "40px",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -46,7 +55,11 @@ export default function ReviewsComponent({ providerId }) {
       >
         {reviews && reviews.length > 0 ? (
           reviews.map((review) => (
-            <ReviewCard key={review._id} handleOpen={handleOpen} review={review} />
+            <ReviewCard
+              key={review._id}
+              handleOpen={handleOpen}
+              review={review}
+            />
           ))
         ) : (
           <Box sx={{ textAlign: "center", color: "#666" }}>
@@ -72,6 +85,7 @@ export default function ReviewsComponent({ providerId }) {
         setOpen={setOpen}
         providerId={providerId}
         review={selectedReview}
+        serviceType="ride"
       />
     </Box>
   );
