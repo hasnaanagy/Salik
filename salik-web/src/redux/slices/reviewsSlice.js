@@ -11,6 +11,7 @@ export const getAllReviewsAction = createAsyncThunk(
   "reviews/getAllReviewsAction",
   async ({ providerId, serviceType }, { rejectWithValue }) => {
     try {
+      console.log("ssssss", providerId, serviceType);
       const url = serviceType
         ? `reviews/${providerId}?serviceType=${serviceType}`
         : `reviews/${providerId}`;

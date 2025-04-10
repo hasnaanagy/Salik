@@ -30,7 +30,6 @@ import {
   Tooltip,
   Collapse,
   Stack,
-  colors,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -72,6 +71,7 @@ const Requests = ({ userType }) => {
     (state) => state.requestSlice || {}
   );
   const { user } = useSelector((state) => state.auth);
+  const { reviews } = useSelector((state) => state.reviews || { reviews: [] });
 
   const [selectedProvider, setSelectedProvider] = useState({});
   const [locations, setLocations] = useState({});
@@ -82,6 +82,7 @@ const Requests = ({ userType }) => {
   });
   const [openReviewModal, setOpenReviewModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [providerRatings, setProviderRatings] = useState({}); // { [providerId]: { [serviceType]: rating } }
 
   useEffect(() => {
     localStorage.setItem("showStatusFilter", JSON.stringify(showStatusFilter));
@@ -99,6 +100,40 @@ const Requests = ({ userType }) => {
   useEffect(() => {
     dispatch(getAllResquestsAction());
   }, [dispatch, user]);
+
+  // Fetch reviews for accepted providers and calculate average ratings based on serviceType
+  useEffect(() => {
+    const acceptedRequests = requests["accepted"] || [];
+    acceptedRequests.forEach((req) => {
+      const serviceType = req.serviceType; // e.g., "mechanic" or "fuel"
+      req.acceptedProviders?.forEach((provider) => {
+        dispatch(
+          getAllReviewsAction({
+            providerId: provider._id,
+            serviceType: serviceType, // Filter reviews by serviceType
+          })
+        ).then((result) => {
+          if (result.meta.requestStatus === "fulfilled") {
+            const providerReviews = result.payload.reviews || [];
+            const avgRating =
+              providerReviews.length > 0
+                ? providerReviews.reduce(
+                    (sum, review) => sum + review.rating,
+                    0
+                  ) / providerReviews.length
+                : 0;
+            setProviderRatings((prev) => ({
+              ...prev,
+              [provider._id]: {
+                ...prev[provider._id],
+                [serviceType]: avgRating.toFixed(1), // Store rating under serviceType
+              },
+            }));
+          }
+        });
+      });
+    });
+  }, [dispatch, requests]);
 
   const getAddressFromCoordinates = async (lat, lng, requestId) => {
     try {
@@ -153,7 +188,6 @@ const Requests = ({ userType }) => {
   };
 
   const handleMarkAsCompletedWithReview = (request) => {
-    // First, open the review modal
     handleAddReview(request);
   };
 
@@ -563,12 +597,17 @@ const Requests = ({ userType }) => {
                               <InputLabel>Select Provider</InputLabel>
                               <Select
                                 value={selectedProvider[req._id] || ""}
-                                onChange={(e) =>
+                                onChange={(e) => {
                                   setSelectedProvider({
                                     ...selectedProvider,
                                     [req._id]: e.target.value,
-                                  })
-                                }
+                                  });
+                                  // Fetch ratings when a provider is selected
+                                  fetchProviderRatingsByServiceType(
+                                    e.target.value,
+                                    req.serviceType
+                                  );
+                                }}
                                 sx={{
                                   "& .MuiOutlinedInput-notchedOutline": {
                                     borderColor: "rgba(0,0,0,0.1)",
@@ -584,32 +623,84 @@ const Requests = ({ userType }) => {
                                       sx={{
                                         display: "flex",
                                         alignItems: "center",
+                                        width: "100%",
+                                        justifyContent: "space-between",
                                       }}
                                     >
-                                      <Avatar
+                                      <Box
                                         sx={{
-                                          width: 28,
-                                          height: 28,
-                                          mr: 1.5,
-                                          bgcolor: statusColors.accepted,
+                                          display: "flex",
+                                          alignItems: "center",
                                         }}
                                       >
-                                        <PersonIcon fontSize="small" />
-                                      </Avatar>
-                                      <Stack direction="column" spacing={0}>
-                                        <Typography
-                                          variant="body2"
-                                          fontWeight="medium"
+                                        <Avatar
+                                          sx={{
+                                            width: 28,
+                                            height: 28,
+                                            mr: 1.5,
+                                            bgcolor: statusColors.accepted,
+                                          }}
                                         >
-                                          {provider.fullName}
-                                        </Typography>
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          {provider.phone}
-                                        </Typography>
-                                      </Stack>
+                                          <PersonIcon fontSize="small" />
+                                        </Avatar>
+                                        <Stack direction="column" spacing={0}>
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="medium"
+                                          >
+                                            {provider.fullName}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {provider.phone}
+                                          </Typography>
+                                        </Stack>
+                                      </Box>
+                                      {/* Display rating specific to this service type */}
+                                      {providerRatings[provider._id]?.[
+                                        req.serviceType
+                                      ] ? (
+                                        <Chip
+                                          icon={
+                                            <StarIcon
+                                              sx={{
+                                                fontSize: 16,
+                                                color: "#FFB300",
+                                              }}
+                                            />
+                                          }
+                                          label={`${
+                                            providerRatings[provider._id][
+                                              req.serviceType
+                                            ]
+                                          } `}
+                                          size="small"
+                                          sx={{
+                                            bgcolor: "rgba(255,179,0,0.1)",
+                                            color: "#FFB300",
+                                            fontWeight: "bold",
+                                          }}
+                                        />
+                                      ) : (
+                                        <Chip
+                                          icon={
+                                            <StarIcon
+                                              sx={{
+                                                fontSize: 16,
+                                                color: "#FFB300",
+                                              }}
+                                            />
+                                          }
+                                          label={`No ${req.serviceType} ratings`}
+                                          size="small"
+                                          sx={{
+                                            bgcolor: "rgba(0,0,0,0.05)",
+                                            color: "text.secondary",
+                                          }}
+                                        />
+                                      )}
                                     </Box>
                                   </MenuItem>
                                 ))}
@@ -896,7 +987,6 @@ const Requests = ({ userType }) => {
           setOpen={(isOpen) => {
             setOpenReviewModal(isOpen);
             if (!isOpen) {
-              // When the review modal closes, mark the request as completed
               handleCompleteRequest(selectedRequest._id);
             }
           }}
