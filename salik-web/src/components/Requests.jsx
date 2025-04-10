@@ -44,7 +44,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import StarIcon from "@mui/icons-material/Star";
 import axios from "axios";
+import ReviewModal from "./ReviewsComponents/ReviewModal";
+import {
+  addReviewsAction,
+  getAllReviewsAction,
+} from "../redux/slices/reviewsSlice";
 
 const statusColors = {
   pending: "#FFC107",
@@ -74,21 +80,18 @@ const Requests = ({ userType }) => {
     const saved = localStorage.getItem("showStatusFilter");
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
-  // Save showStatusFilter to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("showStatusFilter", JSON.stringify(showStatusFilter));
   }, [showStatusFilter]);
 
-  // Get all statuses from requests object
   const statuses = Object.keys(requests);
-
-  // Set first status as default active tab or pending if it exists
   const defaultTab =
     statuses.indexOf("pending") !== -1 ? statuses.indexOf("pending") : 0;
   const [activeTab, setActiveTab] = useState(defaultTab);
 
-  // Function to refresh requests
   const refreshRequests = () => {
     dispatch(getAllResquestsAction());
   };
@@ -97,7 +100,6 @@ const Requests = ({ userType }) => {
     dispatch(getAllResquestsAction());
   }, [dispatch, user]);
 
-  // Convert coordinates to address
   const getAddressFromCoordinates = async (lat, lng, requestId) => {
     try {
       const apiKey = "2d4b78c5799a4d8292da41dce45cadde";
@@ -116,7 +118,7 @@ const Requests = ({ userType }) => {
     Object.entries(requests).forEach(([status, reqList]) => {
       reqList.forEach((req) => {
         if (req.location?.coordinates) {
-          const [lng, lat] = req.location.coordinates; // GeoJSON format (lng, lat)
+          const [lng, lat] = req.location.coordinates;
           getAddressFromCoordinates(lat, lng, req._id);
         }
       });
@@ -145,14 +147,16 @@ const Requests = ({ userType }) => {
     dispatch(getAllResquestsAction());
   };
 
-  const toggleCardExpand = (requestId) => {
-    setExpandedCards((prev) => ({
-      ...prev,
-      [requestId]: !prev[requestId],
-    }));
+  const handleAddReview = (request) => {
+    setSelectedRequest(request);
+    setOpenReviewModal(true);
   };
 
-  // Function to truncate text
+  const handleMarkAsCompletedWithReview = (request) => {
+    // First, open the review modal
+    handleAddReview(request);
+  };
+
   const truncateText = (text, maxLength = 50) => {
     if (!text) return "";
     return text.length > maxLength
@@ -160,10 +164,8 @@ const Requests = ({ userType }) => {
       : text;
   };
 
-  // Format date and time
   const formatDateTime = (dateString) => {
     if (!dateString) return { date: "N/A", time: "N/A" };
-
     const date = new Date(dateString);
     return {
       date: date.toLocaleDateString("en-US", {
@@ -178,7 +180,6 @@ const Requests = ({ userType }) => {
     };
   };
 
-  // Loading state with skeleton
   if (isLoading) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -190,7 +191,6 @@ const Requests = ({ userType }) => {
             Loading your service requests...
           </Typography>
         </Box>
-
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <Grid item xs={12} sm={6} md={4} key={item}>
@@ -224,7 +224,6 @@ const Requests = ({ userType }) => {
     );
   }
 
-  // Empty state
   if (!requests || Object.values(requests).every((arr) => arr.length === 0)) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -248,17 +247,6 @@ const Requests = ({ userType }) => {
               ? "You haven't made any service requests yet."
               : "There are no service requests available at the moment."}
           </Typography>
-          {/* <Button
-            variant="contained"
-            onClick={refreshRequests}
-            startIcon={<RefreshIcon />}
-            sx={{
-              bgcolor: "#FFB800",
-              "&:hover": { bgcolor: "#E69F00" },
-            }}
-          >
-            Refresh
-          </Button> */}
         </Paper>
       </Container>
     );
@@ -279,9 +267,7 @@ const Requests = ({ userType }) => {
             Service Requests
           </Typography>
         </Box>
-
         <Box sx={{ display: "flex", gap: 1 }}>
-          {/* Add filter toggle button */}
           <Tooltip title="Filter by status">
             <IconButton
               onClick={() => setShowStatusFilter(!showStatusFilter)}
@@ -303,9 +289,7 @@ const Requests = ({ userType }) => {
         </Box>
       </Box>
 
-      {/* Main content with right sidebar layout */}
       <Grid container spacing={3}>
-        {/* Main content area - takes full width when filter is hidden, 9/12 when visible */}
         <Grid item xs={12} md={showStatusFilter ? 9 : 12}>
           <Grid container spacing={3}>
             {requests[statuses[activeTab]]?.map((req) => (
@@ -327,7 +311,6 @@ const Requests = ({ userType }) => {
                     border: "1px solid rgba(0,0,0,0.05)",
                   }}
                 >
-                  {/* Status header - Improved design */}
                   <Box
                     sx={{
                       bgcolor: statusColors[statuses[activeTab]],
@@ -363,7 +346,6 @@ const Requests = ({ userType }) => {
                           statuses[activeTab].slice(1)}
                       </Typography>
                     </Box>
-
                     <Chip
                       label={req.serviceType}
                       size="small"
@@ -378,7 +360,6 @@ const Requests = ({ userType }) => {
                     />
                   </Box>
 
-                  {/* Date and time section */}
                   {req.createdAt && (
                     <Box
                       sx={{
@@ -411,7 +392,6 @@ const Requests = ({ userType }) => {
                   )}
 
                   <CardContent sx={{ flexGrow: 1, p: 0 }}>
-                    {/* Location section */}
                     <Box
                       sx={{
                         display: "flex",
@@ -456,7 +436,6 @@ const Requests = ({ userType }) => {
                       </Box>
                     </Box>
 
-                    {/* Problem description */}
                     <Box sx={{ p: 2.5 }}>
                       <Typography
                         variant="subtitle2"
@@ -476,7 +455,6 @@ const Requests = ({ userType }) => {
                         />
                         Problem Description
                       </Typography>
-
                       <Paper
                         elevation={0}
                         sx={{
@@ -492,9 +470,7 @@ const Requests = ({ userType }) => {
                               : "default",
                           "&:hover":
                             req.problemDescription?.length > 80
-                              ? {
-                                  bgcolor: "rgba(0,0,0,0.03)",
-                                }
+                              ? { bgcolor: "rgba(0,0,0,0.03)" }
                               : {},
                         }}
                         onClick={() =>
@@ -505,16 +481,12 @@ const Requests = ({ userType }) => {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{
-                            lineHeight: 1.6,
-                            whiteSpace: "pre-line",
-                          }}
+                          sx={{ lineHeight: 1.6, whiteSpace: "pre-line" }}
                         >
                           {expandedCards[req._id]
                             ? req.problemDescription
                             : truncateText(req.problemDescription, 80)}
                         </Typography>
-
                         {req.problemDescription?.length > 80 && (
                           <Box
                             sx={{
@@ -556,7 +528,6 @@ const Requests = ({ userType }) => {
                       </Paper>
                     </Box>
 
-                    {/* Provider selection for customers */}
                     {user.type === "customer" &&
                       statuses[activeTab] === "accepted" &&
                       req.acceptedProviders?.length > 0 && (
@@ -579,7 +550,6 @@ const Requests = ({ userType }) => {
                             />
                             Available Providers ({req.acceptedProviders.length})
                           </Typography>
-
                           <Paper
                             elevation={0}
                             sx={{
@@ -650,7 +620,6 @@ const Requests = ({ userType }) => {
                       )}
                   </CardContent>
 
-                  {/* Action buttons */}
                   <Box
                     sx={{
                       p: 2.5,
@@ -721,14 +690,22 @@ const Requests = ({ userType }) => {
                             },
                           }}
                           fullWidth
-                          onClick={() => handleCompleteRequest(req._id)}
+                          onClick={() => handleMarkAsCompletedWithReview(req)}
                         >
                           Mark as Completed
                         </Button>
                       )}
 
                     {statuses[activeTab] === "completed" && (
-                      <Box sx={{ textAlign: "center" }}>
+                      <Box
+                        sx={{
+                          textAlign: "center",
+                          display: "flex",
+                          gap: 1,
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <Chip
                           icon={
                             <DoneAllIcon
@@ -756,7 +733,6 @@ const Requests = ({ userType }) => {
             ))}
           </Grid>
 
-          {/* Empty state for tabs */}
           {(!requests[statuses[activeTab]] ||
             requests[statuses[activeTab]].length === 0) && (
             <Paper
@@ -812,7 +788,6 @@ const Requests = ({ userType }) => {
           )}
         </Grid>
 
-        {/* Right sidebar with tabs - hidden when showStatusFilter is false */}
         <Grid item xs={12} md={3}>
           <Collapse in={showStatusFilter} timeout={300}>
             <Paper
@@ -832,8 +807,6 @@ const Requests = ({ userType }) => {
                   Filter by current status
                 </Typography>
               </Box>
-
-              {/* Vertical tabs instead of horizontal */}
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 {statuses.map((status, index) => (
                   <Button
@@ -856,9 +829,7 @@ const Requests = ({ userType }) => {
                         activeTab === index
                           ? statusColors[status]
                           : "text.secondary",
-                      "&:hover": {
-                        bgcolor: `${statusColors[status]}10`,
-                      },
+                      "&:hover": { bgcolor: `${statusColors[status]}10` },
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -918,8 +889,33 @@ const Requests = ({ userType }) => {
           </Collapse>
         </Grid>
       </Grid>
+
+      {selectedRequest && (
+        <ReviewModal
+          open={openReviewModal}
+          setOpen={(isOpen) => {
+            setOpenReviewModal(isOpen);
+            if (!isOpen) {
+              // When the review modal closes, mark the request as completed
+              handleCompleteRequest(selectedRequest._id);
+            }
+          }}
+          providerId={
+            selectedRequest.providerId?._id ||
+            selectedRequest.acceptedProviders?.[0]?._id
+          }
+          serviceType={selectedRequest.serviceType}
+        />
+      )}
     </Container>
   );
+
+  function toggleCardExpand(requestId) {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  }
 };
 
 export default Requests;

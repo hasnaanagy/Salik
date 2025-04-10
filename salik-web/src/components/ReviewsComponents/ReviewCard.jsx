@@ -23,9 +23,14 @@ export default function ReviewCard({ handleOpen, review }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const handleDeleteReview = async () => {
-    console.log(review)
+    console.log(review);
     await dispatch(deleteReviewAction(review._id));
-    await dispatch(getAllReviewsAction({ providerId:`${review.providerId._id}`, serviceType: "ride" }))
+    await dispatch(
+      getAllReviewsAction({
+        providerId: `${review.providerId._id}`,
+        serviceType: "ride",
+      })
+    );
   };
 
   return (
