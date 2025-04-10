@@ -31,6 +31,10 @@ const serviceSchema = new mongoose.Schema({
     from: { type: String, required: true },
     to: { type: String, required: true },
   },
+  
+  // New fields for ratings
+  averageRating: { type: Number, default: 0 },
+  totalReviews: { type: Number, default: 0 }
 });
 
 // Index location for geospatial queries

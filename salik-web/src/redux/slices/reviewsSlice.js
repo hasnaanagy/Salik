@@ -9,28 +9,34 @@ const initialState = {
 
 export const getAllReviewsAction = createAsyncThunk(
   "reviews/getAllReviewsAction",
-  async (providerId, { rejectWithValue }) => {
+  async ({ providerId, serviceType }, { rejectWithValue }) => {
     try {
-      const response = await apiService.getById("reviews", providerId);
+      console.log("ssssss", providerId, serviceType);
+      const url = serviceType
+        ? `reviews/${providerId}?serviceType=${serviceType}`
+        : `reviews/${providerId}`;
+      console.log("Fetching reviews from URL:", url);
+      const response = await apiService.getAll(url);
+      console.log("API Response:", response);
       return response;
     } catch (e) {
-      return rejectWithValue(e.message);
+      console.error("API Error:", e.response?.data || e.message);
+      return rejectWithValue(e.response?.data?.message || e.message);
     }
   }
 );
+
 export const addReviewsAction = createAsyncThunk(
   "reviews/addReviewsAction",
-  async ({ providerId, rating, comment }, { rejectWithValue }) => {
+  async ({ providerId, rating, comment, serviceType }, { rejectWithValue }) => {
     try {
-      console.log(providerId, rating, comment);
       const response = await apiService.create(`reviews/${providerId}`, {
         rating,
         comment,
+        serviceType,
       });
-      console.log(response);
       return response;
     } catch (e) {
-      console.log(e);
       return rejectWithValue(e.message);
     }
   }
@@ -39,31 +45,28 @@ export const addReviewsAction = createAsyncThunk(
 export const deleteReviewAction = createAsyncThunk(
   "reviews/deleteReviewAction",
   async (reviewId, { rejectWithValue }) => {
-    console.log(reviewId);
     try {
-      const response = await apiService.delete(`reviews`,reviewId);
-      console.log(response);
+      console.log(" delete", reviewId);
+      const response = await apiService.delete("reviews", reviewId);
       return response;
     } catch (e) {
-      console.log(e);
       return rejectWithValue(e.message);
     }
   }
 );
+
 export const updateReviewAction = createAsyncThunk(
   "reviews/updateReviewAction",
-  async ({reviewId,rating,comment}, { rejectWithValue }) => {
+  async ({ reviewId, rating, comment }, { rejectWithValue }) => {
     console.log(reviewId);
-    console.log(rating,comment);
+    console.log(rating, comment);
     try {
-      const response = await apiService.update(`reviews/${reviewId}`,{
+      const response = await apiService.update(`reviews/${reviewId}`, {
         rating,
-        comment
+        comment,
       });
-      console.log(response);
       return response;
     } catch (e) {
-      console.log(e);
       return rejectWithValue(e.message);
     }
   }
@@ -74,18 +77,20 @@ const reviewSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(getAllReviewsAction.pending, (state, action) => {
+    builder.addCase(getAllReviewsAction.pending, (state) => {
       state.isLoading = true;
+      state.error = null;
     });
     builder.addCase(getAllReviewsAction.fulfilled, (state, action) => {
       state.isLoading = false;
       state.reviews = action.payload.reviews;
+      console.log("Updated reviews state:", state.reviews);
     });
     builder.addCase(getAllReviewsAction.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
     });
-    builder.addCase(addReviewsAction.pending, (state, action) => {
+    builder.addCase(addReviewsAction.pending, (state) => {
       state.isLoading = true;
     });
     builder.addCase(addReviewsAction.fulfilled, (state, action) => {

@@ -8,18 +8,61 @@ export default function ServicesHome() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log("useEffect triggered: token =", token, "loading =", loading, "user =", user);
+    if (token && !user && !loading) {
+      console.log("Dispatching getUser...");
+      dispatch(getUser());
+    }
+  }, [dispatch, token, user, loading]);
+
   const handleProtectedNavigation = (e, path) => {
     if (!token) {
       setSuccessMessage(true);
-
       e.preventDefault();
       setTimeout(() => {
         navigate("/login");
       }, 5000);
     }
   };
+
+  const handleRideClick = (e) => {
+    e.preventDefault();
+    if (!token) {
+      handleProtectedNavigation(e, "/login");
+      return;
+    }
+
+    if (user?.type === "provider") {
+      const hasDocuments = user?.nationalIdImage && user?.licenseImage;
+      const areVerified = user?.nationalIdStatus === "verified" && user?.licenseStatus === "verified";
+
+      if (!hasDocuments || !areVerified) {
+        navigate("/licence");
+      } else {
+        navigate("/addTrip");
+      }
+    } else {
+      navigate("/addTrip");
+    }};
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <Typography color="error">Error: {error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -42,16 +85,11 @@ export default function ServicesHome() {
       </Typography>
 
       <Grid container spacing={3} justifyContent="center">
-        {/* Ride Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
-            to={
-              user?.nationalIdImage && user?.licenseImage
-                ? "/addTrip"
-                : "/licence"
-            }
+            to="#"
             style={{ textDecoration: "none", color: "inherit" }}
-            onClick={(e) => handleProtectedNavigation(e, "/login")}
+            onClick={handleRideClick}
           >
             <Box
               sx={{
@@ -69,9 +107,7 @@ export default function ServicesHome() {
               }}
             >
               <h2 style={{ fontSize: "30px" }}>Ride</h2>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "20px" }}
-              >
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                 <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
                   Share and request rides now!
                 </p>
@@ -87,7 +123,6 @@ export default function ServicesHome() {
           </Link>
         </Grid>
 
-        {/* Fuel Delivery Box */}
         <Grid item xs={12} sm={6} md={4} sx={{ marginBottom: "70px" }}>
           <Link
             style={{ textDecoration: "none", color: "inherit" }}
@@ -110,10 +145,8 @@ export default function ServicesHome() {
               }}
             >
               <h2 style={{ fontSize: "30px" }}>Fuel Delivery</h2>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "20px" }}
-              >
-                <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                <p style={{ fontSize: "20px", color: "4F4F4F" }}>
                   Bringing you closer, no matter the distance...
                 </p>
                 <img
@@ -128,7 +161,6 @@ export default function ServicesHome() {
           </Link>
         </Grid>
 
-        {/* Mechanic Box */}
         <Grid item xs={12} md={4} sx={{ marginBottom: "70px" }}>
           <Link
             style={{ textDecoration: "none", color: "inherit" }}
@@ -151,9 +183,7 @@ export default function ServicesHome() {
               }}
             >
               <h2 style={{ fontSize: "30px" }}>Mechanic</h2>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "20px" }}
-              >
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                 <p style={{ fontSize: "20px", color: "#4F4F4F" }}>
                   Send and get help anywhere!
                 </p>
@@ -169,6 +199,7 @@ export default function ServicesHome() {
           </Link>
         </Grid>
       </Grid>
+
       <Snackbar
         open={successMessage}
         autoHideDuration={4000}
@@ -180,8 +211,7 @@ export default function ServicesHome() {
           severity="error"
           sx={{ width: "100%" }}
         >
-          🚀 Hold on! You need to log in first. Go ahead, log in, and come back!
-          😉
+          🚀 Hold on! You need to log in first. Go ahead, log in, and come back! 😉
         </Alert>
       </Snackbar>
     </Box>

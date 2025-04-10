@@ -10,6 +10,7 @@ export const fetchBooking = createAsyncThunk("rides/fetchBooking", async () => {
     throw new Error(error.message || "An error occurred while fetching rides.");
   }
 });
+
 // Fetch provided rides
 export const fetchProviderRides = createAsyncThunk(
   "rides/fetchProviderRides",

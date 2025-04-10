@@ -1,0 +1,39 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  /* background-color: #1F1F1F */
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container {
+  flex: 1; /* Pushes the footer down */
+}
+
+/* Make form inputs more visually appealing */
+input {
+  font-size: 16px !important; /* Prevent zooming on mobile */
+}
+
+/* Prevent horizontal overflow */
+.MuiBox-root,
+.MuiGrid-root,
+.MuiPaper-root {
+  max-width: 100%;
+}
+
+/* Ensure login page has no scrolling */
+.login-page-container {
+  height: 100vh;
+  overflow: hidden;
+}

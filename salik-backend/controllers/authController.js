@@ -1,29 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
 const User = require("../models/User");
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files in the "uploads" folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-// File filter
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images are allowed"), false);
-  }
-};
-
-// Initialize upload middleware
-const upload = multer({ storage, fileFilter });
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -37,7 +14,6 @@ exports.signup = async (req, res) => {
   }
 
   try {
-    // Check if the user already exists by phone number or nationalId
     const userExists = await User.findOne({ $or: [{ phone }, { nationalId }] });
     if (userExists) {
       return res.status(400).json({
@@ -46,10 +22,7 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // Hash password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user with default type "customer"
     const newUser = new User({
       fullName,
       phone,
@@ -57,9 +30,7 @@ exports.signup = async (req, res) => {
       nationalId,
     });
 
-    // Save user to DB
     await newUser.save();
-
     res.status(201).json({ status: 201, message: "User registered successfully!" });
   } catch (error) {
     console.error(error);
@@ -89,14 +60,18 @@ exports.login = async (req, res) => {
       return res.status(400).json({ status: 400, message: "Invalid phone number or password" });
     }
 
-    // Create and sign JWT token with user info (including type/role)
     const token = jwt.sign(
       { userId: user._id, type: user.type },
-      process.env.JWT_SECRET, // Secret key stored in environment variable
-      // { expiresIn: "1h" } // Token expiration time
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" } // Add expiration for security
     );
 
-    res.status(200).json({ status: 200, message: "Login successful", token });
+    res.status(200).json({
+      status: 200,
+      message: "Login successful",
+      token,
+      userType: user.type,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: 500, message: "Server error, please try again" });
@@ -112,9 +87,11 @@ exports.switchRole = async (req, res) => {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
 
-    // Toggle the user role between 'customer' and 'provider'
-    user.type = user.type === "customer" ? "provider" : "customer";
+    if (user.type === "admin") {
+      return res.status(403).json({ message: "Admins cannot switch roles" });
+    }
 
+    user.type = user.type === "customer" ? "provider" : "customer";
     await user.save();
 
     res.status(200).json({
@@ -135,8 +112,7 @@ exports.switchRole = async (req, res) => {
 // Get User Controller
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-
+    const user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
@@ -147,45 +123,183 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Update User Controller with Image Upload
-const path = require("path");
+// Create Admin Controller
+exports.createAdmin = async (req, res) => {
+  const { fullName, phone, password, nationalId } = req.body;
 
-exports.updateUser = async (req, res) => {
+  if (!fullName || !phone || !password || !nationalId) {
+    return res.status(400).json({
+      status: 400,
+      message: "Please provide all the required fields!",
+    });
+  }
+
   try {
-      const userId = req.user.id; // Get user ID from token
-      const updatedData = { ...req.body }; // Copy request body
-
-      console.log("Received files:", req.files);
-      console.log("Received body:", req.body);
-
-      // Check and assign uploaded files
-      if (req.files) {
-          if (req.files.profileImg) {
-              updatedData.profileImg = `/uploads/${req.files.profileImg[0].filename}`;
-          }
-          if (req.files.nationalIdImage) {
-              updatedData.nationalIdImage = `/uploads/${req.files.nationalIdImage[0].filename}`;
-          }
-          if (req.files.licenseImage) {
-              updatedData.licenseImage = `/uploads/${req.files.licenseImage[0].filename}`;
-          }
-      }
-
-      // Update the user in the database
-      const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
-
-      if (!updatedUser) {
-          return res.status(404).json({ status: 404, message: "User not found" });
-      }
-
-      res.status(200).json({
-          status: 200,
-          message: "User updated successfully",
-          updatedUser,
+    const userExists = await User.findOne({ $or: [{ phone }, { nationalId }] });
+    if (userExists) {
+      return res.status(400).json({
+        status: 400,
+        message: "User with this phone number or national ID already exists!",
       });
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAdmin = new User({
+      fullName,
+      phone,
+      password: hashedPassword,
+      nationalId,
+      type: "admin",
+    });
+
+    await newAdmin.save();
+    res.status(201).json({ status: 201, message: "Admin user created successfully!" });
   } catch (error) {
-      console.error("Update User Error:", error);
-      res.status(500).json({ status: 500, message: "Internal Server Error" });
+    console.error(error);
+    res.status(500).json({ status: 500, message: "Server error, please try again" });
   }
 };
+
+// Get Unverified Documents
+exports.getUnverifiedDocuments = async (req, res) => {
+  try {
+    const users = await User.find({
+      type: "provider",
+      $or: [{ nationalIdStatus: "pending" }, { licenseStatus: "pending" }],
+    }).select("fullName phone nationalId nationalIdImage licenseImage nationalIdStatus licenseStatus");
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "No unverified documents found" });
+    }
+
+    res.status(200).json({ message: "Unverified documents retrieved successfully", users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Verify Document
+exports.verifyDocument = async (req, res) => {
+  const { userId, documentType, action } = req.body;
+
+  if (!userId || !["nationalId", "license"].includes(documentType) || !["approve", "reject"].includes(action)) {
+    return res.status(400).json({
+      message: "User ID, valid document type (nationalId/license), and action (approve/reject) are required",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user || user.type !== "provider") {
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const imageField = documentType === "nationalId" ? "nationalIdImage" : "licenseImage";
+    const statusField = documentType === "nationalId" ? "nationalIdStatus" : "licenseStatus";
+
+    if (!user[imageField]) {
+      return res.status(400).json({ message: `No ${documentType} image uploaded` });
+    }
+
+    if (action === "approve") {
+      user[statusField] = "verified";
+    } else if (action === "reject") {
+      user[imageField] = "";
+      user[statusField] = "rejected";
+    }
+
+    await user.save();
+    res.status(200).json({
+      message: `${documentType === "nationalId" ? "National ID" : "Driving License"} ${action}d successfully`,
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get Filtered Users
+exports.getFilteredUsers = async (req, res) => {
+  try {
+    const { type } = req.query;
+    let filter = {};
+
+    if (type && ["customer", "provider", "admin"].includes(type)) {
+      filter.type = type;
+    }
+
+    const users = await User.find(filter).select("-password");
+
+    const formattedUsers = users.map((user) => ({
+      id: user._id,
+      fullName: user.fullName,
+      phone: user.phone,
+      nationalId: user.nationalId,
+      type: user.type,
+      profileImg: user.profileImg,
+      nationalIdStatus: user.nationalIdStatus,
+      licenseStatus: user.licenseStatus,
+      nationalIdImage: user.nationalIdImage,
+      licenseImage: user.licenseImage,
+    }));
+
+    res.status(200).json({
+      status: 200,
+      message: type ? `${type} users retrieved successfully` : "All users retrieved successfully",
+      count: formattedUsers.length, // Fixed typo: 'lengt' to 'length'
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Server error while fetching users",
+      error: error.message,
+    });
+  }
+};
+
+// Update User (Cloudinary URLs)
+exports.updateUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const updatedData = { ...req.body };
+
+    console.log("Received body:", req.body);
+
+    if (req.body.nationalIdImage) {
+      updatedData.nationalIdImage = req.body.nationalIdImage;
+      updatedData.nationalIdStatus = "pending";
+    }
+    if (req.body.licenseImage) {
+      updatedData.licenseImage = req.body.licenseImage;
+      updatedData.licenseStatus = "pending";
+    }
+    if (req.body.profileImg) {
+      updatedData.profileImg = req.body.profileImg;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ status: 404, message: "User not found" });
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: "User updated successfully",
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Update User Error:", error);
+    res.status(500).json({ status: 500, message: "Internal Server Error" });
+  }
+};
+// async function generatePassword() {
+//   const hashedPassword = await bcrypt.hash("Admin@12345", 10);
+//   console.log(hashedPassword,"hello");
+// }
+
+// generatePassword();
