@@ -54,10 +54,14 @@ exports.signup = async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({ status: 201, message: "User registered successfully!" });
+    res
+      .status(201)
+      .json({ status: 201, message: "User registered successfully!" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: 500, message: "Server error, please try again" });
+    res
+      .status(500)
+      .json({ status: 500, message: "Server error, please try again" });
   }
 };
 
@@ -75,12 +79,16 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({ phone });
     if (!user) {
-      return res.status(400).json({ status: 400, message: "Invalid phone number or password" });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Invalid phone number or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ status: 400, message: "Invalid phone number or password" });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Invalid phone number or password" });
     }
 
     const token = jwt.sign(
@@ -96,7 +104,9 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: 500, message: "Server error, please try again" });
+    res
+      .status(500)
+      .json({ status: 500, message: "Server error, please try again" });
   }
 };
 
@@ -138,10 +148,16 @@ exports.getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
-    res.status(200).json({ status: 200, message: "User retrieved successfully", user });
+    res
+      .status(200)
+      .json({ status: 200, message: "User retrieved successfully", user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, message: "Error fetching user", error: err.message });
+    res.status(500).json({
+      status: 500,
+      message: "Error fetching user",
+      error: err.message,
+    });
   }
 };
 
@@ -177,10 +193,14 @@ exports.createAdmin = async (req, res) => {
     });
 
     await newAdmin.save();
-    res.status(201).json({ status: 201, message: "Admin user created successfully!" });
+    res
+      .status(201)
+      .json({ status: 201, message: "Admin user created successfully!" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: 500, message: "Server error, please try again" });
+    res
+      .status(500)
+      .json({ status: 500, message: "Server error, please try again" });
   }
 };
 
@@ -189,17 +209,18 @@ exports.getUnverifiedDocuments = async (req, res) => {
   try {
     const users = await User.find({
       type: "provider",
-      $or: [
-        { nationalIdStatus: "pending" },
-        { licenseStatus: "pending" },
-      ],
-    }).select("fullName phone nationalId nationalIdImage licenseImage nationalIdStatus licenseStatus");
+      $or: [{ nationalIdStatus: "pending" }, { licenseStatus: "pending" }],
+    }).select(
+      "fullName phone nationalId nationalIdImage licenseImage nationalIdStatus licenseStatus"
+    );
 
     if (users.length === 0) {
       return res.status(404).json({ message: "No unverified documents found" });
     }
 
-    res.status(200).json({ message: "Unverified documents retrieved successfully", users });
+    res
+      .status(200)
+      .json({ message: "Unverified documents retrieved successfully", users });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -210,9 +231,14 @@ exports.getUnverifiedDocuments = async (req, res) => {
 exports.verifyDocument = async (req, res) => {
   const { userId, documentType, action } = req.body;
 
-  if (!userId || !["nationalId", "license"].includes(documentType) || !["approve", "reject"].includes(action)) {
-    return res.status(400).json({ 
-      message: "User ID, valid document type (nationalId/license), and action (approve/reject) are required" 
+  if (
+    !userId ||
+    !["nationalId", "license"].includes(documentType) ||
+    !["approve", "reject"].includes(action)
+  ) {
+    return res.status(400).json({
+      message:
+        "User ID, valid document type (nationalId/license), and action (approve/reject) are required",
     });
   }
 
@@ -222,11 +248,15 @@ exports.verifyDocument = async (req, res) => {
       return res.status(404).json({ message: "Provider not found" });
     }
 
-    const imageField = documentType === "nationalId" ? "nationalIdImage" : "licenseImage";
-    const statusField = documentType === "nationalId" ? "nationalIdStatus" : "licenseStatus";
+    const imageField =
+      documentType === "nationalId" ? "nationalIdImage" : "licenseImage";
+    const statusField =
+      documentType === "nationalId" ? "nationalIdStatus" : "licenseStatus";
 
     if (!user[imageField]) {
-      return res.status(400).json({ message: `No ${documentType} image uploaded` });
+      return res
+        .status(400)
+        .json({ message: `No ${documentType} image uploaded` });
     }
 
     if (action === "approve") {
@@ -238,7 +268,9 @@ exports.verifyDocument = async (req, res) => {
 
     await user.save();
     res.status(200).json({
-      message: `${documentType === "nationalId" ? "National ID" : "Driving License"} ${action}d successfully`,
+      message: `${
+        documentType === "nationalId" ? "National ID" : "Driving License"
+      } ${action}d successfully`,
       user,
     });
   } catch (error) {
@@ -267,7 +299,9 @@ exports.updateUser = async (req, res) => {
       updatedData.profileImg = req.body.profileImg;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ status: 404, message: "User not found" });

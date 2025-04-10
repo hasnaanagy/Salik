@@ -38,7 +38,9 @@ export const getUser = createAsyncThunk(
       if (!data) throw new Error("User data not found");
       return data; // Expect { user: { fullName, phone, nationalIdImage, licenseImage, ... } }
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch user"
+      );
     }
   }
 );
@@ -77,7 +79,9 @@ export const switchRole = createAsyncThunk(
       return response;
     } catch (error) {
       console.error("❌ Error switching role:", error);
-      return rejectWithValue(error.response?.data?.message || "Failed to switch role");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to switch role"
+      );
     }
   }
 );
