@@ -8,26 +8,13 @@ export const loginUser = createAsyncThunk(
     try {
       const data = await apiService.create("auth/login", userData);
       localStorage.setItem("token", data.token);
-      return data;
+      return data; // { status, message, token, userType }
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
 
-// Signup User
-export const signupUser = createAsyncThunk(
-  "auth/signup",
-  async (userData, { rejectWithValue }) => {
-    try {
-      const data = await apiService.create("auth/signup", userData);
-      localStorage.setItem("token", data.token);
-      return data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Signup failed");
-    }
-  }
-);
 
 // Get User Data
 export const getUser = createAsyncThunk(
@@ -35,25 +22,27 @@ export const getUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await apiService.getAll("auth");
-      if (!data?.user) throw new Error("User data not found");
-      return data;
+      if (!data) throw new Error("User data not found");
+      return data; // Expect { user: { fullName, phone, nationalIdImage, licenseImage, ... } }
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
     }
   }
 );
 
-// Update User (with Cloudinary URLs)
+// Update User (includes image uploads)
 export const updateUser = createAsyncThunk(
   "auth/updateUser",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await apiService.patch("auth/", formData);
+      const response = await apiService.patch("auth/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       console.log("🔄 API Response:", response);
       if (!response.updatedUser) {
         throw new Error("Invalid server response: Missing updatedUser.");
       }
-      return response.updatedUser;
+      return response.updatedUser; // Full user object with updated fields
     } catch (error) {
       console.error("❌ Update failed:", error);
       return rejectWithValue(error.response?.data?.message || "Update failed");
@@ -61,29 +50,10 @@ export const updateUser = createAsyncThunk(
   }
 );
 
-// Switch Role
-export const switchRole = createAsyncThunk(
-  "auth/switchRole",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await apiService.update("auth/switch-role", {});
-      console.log("🔄 Full API Response:", response);
-      if (!response?.newRole) {
-        throw new Error("Invalid API response format");
-      }
-      localStorage.setItem("userRole", response.newRole);
-      return response;
-    } catch (error) {
-      console.error("❌ Error switching role:", error);
-      return rejectWithValue(error.response?.data?.message || "Failed to switch role");
-    }
-  }
-);
 
-// Logout User
+
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("userRole");
   return null;
 });
 
@@ -105,26 +75,16 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = { userId: action.payload.userId, type: action.payload.userType };
+        state.user = {
+          type: action.payload.userType,
+        };
         state.token = action.payload.token;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(signupUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(signupUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-      })
-      .addCase(signupUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+     
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.token = null;
@@ -135,7 +95,7 @@ const authSlice = createSlice({
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+        state.user = action.payload.user; // Full user object
       })
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
@@ -147,21 +107,13 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // Full updated user object
+        state.user = action.payload; // Update with full user object
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(switchRole.fulfilled, (state, action) => {
-        console.log("🎭 Switched Role Data:", action.payload);
-        if (action.payload?.newRole) {
-          state.user = { ...state.user, type: action.payload.newRole }; // Use 'type' to match schema
-        }
-      })
-      .addCase(switchRole.rejected, (state, action) => {
-        state.error = action.payload;
-      });
+
   },
 });
 

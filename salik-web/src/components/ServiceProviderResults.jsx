@@ -417,7 +417,7 @@ export function ServiceProviderResults({
                   </Tooltip>
                 )}
 
-                <Tooltip title="Add Review" arrow>
+                {/* <Tooltip title="Add Review" arrow>
                   <Button
                     variant="contained"
                     size="small"
@@ -438,7 +438,7 @@ export function ServiceProviderResults({
                   >
                     Review
                   </Button>
-                </Tooltip>
+                </Tooltip> */}
               </Stack>
             </Card>
           </Box>
