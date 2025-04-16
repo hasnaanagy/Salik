@@ -18,4 +18,7 @@ router.get("/users", verifyToken, adminMiddleware, authController.getFilteredUse
 // Update user with Cloudinary URLs
 router.patch("/", verifyToken, authController.updateUser);
 
+// Add the delete user route (admin only)
+router.delete("/users/:userId", verifyToken, adminMiddleware, authController.deleteUser);
+
 module.exports = router;

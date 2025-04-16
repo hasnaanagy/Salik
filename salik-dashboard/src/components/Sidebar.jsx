@@ -21,14 +21,18 @@ const NavItem = ({ text, icon, isActive, onClick }) => {
         padding: '12px 16px',
         borderRadius: '8px',
         marginBottom: '8px',
-        backgroundColor: isActive ? "#334155" : "transparent",
+        backgroundColor: isActive ? "#e6a700" : "transparent", // Slightly darker shade for active
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        "&:hover": { backgroundColor: "#334155" },
+        "&:hover": { backgroundColor: "#e6a700" }, // Hover effect
       }}
     >
-      <Box sx={{ color: "#FFFFFF", display: 'flex' }}>{icon}</Box>
-      <Typography sx={{ color: "#FFFFFF", fontSize: '14px' }}>{text}</Typography>
+      <Box sx={{ color: isActive ? "#000000" : "#333333", display: 'flex' }}> {/* Dark gray/black for icons */}
+        {icon}
+      </Box>
+      <Typography sx={{ color: isActive ? "#000000" : "#333333", fontSize: '14px' }}> {/* Dark gray/black for text */}
+        {text}
+      </Typography>
     </Box>
   );
 };
@@ -45,8 +49,6 @@ export default function Sidebar() {
   const menuItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "Users", icon: <PeopleIcon />, path: "/users" },
-    { text: "Rides", icon: <DirectionsCarIcon />, path: "/rides" },
-    { text: "Services", icon: <BuildIcon />, path: "/services" },
     { text: "Documents", icon: <DescriptionIcon />, path: "/documents" },
   ];
 
@@ -58,7 +60,6 @@ export default function Sidebar() {
     handleGetUser();
   }, [dispatch]);
   
-  // Get the current path to determine which menu item is active
   const currentPath = location.pathname;
   
   return (
@@ -68,18 +69,17 @@ export default function Sidebar() {
         flexDirection: "column",
         width: "250px",
         height: "100vh",
-        backgroundColor: "#141212",
+        backgroundColor: "#ffb800", // Sidebar background
         padding: "30px 20px 20px 20px",
         boxShadow: '2px 0px 10px rgba(0, 0, 0, 0.1)',
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'start', mb: 6 }}>
-        <Typography variant="h5" sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
+        <Typography variant="h5" sx={{ color: "#000000", fontWeight: "bold" }}> {/* Black for title */}
           Salik Dashboard
         </Typography>
       </Box>
 
-      {/* Navigation Menu */}
       <List sx={{ p: 0 }}>
         {menuItems.map((item, index) => (
           <NavItem

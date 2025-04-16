@@ -297,6 +297,30 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ status: 500, message: "Internal Server Error" });
   }
 };
+exports.deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Prevent deleting admin users
+    if (user.type === "admin") {
+      return res.status(403).json({ message: "Admin users cannot be deleted" });
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Error deleting user", error: error.message });
+  }
+};
 // async function generatePassword() {
 //   const hashedPassword = await bcrypt.hash("Admin@12345", 10);
 //   console.log(hashedPassword,"hello");

@@ -6,7 +6,9 @@ const moment = require("moment");
 
 exports.createRide = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("type nationalIdStatus licenseStatus");
+    console.log("Fetched User:", user);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -16,7 +18,7 @@ exports.createRide = async (req, res) => {
     }
 
     // Check if both national ID and driving license are verified
-    if (!user.nationalIdVerified || !user.licenseVerified) {
+    if (user.nationalIdStatus !== "verified" || user.licenseStatus !== "verified") {
       return res.status(403).json({
         message: "Your national ID and driving license must be verified by an admin before creating a ride.",
       });
