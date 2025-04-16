@@ -109,7 +109,7 @@ export function Header() {
   const tabs =
     currentRole === "customer"
       ? ["Home", "Activities", "Requests"]
-      : ["Home", "Services", "Activities", "Requests"];
+      : ["Home", "Activities", "Requests"];
   return (
     <AppBar
       position={scrolled ? "fixed" : "static"}

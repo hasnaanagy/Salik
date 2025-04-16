@@ -155,7 +155,6 @@ const ActivityComponent = () => {
     <View style={styles.mainContainer}>
       {/* Header with title and filter icon */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Rides</Text>
         <TouchableOpacity style={styles.filterButton} onPress={toggleFilterBox}>
           <Feather name="filter" size={22} color={baseColor} />
         </TouchableOpacity>
@@ -223,15 +222,17 @@ const ActivityComponent = () => {
           <>
             {shouldShowSection("upcoming") && (
               <>
-                <Text style={styles.heading}>
-                  <Feather
+            <View style={{flexDirection: "row", alignItems: "center",gap: 10,marginBottom: 16}}>
+            <Feather
                     name="clock"
                     size={20}
                     color={COLORS.upcoming}
                     style={styles.headingIcon}
                   />
+                <Text style={styles.heading}>
                   Upcoming
                 </Text>
+                </View>
                 {upcoming.length > 0 ? (
                   upcoming.map((ride) => (
                     <Cards
@@ -250,15 +251,17 @@ const ActivityComponent = () => {
 
             {shouldShowSection("completed") && (
               <>
-                <Text style={styles.heading}>
-                  <Feather
+          <View style={{flexDirection: "row", alignItems: "center",gap: 10,marginBottom: 16}}>
+          <Feather
                     name="check-circle"
                     size={20}
                     color={COLORS.completed}
                     style={styles.headingIcon}
                   />
+                <Text style={styles.heading}>
                   Completed
                 </Text>
+                </View>
                 {completed.length > 0 ? (
                   completed.map((ride) => (
                     <Cards
@@ -277,15 +280,16 @@ const ActivityComponent = () => {
 
             {shouldShowSection("canceled") && (
               <>
-                <Text style={styles.heading}>
-                  <Feather
+              <View style={{flexDirection: "row", alignItems: "center",gap: 10,marginBottom: 16}}>
+              <Feather
                     name="x-circle"
-                    size={20}
+                    size={22}
                     color={COLORS.canceled}
-                    style={styles.headingIcon}
                   />
+                <Text style={styles.heading}>  
                   Canceled
                 </Text>
+                </View>
                 {canceled.length > 0 ? (
                   canceled.map((ride) => (
                     <Cards
@@ -318,8 +322,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   headerTitle: {
     fontSize: 18,
@@ -327,12 +329,14 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   filterButton: {
+    position: "absolute",
+    right: 16,
+    top: -50,
     width: 40,
     height: 40,
-    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    zIndex: 2,
   },
   container: {
     padding: 16,
@@ -370,15 +374,9 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 15,
-    marginTop: 20,
-    flexDirection: "row",
-    alignItems: "center",
+    marginLeft: 10,
   },
-  headingIcon: {
-    marginRight: 8,
-  },
+
   noData: {
     fontSize: 16,
     color: "gray",

@@ -25,9 +25,9 @@ const TabsLayout = () => {
 
   return (
     <Tabs tabBar={(props) => <TabBar {...props} />}>
-      <Tabs.Screen name="index" options={{ title: "Salik", ...options }} />
-      <Tabs.Screen name="requests" options={{ title: "Requests", ...options }} />
-      <Tabs.Screen name="activity" options={{ title: "Activity", ...options }} />
+      <Tabs.Screen name="index" options={{ title: "Salik", ...options,}} />
+      <Tabs.Screen name="requests" options={{ title: "Requests", ...options,headerStyle: { backgroundColor: '#f8f9fa',height: Platform.OS === 'ios' ? 100 : 60, elevation: 0,shadowOpacity: 0,} }} />
+      <Tabs.Screen name="activity" options={{ title: "Activity", ...options,headerStyle: { backgroundColor: '#f8f9fa',height: Platform.OS === 'ios' ? 100 : 60 , elevation: 0,shadowOpacity: 0, }}} />
       <Tabs.Screen name="profile" options={{ title: "Profile", ...options }} />
     </Tabs>
   );

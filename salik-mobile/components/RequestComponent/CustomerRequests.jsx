@@ -559,19 +559,7 @@ const CustomerRequests = () => {
                       );
                     })}
                   </View>
-                ) : (
-                  // Update the emptyState view to be more informative and visually appealing
-                  nearbyProviders.length === 0 &&
-                  !findingProviders &&
-                  !locationLoading && (
-                    <View style={styles.emptyState}>
-                      <Feather name="map-pin" size={50} color="#adb5bd" />
-                      <CustomText style={styles.emptyStateText}>
-                        No service providers found in your area.{"\n"}\{" "}
-                      </CustomText>
-                    </View>
-                  )
-                )}
+                ) : null}
               </View>
             )}
           </View>
@@ -587,6 +575,7 @@ const styles = StyleSheet.create({
     top: Platform.OS === "ios" ? -30 : -30,
     left: 5,
     zIndex: 999,
+    marginTop: Platform.OS === "ios" ? 40 : 10,
   },
   scrollContainer: {
     flexGrow: 1,

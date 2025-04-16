@@ -7,6 +7,7 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Feather } from "@expo/vector-icons";
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
+    marginTop: Platform.OS === "ios" ? 40 : 10,
     marginBottom: 20,
   },
   headerTitle: {

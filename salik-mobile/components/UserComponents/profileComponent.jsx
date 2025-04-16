@@ -85,8 +85,8 @@ const ProfileComponent = ({ navigation }) => {
         )}
         <View style={styles.userInfo}>
           <Text style={styles.name}>{user?.fullName || "User Name"}</Text>
-          <Text style={styles.phone}>
-            {user?.phone || "No phone available"}
+          <Text style={styles.type}>
+            {user?.type || "user not found"}
           </Text>
         </View>
         <TouchableOpacity style={styles.settingsIcon}>
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  phone: {
+  type: {
     fontSize: 14,
     color: "#666",
     marginTop: 2,

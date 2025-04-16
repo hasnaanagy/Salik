@@ -418,7 +418,6 @@ const RequestPage = () => {
   return (
     <View style={styles.mainContainer}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Service Requests</Text>
         <TouchableOpacity style={styles.filterButton} onPress={toggleFilterBox}>
           <Feather name="filter" size={22} color={baseColor} />
         </TouchableOpacity>
@@ -766,15 +765,13 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: "#f8f9fa",
-  },
+    },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    paddingVertical: 4,
     backgroundColor: "#f8f9fa",
     zIndex: 9998,
   },
@@ -787,9 +784,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    position: "absolute",
+    right: 16,
+    top: -42,
+    
   },
   filterBox: {
     backgroundColor: "white",

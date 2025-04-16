@@ -113,7 +113,7 @@ export default function Login() {
 
         <MainButton
           type="submit"
-          style={{ width: "100%" }}
+          style={{ width: "100%",backgroundColor: "#ffb800" }}
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
