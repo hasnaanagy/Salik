@@ -20,12 +20,8 @@ axiosInstance.interceptors.request.use(
 
 const apiService = {
   patch: async (endpoint, data) => {
-    const headers =
-      data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
-    const response = await axiosInstance.patch(`/${endpoint}`, data, {
-      headers,
-    });
-
+    const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await axiosInstance.patch(`/${endpoint}`, data, { headers });
     return response.data;
   },
   getAll: async (endpoint) => {
@@ -41,18 +37,13 @@ const apiService = {
     return response.data;
   },
   update: async (endpoint, data) => {
-    try {
-      const response = await axiosInstance.put(`/${endpoint}`, data);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosInstance.put(`/${endpoint}`, data);
+    return response.data;
   },
   delete: async (endpoint, id) => {
     const response = await axiosInstance.delete(`/${endpoint}/${id}`);
     return response.data;
   },
-
   updateWithFormData: async (endpoint, id, formData) => {
     const response = await axiosInstance.put(`/${endpoint}/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },

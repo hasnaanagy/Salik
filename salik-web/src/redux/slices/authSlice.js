@@ -8,7 +8,7 @@ export const loginUser = createAsyncThunk(
     try {
       const data = await apiService.create("auth/login", userData);
       localStorage.setItem("token", data.token);
-      return data; // { status, message, token, userType }
+      return data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
@@ -35,8 +35,8 @@ export const getUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await apiService.getAll("auth");
-      if (!data) throw new Error("User data not found");
-      return data; // Expect { user: { fullName, phone, nationalIdImage, licenseImage, ... } }
+      if (!data?.user) throw new Error("User data not found");
+      return data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch user"
@@ -45,19 +45,17 @@ export const getUser = createAsyncThunk(
   }
 );
 
-// Update User (includes image uploads)
+// Update User (with Cloudinary URLs)
 export const updateUser = createAsyncThunk(
   "auth/updateUser",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await apiService.patch("auth/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await apiService.patch("auth/", formData);
       console.log("🔄 API Response:", response);
       if (!response.updatedUser) {
         throw new Error("Invalid server response: Missing updatedUser.");
       }
-      return response.updatedUser; // Full user object with updated fields
+      return response.updatedUser;
     } catch (error) {
       console.error("❌ Update failed:", error);
       return rejectWithValue(error.response?.data?.message || "Update failed");
@@ -72,7 +70,7 @@ export const switchRole = createAsyncThunk(
     try {
       const response = await apiService.update("auth/switch-role", {});
       console.log("🔄 Full API Response:", response);
-      if (!response || !response.newRole) {
+      if (!response?.newRole) {
         throw new Error("Invalid API response format");
       }
       localStorage.setItem("userRole", response.newRole);
@@ -89,6 +87,7 @@ export const switchRole = createAsyncThunk(
 // Logout User
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("userRole");
   return null;
 });
 
@@ -110,10 +109,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = {
-          userId: action.payload.userId,
-          type: action.payload.userType,
-        };
+        state.user = { userId: action.payload.userId, type: action.payload.userType };
         state.token = action.payload.token;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -128,7 +124,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        state.error = null;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.loading = false;
@@ -144,7 +139,7 @@ const authSlice = createSlice({
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user; // Full user object
+        state.user = action.payload.user;
       })
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
@@ -156,7 +151,7 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // Update with full user object
+        state.user = action.payload; // Full updated user object
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.loading = false;
@@ -165,7 +160,7 @@ const authSlice = createSlice({
       .addCase(switchRole.fulfilled, (state, action) => {
         console.log("🎭 Switched Role Data:", action.payload);
         if (action.payload?.newRole) {
-          state.user = { ...state.user, role: action.payload.newRole };
+          state.user = { ...state.user, type: action.payload.newRole }; // Use 'type' to match schema
         }
       })
       .addCase(switchRole.rejected, (state, action) => {

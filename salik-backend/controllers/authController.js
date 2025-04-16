@@ -1,29 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
 const User = require("../models/User");
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files in the "uploads" folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-// File filter
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images are allowed"), false);
-  }
-};
-
-// Initialize upload middleware
-const upload = multer({ storage, fileFilter });
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -65,7 +42,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-// Login Controller (Modified to include userType)
+// Login Controller
 exports.login = async (req, res) => {
   const { phone, password } = req.body;
 
@@ -93,14 +70,15 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, type: user.type },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" } // Add expiration for security
     );
 
     res.status(200).json({
       status: 200,
       message: "Login successful",
       token,
-      userType: user.type, // Return user type for frontend routing
+      userType: user.type,
     });
   } catch (error) {
     console.error(error);
@@ -144,7 +122,7 @@ exports.switchRole = async (req, res) => {
 // Get User Controller
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
@@ -160,8 +138,6 @@ exports.getUserById = async (req, res) => {
     });
   }
 };
-
-// Update User Controller (Reset verification status on new uploads)
 
 // Create Admin Controller
 exports.createAdmin = async (req, res) => {
@@ -279,7 +255,50 @@ exports.verifyDocument = async (req, res) => {
   }
 };
 
-// Update User
+// Get Filtered Users
+exports.getFilteredUsers = async (req, res) => {
+  try {
+    const { type } = req.query;
+    let filter = {};
+
+    if (type && ["customer", "provider", "admin"].includes(type)) {
+      filter.type = type;
+    }
+
+    const users = await User.find(filter).select("-password");
+
+    const formattedUsers = users.map((user) => ({
+      id: user._id,
+      fullName: user.fullName,
+      phone: user.phone,
+      nationalId: user.nationalId,
+      type: user.type,
+      profileImg: user.profileImg,
+      nationalIdStatus: user.nationalIdStatus,
+      licenseStatus: user.licenseStatus,
+      nationalIdImage: user.nationalIdImage,
+      licenseImage: user.licenseImage,
+    }));
+
+    res.status(200).json({
+      status: 200,
+      message: type
+        ? `${type} users retrieved successfully`
+        : "All users retrieved successfully",
+      count: formattedUsers.length, // Fixed typo: 'lengt' to 'length'
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Server error while fetching users",
+      error: error.message,
+    });
+  }
+};
+
+// Update User (Cloudinary URLs)
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -301,7 +320,7 @@ exports.updateUser = async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
-    });
+    }).select("-password");
 
     if (!updatedUser) {
       return res.status(404).json({ status: 404, message: "User not found" });

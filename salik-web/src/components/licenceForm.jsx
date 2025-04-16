@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
-import { setImage } from "../redux/slices/imageSlice";
+import { setImage, clearImages } from "../redux/slices/imageSlice";
 import { getUser, updateUser } from "../redux/slices/authSlice";
 import ImageUpload from "./ImageUpload";
 import { useNavigate } from "react-router-dom";
@@ -31,15 +31,19 @@ const LicenceForm = () => {
     dispatch(getUser());
   }, [dispatch]);
 
+  // Set initial state from user data (Cloudinary URLs)
   useEffect(() => {
     if (user?.nationalIdImage) setSelectedNationalIdImage(user.nationalIdImage);
-    else if (nationalIdImage) setSelectedNationalIdImage(nationalIdImage);
     if (user?.licenseImage) setSelectedLicenseImage(user.licenseImage);
-    else if (licenseImage) setSelectedLicenseImage(licenseImage);
-  }, [user, nationalIdImage, licenseImage]);
+  }, [user]);
 
   const uploadToCloudinary = async (file) => {
-    if (!file || typeof file === "string") return file;
+    if (!file || typeof file === "string") {
+      console.log("Skipping upload: file is", file);
+      return file; // Return existing Cloudinary URL or null
+    }
+
+    console.log("Uploading file to Cloudinary:", file.name, file.type, file.size);
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "salik-preset");
@@ -50,11 +54,14 @@ const LicenceForm = () => {
         { method: "POST", body: formData }
       );
       const data = await response.json();
-      console.log("Cloudinary response:", data);
+      if (!response.ok) {
+        throw new Error(data.error?.message || "Cloudinary upload failed");
+      }
+      console.log("Cloudinary success:", data.secure_url);
       return data.secure_url || null;
     } catch (error) {
-      console.error("❌ Cloudinary Upload Error:", error);
-      return null;
+      console.error("❌ Cloudinary Upload Error:", error.message);
+      throw error;
     }
   };
 
@@ -62,19 +69,22 @@ const LicenceForm = () => {
     setUploading(true);
 
     try {
-      console.log("🚀 Uploading Images to Cloudinary...");
+      console.log("🚀 Starting upload process...");
       console.log("Selected Images:", { selectedNationalIdImage, selectedLicenseImage });
 
-      const nationalIdUrl = selectedNationalIdImage
-        ? await uploadToCloudinary(selectedNationalIdImage)
-        : user?.nationalIdImage || "";
-      const licenseUrl = selectedLicenseImage
-        ? await uploadToCloudinary(selectedLicenseImage)
-        : user?.licenseImage || "";
+      const nationalIdUrl =
+        selectedNationalIdImage && typeof selectedNationalIdImage !== "string"
+          ? await uploadToCloudinary(selectedNationalIdImage)
+          : user?.nationalIdImage || "";
+      const licenseUrl =
+        selectedLicenseImage && typeof selectedLicenseImage !== "string"
+          ? await uploadToCloudinary(selectedLicenseImage)
+          : user?.licenseImage || "";
 
       console.log("Uploaded URLs:", { nationalIdUrl, licenseUrl });
 
-      if (!nationalIdUrl && !licenseUrl) {
+      if ((!nationalIdUrl && !licenseUrl) && (!selectedNationalIdImage && !selectedLicenseImage)) {
+        console.log("No new images to upload");
         setUploading(false);
         alert("❌ No new images selected!");
         return;
@@ -86,14 +96,19 @@ const LicenceForm = () => {
 
       console.log("FormData contents:", Array.from(formData.entries()));
 
-      await dispatch(updateUser(formData));
-      await dispatch(getUser());
+      const result = await dispatch(updateUser(formData)).unwrap();
+      console.log("Update result:", result);
+      await dispatch(getUser()).unwrap();
+
+      // Clear preview images after successful upload
+      dispatch(clearImages());
 
       setUploading(false);
+      alert("✅ Images uploaded successfully!");
     } catch (error) {
-      console.error("❌ Upload failed:", error);
+      console.error("❌ Upload failed:", error.message || error);
       setUploading(false);
-      alert("❌ Upload failed! Please try again.");
+      alert(`❌ Upload failed: ${error.message || "Unknown error"}`);
     }
   };
 
@@ -108,13 +123,13 @@ const LicenceForm = () => {
   const getBadgeProps = (status) => {
     switch (status) {
       case "verified":
-        return { color: "success" }; // Green dot
+        return { color: "success" };
       case "pending":
-        return { color: "warning" }; // Yellow dot
+        return { color: "warning" };
       case "rejected":
-        return { color: "error" }; // Red dot
+        return { color: "error" };
       default:
-        return { color: null }; // No dot
+        return { color: null };
     }
   };
 
@@ -136,11 +151,7 @@ const LicenceForm = () => {
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           {nationalIdBadge.color && (
-            <Badge
-              color={nationalIdBadge.color}
-              variant="dot"
-              sx={{ mr: 2 }}
-            />
+            <Badge color={nationalIdBadge.color} variant="dot" sx={{ mr: 2 }} />
           )}
           <Typography fontWeight="bold">National ID</Typography>
         </AccordionSummary>
@@ -150,10 +161,11 @@ const LicenceForm = () => {
               type="nationalIdImage"
               label="National ID"
               setImage={(file) => {
-                setSelectedNationalIdImage(file);
-                dispatch(setImage({ type: "nationalIdImage", url: URL.createObjectURL(file) }));
+                console.log("Setting National ID file:", file);
+                setSelectedNationalIdImage(file); // Store File object
+                dispatch(setImage({ type: "nationalIdImage", url: file ? URL.createObjectURL(file) : null })); // Store preview URL
               }}
-              existingImage={user?.nationalIdImage || null} // Only show server image
+              existingImage={user?.nationalIdImage || nationalIdImage} // Show server URL or preview
             />
           )}
           {user?.nationalIdStatus && (
@@ -167,11 +179,7 @@ const LicenceForm = () => {
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           {licenseBadge.color && (
-            <Badge
-              color={licenseBadge.color}
-              variant="dot"
-              sx={{ mr: 2 }}
-            />
+            <Badge color={licenseBadge.color} variant="dot" sx={{ mr: 2 }} />
           )}
           <Typography fontWeight="bold">Driving License</Typography>
         </AccordionSummary>
@@ -181,10 +189,11 @@ const LicenceForm = () => {
               type="licenseImage"
               label="License Photo"
               setImage={(file) => {
-                setSelectedLicenseImage(file);
-                dispatch(setImage({ type: "licenseImage", url: URL.createObjectURL(file) }));
+                console.log("Setting License file:", file);
+                setSelectedLicenseImage(file); // Store File object
+                dispatch(setImage({ type: "licenseImage", url: file ? URL.createObjectURL(file) : null })); // Store preview URL
               }}
-              existingImage={user?.licenseImage || null} // Only show server image
+              existingImage={user?.licenseImage || licenseImage} // Show server URL or preview
             />
           )}
           {user?.licenseStatus && (
@@ -202,10 +211,9 @@ const LicenceForm = () => {
         sx={{ mt: 2 }}
         onClick={handleUpload}
         disabled={
-          uploading || // Disable while uploading
-          !canUploadNationalId || // Disable if National ID is already verified
-          !canUploadLicense || // Disable if License is already verified
-          !(selectedNationalIdImage && selectedLicenseImage) // Disable unless both images are selected
+          uploading ||
+          (!canUploadNationalId && !canUploadLicense) ||
+          !(selectedNationalIdImage || selectedLicenseImage)
         }
       >
         {uploading ? <CircularProgress size={24} /> : "Upload Images"}
@@ -225,4 +233,4 @@ const LicenceForm = () => {
   );
 };
 
-export default LicenceForm;
+export default LicenceForm;
