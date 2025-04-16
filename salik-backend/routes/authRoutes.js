@@ -10,10 +10,30 @@ router.put("/switch-role", verifyToken, authController.switchRole);
 router.get("/", verifyToken, authController.getUserById);
 
 // Admin-only routes
-router.post("/create-admin", verifyToken, adminMiddleware, authController.createAdmin);
-router.get("/unverified-documents", verifyToken, adminMiddleware, authController.getUnverifiedDocuments);
-router.post("/verify-document", verifyToken, adminMiddleware, authController.verifyDocument);
-router.get("/users", verifyToken, adminMiddleware, authController.getFilteredUsers);
+router.post(
+  "/create-admin",
+  verifyToken,
+  adminMiddleware,
+  authController.createAdmin
+);
+router.get(
+  "/unverified-documents",
+  verifyToken,
+  adminMiddleware,
+  authController.getUnverifiedDocuments
+);
+router.post(
+  "/verify-document",
+  verifyToken,
+  adminMiddleware,
+  authController.verifyDocument
+);
+router.get(
+  "/users",
+  verifyToken,
+  adminMiddleware,
+  authController.getFilteredUsers
+);
 
 // Update user with Cloudinary URLs
 router.patch("/", verifyToken, authController.updateUser);

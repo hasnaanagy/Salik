@@ -9,24 +9,31 @@ const initialState = {
 
 export const getAllReviewsAction = createAsyncThunk(
   "reviews/getAllReviewsAction",
-  async (providerId, { rejectWithValue }) => {
+  async ({ providerId, serviceType }, { rejectWithValue }) => {
     try {
-      const response = await apiService.getById("reviews", providerId);
+      console.log("ssssss", providerId, serviceType);
+      const url = serviceType
+        ? `reviews/${providerId}?serviceType=${serviceType}`
+        : `reviews/${providerId}`;
+      console.log("Fetching reviews from URL:", url);
+      const response = await apiService.getAll(url);
+      console.log("API Response:", response);
       return response;
-    } catch (error) {
-      console.error("❌ reviewsSlice:", error.response?.data || error.message);
-      return rejectWithValue(e.message);
+    } catch (e) {
+      console.error("API Error:", e.response?.data || e.message);
+      return rejectWithValue(e.response?.data?.message || e.message);
     }
   }
 );
 export const addReviewsAction = createAsyncThunk(
   "reviews/addReviewsAction",
-  async ({ providerId, rating, comment }, { rejectWithValue }) => {
+  async ({ providerId, rating, comment, serviceType }, { rejectWithValue }) => {
     try {
-      console.log(providerId, rating, comment);
+      console.log(providerId, rating, comment, serviceType);
       const response = await apiService.create(`reviews/${providerId}`, {
         rating,
         comment,
+        serviceType,
       });
       console.log(response);
       return response;

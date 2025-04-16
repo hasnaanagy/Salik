@@ -11,7 +11,11 @@ import {
   Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 import appColors from "../../constants/colors";
 import { useDispatch } from "react-redux";
 import { bookRideAction, getRideById } from "../../redux/slices/RideSlice";
@@ -35,7 +39,12 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
 
   const handleBookRide = async () => {
     setLoading(true);
-    await dispatch(bookRideAction({ rideId: ride._id, bookedSeats: parseInt(seatsToBook, 10) }));
+    await dispatch(
+      bookRideAction({
+        rideId: ride._id,
+        bookedSeats: parseInt(seatsToBook, 10),
+      })
+    );
     await dispatch(getRideById({ rideId: ride._id }));
     setLoading(false);
     navigation.goBack();
@@ -56,7 +65,10 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
   };
 
   const handleProviderPress = () => {
-    navigation.navigate("reviews", { providerId: ride.providerId._id });
+    navigation.navigate("reviews", {
+      providerId: ride.providerId._id,
+      serviceType: "ride",
+    });
   };
 
   const image = ride?.providerId?.profileImg
@@ -64,7 +76,9 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
     : require("../../assets/adaptive-icon.png");
 
   const availableSeats = ride ? ride.totalSeats - ride.bookedSeats : 0;
-  const seatOptions = Array.from({ length: Math.min(availableSeats) }, (_, i) => (i + 1).toString());
+  const seatOptions = Array.from({ length: Math.min(availableSeats) }, (_, i) =>
+    (i + 1).toString()
+  );
 
   return (
     <ScrollView
@@ -74,22 +88,34 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
     >
       <Animated.View style={[animatedStyle]}>
         {/* Back Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => setSelectedRide(null)}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setSelectedRide(null)}
+        >
           <Ionicons name="arrow-back" size={26} color="#333" />
         </TouchableOpacity>
 
         {/* Header Section */}
         {ride ? (
           <>
-            <TouchableOpacity style={styles.header} onPress={handleProviderPress}>
+            <TouchableOpacity
+              style={styles.header}
+              onPress={handleProviderPress}
+            >
               <Image source={image} style={styles.providerImage} />
               <View style={styles.headerTextContainer}>
-                <Text style={styles.providerName}>{ride.providerId.fullName}</Text>
+                <Text style={styles.providerName}>
+                  {ride.providerId.fullName}
+                </Text>
                 <Text style={styles.price}>{ride.price} EGP</Text>
               </View>
             </TouchableOpacity>
             <View style={styles.locationContainer}>
-              <Ionicons name="location-outline" size={18} color={appColors.primary} />
+              <Ionicons
+                name="location-outline"
+                size={18}
+                color={appColors.primary}
+              />
               <Text style={styles.locationText}>
                 {ride.fromLocation} → {ride.toLocation}
               </Text>
@@ -125,8 +151,9 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
             <View style={styles.descriptionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
               <Text style={styles.descriptionText}>
-                Ride provided by {ride.providerId.fullName}. From {ride.fromLocation} to{" "}
-                {ride.toLocation}. This ride offers a comfortable experience with a {ride.carType}.
+                Ride provided by {ride.providerId.fullName}. From{" "}
+                {ride.fromLocation} to {ride.toLocation}. This ride offers a
+                comfortable experience with a {ride.carType}.
               </Text>
             </View>
 
@@ -137,7 +164,11 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
                 onPress={handleCallProvider}
                 activeOpacity={0.8}
               >
-                <Ionicons name="call-outline" size={20} color={appColors.primary} />
+                <Ionicons
+                  name="call-outline"
+                  size={20}
+                  color={appColors.primary}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -153,7 +184,12 @@ const RideDetailesComponent = ({ ride, setSelectedRide }) => {
                 ) : (
                   <>
                     <Text style={styles.bookButtonText}>Book Trip Now</Text>
-                    <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.arrowIcon} />
+                    <Ionicons
+                      name="arrow-forward"
+                      size={20}
+                      color="#fff"
+                      style={styles.arrowIcon}
+                    />
                   </>
                 )}
               </TouchableOpacity>

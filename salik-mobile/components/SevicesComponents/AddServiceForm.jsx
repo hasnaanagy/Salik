@@ -12,12 +12,13 @@ import {
   Platform,
   Pressable,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clearError,
   postServiceData,
   resetSuccess,
+  updateService,
 } from "../../redux/slices/ServiceSlice.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
@@ -32,9 +33,16 @@ import SubmitButton from "./SubmitButton";
 import appColors from "../../constants/colors.js";
 import { GOOGLE_API_KEY } from "@env";
 
-// Memoized Location Field Component (unchanged)
+// Memoized Location Field Component
 const LocationField = React.memo(
-  ({ form, setForm, error, openMapModal, isMapSelection, setIsMapSelection }) => {
+  ({
+    form,
+    setForm,
+    error,
+    openMapModal,
+    isMapSelection,
+    setIsMapSelection,
+  }) => {
     const [inputValue, setInputValue] = useState(form.location);
 
     useEffect(() => {
@@ -89,10 +97,7 @@ const LocationField = React.memo(
             }}
             styles={{
               container: styles.autocompleteContainer,
-              textInput: [
-                styles.autocompleteInput,
-                error && styles.errorInput,
-              ],
+              textInput: [styles.autocompleteInput, error && styles.errorInput],
               listView: styles.autocompleteList,
             }}
             fetchDetails={true}
@@ -101,7 +106,10 @@ const LocationField = React.memo(
               value: inputValue,
               onChangeText: handleTextChange,
               onBlur: () => {
-                console.log("Blur triggered, setting form.location to:", inputValue);
+                console.log(
+                  "Blur triggered, setting form.location to:",
+                  inputValue
+                );
                 setForm((prev) => ({ ...prev, location: inputValue }));
               },
             }}
@@ -110,10 +118,17 @@ const LocationField = React.memo(
             onFail={(error) => console.log("Autocomplete error:", error)}
           />
           <TouchableOpacity style={styles.iconButton} onPress={openMapModal}>
-            <Ionicons name="location-outline" size={20} color={appColors.primary} />
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color={appColors.primary}
+            />
           </TouchableOpacity>
           {inputValue ? (
-            <TouchableOpacity style={styles.clearButton} onPress={clearLocation}>
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={clearLocation}
+            >
               <Ionicons name="close-circle" size={20} color="red" />
             </TouchableOpacity>
           ) : null}
@@ -125,7 +140,7 @@ const LocationField = React.memo(
 );
 
 // Custom Service Type Dropdown Component
-const ServiceTypeInput = ({ value, onValueChange, error }) => {
+const ServiceTypeInput = ({ value, onValueChange, error, disabled }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const options = [
     { label: "Select a service type", value: "" },
@@ -133,10 +148,12 @@ const ServiceTypeInput = ({ value, onValueChange, error }) => {
     { label: "Mechanic", value: "mechanic" },
   ];
 
-  const displayValue = options.find((option) => option.value === value)?.label || "Select a service type";
+  const displayValue =
+    options.find((option) => option.value === value)?.label ||
+    "Select a service type";
 
   const handleSelect = (selectedValue) => {
-    if (selectedValue === "") return; // Prevent selecting the placeholder
+    if (selectedValue === "" || disabled) return;
     onValueChange(selectedValue);
     setModalVisible(false);
   };
@@ -145,42 +162,62 @@ const ServiceTypeInput = ({ value, onValueChange, error }) => {
     <View>
       <Text style={styles.label}>Service Type</Text>
       {Platform.OS === "android" ? (
-        // Use Picker for Android
-        <View style={[styles.pickerContainer, error && styles.errorInput]}>
+        <View
+          style={[
+            styles.pickerContainer,
+            error && styles.errorInput,
+            disabled && styles.disabledInput,
+          ]}
+        >
           <Picker
             selectedValue={value}
             onValueChange={(itemValue) => {
-              if (itemValue !== "") onValueChange(itemValue); // Prevent selecting placeholder
+              if (itemValue !== "" && !disabled) onValueChange(itemValue);
             }}
             style={styles.picker}
             mode="dropdown"
             dropdownIconColor={appColors.primary}
+            enabled={!disabled}
           >
             {options.map((option) => (
               <Picker.Item
                 key={option.value}
                 label={option.label}
                 value={option.value}
-                enabled={option.value !== ""}
+                enabled={option.value !== "" && !disabled}
               />
             ))}
           </Picker>
         </View>
       ) : (
-        // Custom dropdown for iOS
         <TouchableOpacity
-          style={[styles.input, error && styles.errorInput]}
-          onPress={() => setModalVisible(true)}
+          style={[
+            styles.input,
+            error && styles.errorInput,
+            disabled && styles.disabledInput,
+          ]}
+          onPress={() => !disabled && setModalVisible(true)}
+          disabled={disabled}
         >
-          <Text style={[styles.inputText, !value && styles.placeholderText]}>
+          <Text
+            style={[
+              styles.inputText,
+              !value && styles.placeholderText,
+              disabled && styles.disabledText,
+            ]}
+          >
             {displayValue}
           </Text>
-          <Ionicons name="chevron-down" size={20} color={appColors.primary} style={styles.dropdownIcon} />
+          <Ionicons
+            name="chevron-down"
+            size={20}
+            color={disabled ? "#999" : appColors.primary}
+            style={styles.dropdownIcon}
+          />
         </TouchableOpacity>
       )}
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* Modal for iOS dropdown */}
       {Platform.OS === "ios" && (
         <Modal
           animationType="fade"
@@ -201,7 +238,7 @@ const ServiceTypeInput = ({ value, onValueChange, error }) => {
                     option.value === "" && styles.disabledItem,
                   ]}
                   onPress={() => handleSelect(option.value)}
-                  disabled={option.value === ""}
+                  disabled={option.value === "" || disabled}
                 >
                   <Text
                     style={[
@@ -221,32 +258,51 @@ const ServiceTypeInput = ({ value, onValueChange, error }) => {
   );
 };
 
-export default function AddServiceForm() {
+function AddServiceForm() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { loading, success, error } = useSelector((state) => state.addServices);
+  const params = useLocalSearchParams();
+  const { loading, success, error } = useSelector((state) => state.service);
   const [alertVisible, setAlertVisible] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [mapModalVisible, setMapModalVisible] = useState(false);
   const [isMapSelection, setIsMapSelection] = useState(false);
+  const [hasShownSuccess, setHasShownSuccess] = useState(false);
 
+  // Determine if in edit mode
+  const isEditMode = params.mode === "edit" || !!params.serviceId;
+
+  // Initialize form state, pre-filling with params if in edit mode
   const [form, setForm] = useState({
-    location: "",
-    serviceType: "",
-    workingDays: [],
-    startTime: new Date(),
-    endTime: new Date(new Date().setHours(new Date().getHours() + 8)),
+    location: params.location || "",
+    serviceType: params.serviceType || "",
+    workingDays: params.workingDays ? JSON.parse(params.workingDays) : [],
+    startTime: params.workingHoursFrom
+      ? new Date(params.workingHoursFrom)
+      : new Date(),
+    endTime: params.workingHoursTo
+      ? new Date(params.workingHoursTo)
+      : new Date(new Date().setHours(new Date().getHours() + 8)),
   });
 
   const [showStartTime, setShowStartTime] = useState(false);
   const [showEndTime, setShowEndTime] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Clear success state on mount to prevent stale success triggers
+  useEffect(() => {
+    console.log("AddServiceForm mounted, params:", params);
+    dispatch(resetSuccess());
+    setHasShownSuccess(false);
+    setAlertVisible(false);
+  }, [dispatch]);
+
   const validateForm = useCallback(() => {
     let newErrors = {};
     if (!form.location.trim()) newErrors.location = "Location is required";
-    if (!form.serviceType) newErrors.serviceType = "Please select a service type";
+    if (!form.serviceType)
+      newErrors.serviceType = "Please select a service type";
     if (form.workingDays.length === 0)
       newErrors.workingDays = "Select at least one day";
     setErrors(newErrors);
@@ -272,29 +328,56 @@ export default function AddServiceForm() {
 
   const handleSubmit = () => {
     if (!validateForm()) return;
+    setHasShownSuccess(false);
 
     const serviceData = {
       serviceType: form.serviceType,
-      location: { description: form.location.trim() },
+      location: {
+        description: form.location.trim(),
+      },
+      addressOnly: form.location.trim(),
+
       workingDays: form.workingDays,
       workingHours: {
-        from: form.startTime.toISOString(),
-        to: form.endTime.toISOString(),
+        from: form.startTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        to: form.endTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
       },
     };
 
     console.log("Submitting service data:", serviceData);
-    dispatch(postServiceData(serviceData));
+
+    if (isEditMode) {
+      dispatch(
+        updateService({
+          serviceId: params.serviceId,
+          ...serviceData,
+        })
+      );
+    } else {
+      dispatch(postServiceData(serviceData));
+    }
   };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setForm({
-      location: "",
-      serviceType: "",
-      workingDays: [],
-      startTime: new Date(),
-      endTime: new Date(new Date().setHours(new Date().getHours() + 8)),
+      location: isEditMode ? params.location || "" : "",
+      serviceType: isEditMode ? params.serviceType || "" : "",
+      workingDays: isEditMode ? JSON.parse(params.workingDays || "[]") : [],
+      startTime: isEditMode
+        ? new Date(params.workingHoursFrom || new Date())
+        : new Date(),
+      endTime: isEditMode
+        ? new Date(params.workingHoursTo || new Date())
+        : new Date(new Date().setHours(new Date().getHours() + 8)),
     });
     setErrors({});
     setFocusedField(null);
@@ -302,22 +385,31 @@ export default function AddServiceForm() {
     setShowEndTime(false);
     dispatch(clearError());
     dispatch(resetSuccess());
+    setHasShownSuccess(false);
+    setAlertVisible(false);
     setTimeout(() => setRefreshing(false), 1000);
-  }, [dispatch]);
+  }, [dispatch, isEditMode, params]);
 
   useEffect(() => {
-    if (success && !alertVisible) {
+    if (success && !alertVisible && !hasShownSuccess) {
       setAlertVisible(true);
-      Alert.alert("Success", "✅ Service added successfully!", [
-        {
-          text: "OK",
-          onPress: () => {
-            setAlertVisible(false);
-            dispatch(resetSuccess());
-            router.push("/");
+      setHasShownSuccess(true); // Prevent multiple alerts
+      Alert.alert(
+        "Success",
+        isEditMode
+          ? "✅ Service updated successfully!"
+          : "✅ Service added successfully!",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              setAlertVisible(false);
+              dispatch(resetSuccess());
+              router.push("/servicesProvider");
+            },
           },
-        },
-      ]);
+        ]
+      );
     }
 
     if (error && !alertVisible) {
@@ -337,8 +429,15 @@ export default function AddServiceForm() {
         },
       ]);
     }
-  }, [success, error, alertVisible, dispatch, router]);
-
+  }, [
+    success,
+    error,
+    alertVisible,
+    hasShownSuccess,
+    dispatch,
+    router,
+    isEditMode,
+  ]);
   const openMapModal = () => {
     console.log("Opening map modal");
     setMapModalVisible(true);
@@ -358,7 +457,9 @@ export default function AddServiceForm() {
   const renderFormContent = () => (
     <View style={styles.formContainer}>
       <BackButton />
-      <Text style={styles.title}>Add Service Details</Text>
+      <Text style={styles.title}>
+        {isEditMode ? "Edit Service Details" : "Add Service Details"}
+      </Text>
 
       <LocationField
         form={form}
@@ -371,8 +472,11 @@ export default function AddServiceForm() {
 
       <ServiceTypeInput
         value={form.serviceType}
-        onValueChange={(itemValue) => setForm({ ...form, serviceType: itemValue })}
+        onValueChange={(itemValue) =>
+          setForm({ ...form, serviceType: itemValue })
+        }
         error={errors.serviceType}
+        disabled={isEditMode}
       />
 
       <WorkingDaysSelector
@@ -553,6 +657,10 @@ const styles = StyleSheet.create({
   disabledText: {
     color: "#999",
   },
+  disabledInput: {
+    backgroundColor: "#f0f0f0",
+    borderColor: "#ccc",
+  },
   modalContainer: {
     flex: 1,
     backgroundColor: "#fff",
@@ -572,3 +680,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default AddServiceForm;

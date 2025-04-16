@@ -20,6 +20,15 @@ import car from "../../assets/car.png";
 import appColors from "../../constants/colors";
 import { Feather } from "@expo/vector-icons";
 
+// Updated color scheme
+const COLORS = {
+  upcoming: "#FFB800",
+  completed: "#5db661",
+  canceled: "#F44336",
+  background: "#f8f9fa",
+  text: "#333333",
+};
+
 const baseColor = appColors.primary;
 
 const Cards = ({ ride }) => {
@@ -29,6 +38,8 @@ const Cards = ({ ride }) => {
   const { user } = useSelector((state) => state.auth);
   const [cancelled, setCancelled] = useState(ride.status === "canceled");
   const fadeAnim = new Animated.Value(0);
+  // Remove the expanded state since we're removing the click functionality
+  const [expanded, setExpanded] = useState(true); // Always show expanded content
 
   useEffect(() => {
     if (!user) {
@@ -67,99 +78,216 @@ const Cards = ({ ride }) => {
     if (rideTimeRaw) {
       const [hours, minutes] = rideTimeRaw.split(":");
       const hourNum = parseInt(hours, 10);
-      rideTime = `${hourNum % 12 || 12}:${minutes} ${hourNum < 12 ? "AM" : "PM"}`;
+      rideTime = `${hourNum % 12 || 12}:${minutes} ${
+        hourNum < 12 ? "AM" : "PM"
+      }`;
     }
   }
 
   const handleLocationField = (data) =>
     data?.length > 10 ? ` ${data?.slice(0, 10)}... ` : data;
 
-  const rideColor =
-    ride.status === "upcoming"
-      ? baseColor
-      : ride.status === "completed"
-      ? "#4C585B"
-      : "#F44336";
+  // Status icon and color mapping
+  const getStatusInfo = () => {
+    switch (ride.status) {
+      case "upcoming":
+        return {
+          color: ride.statusColor || COLORS.upcoming,
+          icon: "clock",
+          label: "Upcoming",
+        };
+      case "completed":
+        return {
+          color: ride.statusColor || COLORS.completed,
+          icon: "check-circle",
+          label: "Completed",
+        };
+      case "cancelled":
+        return {
+          color: ride.statusColor || COLORS.canceled,
+          icon: "x-circle",
+          label: "Canceled",
+        };
+      default:
+        return {
+          color: "#9E9E9E",
+          icon: "help-circle",
+          label: "Unknown",
+        };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
 
   return (
     <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
-      <View style={[styles.status, { backgroundColor: rideColor }]}></View>
+      <View
+        style={[styles.status, { backgroundColor: statusInfo.color }]}
+      ></View>
+      {/* Remove TouchableOpacity onPress and replace with View */}
       <View style={styles.card}>
-        <View style={styles.cardContent}>
-          <Image source={car} style={styles.carImage} />
-
-          <View style={styles.rideDetails}>
-            <Text style={styles.title}>
-              {handleLocationField(ride.fromLocation)} to{" "}
-              {handleLocationField(ride.toLocation)}
+        <View style={styles.cardHeader}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: `${statusInfo.color}20` },
+            ]}
+          >
+            <Feather
+              name={statusInfo.icon}
+              size={14}
+              color={statusInfo.color}
+            />
+            <Text style={[styles.statusText, { color: statusInfo.color }]}>
+              {statusInfo.label}
             </Text>
-
-            {/* Ride Date Section */}
-            <Text style={styles.rideDate}>
-              {ride?.rideDateTime?.split("T")[0] || "N/A"} | {rideTime}
-            </Text>
-
-            <Text style={styles.details}>
-              Price: ${ride.price} |{" "}
-              {user?.type === "customer" ? "Booked Seats:" : "Total Seats:"}{" "}
-              {user?.type === "customer" ? ride.bookedSeats : ride.totalSeats}
-            </Text>
-            {user?.type === "provider" && (
-              <Text style={styles.details}>
-                Available Seats: {ride.totalSeats - ride.bookedSeats}
-              </Text>
-            )}
           </View>
 
-          {ride.status === "upcoming" && user?.type === "customer" && (
-            <TouchableOpacity
-              disabled={cancelled}
-              onPress={handleCancel}
-              style={[styles.button, cancelled && styles.disabledButton]}
-            >
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          )}
           {ride.status === "upcoming" && user?.type === "provider" && (
             <View style={styles.iconContainer}>
-              <TouchableOpacity
-                onPress={() => handleEdit()}
-                style={styles.iconButton}
-              >
-                <Feather name="edit" size={18} color="black" />
+              <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+                <Feather name="edit" size={18} color={COLORS.upcoming} />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleDelete}
                 style={styles.iconButton}
               >
-                <Feather name="trash" size={18} color="#F44336" />
+                <Feather name="trash" size={18} color={COLORS.canceled} />
               </TouchableOpacity>
             </View>
           )}
+
+          {/* Remove the expand/collapse chevron icon */}
         </View>
+
+        <View style={styles.cardContent}>
+          <Image source={car} style={styles.carImage} />
+
+          <View style={styles.rideDetails}>
+            <View style={styles.locationContainer}>
+              <Feather
+                name="map-pin"
+                size={14}
+                color={statusInfo.color}
+                style={styles.locationIcon}
+              />
+              <Text style={styles.title}>
+                {handleLocationField(ride.fromLocation)} to{" "}
+                {handleLocationField(ride.toLocation)}
+              </Text>
+            </View>
+
+            <View style={styles.dateTimeContainer}>
+              <Feather
+                name="calendar"
+                size={14}
+                color={statusInfo.color}
+                style={styles.dateTimeIcon}
+              />
+              <Text style={[styles.rideDate, { color: statusInfo.color }]}>
+                {ride?.rideDateTime?.split("T")[0] || "N/A"} | {rideTime}
+              </Text>
+            </View>
+
+            {/* Always show these details since we're not collapsing anymore */}
+            <View style={styles.priceSeatsContainer}>
+              <View style={styles.priceContainer}>
+                <Feather
+                  name="dollar-sign"
+                  size={14}
+                  color="gray"
+                  style={styles.infoIcon}
+                />
+                <Text style={styles.details}>${ride.price}</Text>
+              </View>
+
+              <View style={styles.seatsContainer}>
+                <Feather
+                  name="users"
+                  size={14}
+                  color="gray"
+                  style={styles.infoIcon}
+                />
+                <Text style={styles.details}>
+                  {user?.type === "customer" ? "Booked: " : "Total: "}
+                  {user?.type === "customer"
+                    ? ride.bookedSeats
+                    : ride.totalSeats}
+                </Text>
+              </View>
+            </View>
+
+            {user?.type === "provider" && (
+              <View style={styles.availableSeatsContainer}>
+                <Feather
+                  name="user-check"
+                  size={14}
+                  color="gray"
+                  style={styles.infoIcon}
+                />
+                <Text style={styles.details}>
+                  Available: {ride.totalSeats - ride.bookedSeats}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {ride.status === "upcoming" && user?.type === "customer" && (
+          <TouchableOpacity
+            disabled={cancelled}
+            onPress={handleCancel}
+            style={[styles.cancelButton, cancelled && styles.disabledButton]}
+          >
+            <Feather name="x" size={16} color={cancelled ? "gray" : "white"} />
+            <Text style={styles.buttonText}>Cancel Ride</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
 };
 
-// Styles remain unchanged
+// Updated styles
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   card: {
     flex: 1,
     backgroundColor: "white",
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 12,
+    padding: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  expandIcon: {
+    marginLeft: "auto",
+    marginRight: 5,
   },
   cardContent: {
     flexDirection: "row",
@@ -168,46 +296,94 @@ const styles = StyleSheet.create({
   carImage: {
     width: 50,
     height: 50,
-    marginRight: 10,
+    marginRight: 15,
+    borderRadius: 25,
+    backgroundColor: "#f5f5f5",
+    padding: 5,
   },
   rideDetails: {
     flex: 1,
   },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  locationIcon: {
+    marginRight: 5,
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  dateTimeIcon: {
+    marginRight: 5,
+  },
+  priceSeatsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
+    backgroundColor: "#f9f9f9",
+    padding: 8,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  seatsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  availableSeatsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: 8,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  infoIcon: {
+    marginRight: 5,
+  },
   title: {
     fontSize: 16,
     fontWeight: "bold",
+    color: COLORS.text,
   },
   rideDate: {
     fontSize: 14,
-    color: appColors.primary,
-    marginBottom: 5,
-    marginTop: 5,
   },
   details: {
     fontSize: 14,
     color: "gray",
   },
-  button: {
-    backgroundColor: baseColor,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    marginTop: 10,
+  cancelButton: {
+    backgroundColor: COLORS.canceled,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 15,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
+    marginLeft: 5,
   },
   disabledButton: {
     backgroundColor: "#ccc",
   },
   iconContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    marginLeft: 10,
   },
   iconButton: {
-    marginLeft: 5,
+    marginLeft: 10,
     padding: 5,
   },
   status: {
