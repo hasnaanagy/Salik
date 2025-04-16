@@ -71,6 +71,21 @@ export const confirmRequestAction = createAsyncThunk(
     }
   }
 );
+export const getAllFilterServices = createAsyncThunk(
+  "requests/getAllFilterServices",
+  async ({ latitude, longitude, serviceType }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getAll(
+        `service/search?latitude=${latitude}&longitude=${longitude}&serviceType=${serviceType}`
+      );
+      console.log(response);
+      return response.services || []; // Ensure we return an empty array if no services
+    } catch (e) {
+      console.log(e);
+      return rejectWithValue(e.message);
+    }
+  }
+);
 const requestSlice = createSlice({
   name: "requests",
   initialState,
@@ -114,6 +129,19 @@ const requestSlice = createSlice({
       state.isLoading = false;
     });
     builder.addCase(updateRequestStateAction.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    });
+    builder.addCase(getAllFilterServices.pending, (state, action) => {
+      state.isLoading = true;
+    });
+    // Make sure the reducer properly handles the services state
+    builder.addCase(getAllFilterServices.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.services = action.payload;
+      state.error = null; // Clear any previous errors
+    });
+    builder.addCase(getAllFilterServices.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
     });
