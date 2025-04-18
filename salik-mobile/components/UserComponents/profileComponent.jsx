@@ -22,7 +22,6 @@ const ProfileComponent = ({ navigation }) => {
 
   useEffect(() => {
     dispatch(getUser());
-    dispatch(getAllResquestsAction());
   }, [dispatch]);
 
   const handleLogout = async () => {
@@ -34,7 +33,7 @@ const ProfileComponent = ({ navigation }) => {
     if (!user?.type) return;
 
     console.log("🔄 Previous Type:", user.type);
-
+    await dispatch(getAllResquestsAction());
     const resultAction = await dispatch(switchRole());
 
     if (switchRole.fulfilled.match(resultAction)) {
@@ -42,6 +41,8 @@ const ProfileComponent = ({ navigation }) => {
       if (newType) {
         console.log("🟢 New Type:", newType);
         Alert.alert("Role Changed", `You are now a ${newType}`);
+        await dispatch(getAllResquestsAction());
+        router.replace("/requests");
       }
     } else {
       console.error("❌ Failed to switch role.");
@@ -85,9 +86,7 @@ const ProfileComponent = ({ navigation }) => {
         )}
         <View style={styles.userInfo}>
           <Text style={styles.name}>{user?.fullName || "User Name"}</Text>
-          <Text style={styles.type}>
-            {user?.type || "user not found"}
-          </Text>
+          <Text style={styles.type}>{user?.type || "user not found"}</Text>
         </View>
         <TouchableOpacity style={styles.settingsIcon}>
           <Ionicons name="settings-outline" size={20} color="#FFB800" />

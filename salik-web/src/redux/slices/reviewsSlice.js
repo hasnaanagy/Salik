@@ -15,12 +15,9 @@ export const getAllReviewsAction = createAsyncThunk(
       const url = serviceType
         ? `reviews/${providerId}?serviceType=${serviceType}`
         : `reviews/${providerId}`;
-      console.log("Fetching reviews from URL:", url);
       const response = await apiService.getAll(url);
-      console.log("API Response:", response);
       return response;
     } catch (e) {
-      console.error("API Error:", e.response?.data || e.message);
       return rejectWithValue(e.response?.data?.message || e.message);
     }
   }

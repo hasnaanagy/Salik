@@ -71,7 +71,6 @@ const Requests = ({ userType }) => {
     (state) => state.requestSlice || {}
   );
   const { user } = useSelector((state) => state.auth);
-  const { reviews } = useSelector((state) => state.reviews || { reviews: [] });
 
   const [selectedProvider, setSelectedProvider] = useState({});
   const [locations, setLocations] = useState({});
@@ -106,6 +105,7 @@ const Requests = ({ userType }) => {
     const acceptedRequests = requests["accepted"] || [];
     acceptedRequests.forEach((req) => {
       const serviceType = req.serviceType; // e.g., "mechanic" or "fuel"
+
       req.acceptedProviders?.forEach((provider) => {
         dispatch(
           getAllReviewsAction({
