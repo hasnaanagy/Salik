@@ -39,9 +39,11 @@ function ServicesProvider() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            dispatch(deleteService(serviceId));
-            dispatch(getProviderServices());
+          onPress: async () => {
+            // 1. Dispatch the delete action
+            await dispatch(deleteService(serviceId));
+            // 2. Dispatch action to fetch the updated list, triggering a re-render
+            await dispatch(getProviderServices());
           },
         },
       ]
@@ -58,6 +60,20 @@ function ServicesProvider() {
           text: "Edit",
           onPress: () => {
             console.log("Navigating to edit service:", item._id);
+
+            // Format the time strings properly for the form
+            let fromTime = item.workingHours?.from || "";
+            let toTime = item.workingHours?.to || "";
+
+            // If the time is in ISO format, convert it to a proper time string
+            if (fromTime.includes("T")) {
+              fromTime = new Date(fromTime).toISOString();
+            }
+
+            if (toTime.includes("T")) {
+              toTime = new Date(toTime).toISOString();
+            }
+
             router.push({
               pathname: "/addService",
               params: {
@@ -66,8 +82,8 @@ function ServicesProvider() {
                 serviceType: item.serviceType,
                 location: item.addressOnly || "",
                 workingDays: JSON.stringify(item.workingDays),
-                workingHoursFrom: item.workingHours?.from || "",
-                workingHoursTo: item.workingHours?.to || "",
+                workingHoursFrom: fromTime,
+                workingHoursTo: toTime,
               },
             });
           },
@@ -114,85 +130,91 @@ function ServicesProvider() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <CustomText style={styles.headerTitle}>My Services</CustomText>
-      </View>
+    <View style={styles.mainContainer}>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <CustomText style={styles.headerTitle}>My Services</CustomText>
+        </View>
 
-      {service?.services?.map((item) => (
-        <View key={item._id} style={styles.card}>
-          <TouchableOpacity
-            style={styles.cardHeader}
-            onPress={() => toggleCardExpansion(item._id)}
-          >
-            <View style={styles.serviceTypeContainer}>
-              <Feather
-                name={item.serviceType === "fuel" ? "droplet" : "tool"}
-                size={24}
-                color="#f5c518"
-              />
-              <CustomText style={styles.serviceType}>
-                {item.serviceType.charAt(0).toUpperCase() +
-                  item.serviceType.slice(1)}{" "}
-                Service
-              </CustomText>
-            </View>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: "#e3f2fd" }]}
-                onPress={() => handleEdit(item)}
-              >
-                <Feather name="edit-2" size={18} color="#2196f3" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: "#ffebee" }]}
-                onPress={() => handleDelete(item._id)}
-              >
-                <Feather name="trash-2" size={18} color="#f44336" />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-
-          {expandedCards.includes(item._id) && (
-            <View style={styles.cardContent}>
-              <View style={styles.infoRow}>
-                <Feather name="map-pin" size={16} color="#ffc107" />
-                <CustomText style={styles.infoText}>
-                  {item.addressOnly ||
-                    (item.location?.coordinates?.length
-                      ? `${item.location.coordinates[0]}, ${item.location.coordinates[1]}`
-                      : "Location not available")}
+        {service?.services?.map((item) => (
+          <View key={item._id} style={styles.card}>
+            <TouchableOpacity
+              style={styles.cardHeader}
+              onPress={() => toggleCardExpansion(item._id)}
+            >
+              <View style={styles.serviceTypeContainer}>
+                <Feather
+                  name={item.serviceType === "fuel" ? "droplet" : "tool"}
+                  size={24}
+                  color="#f5c518"
+                />
+                <CustomText style={styles.serviceType}>
+                  {item.serviceType.charAt(0).toUpperCase() +
+                    item.serviceType.slice(1)}{" "}
+                  Service
                 </CustomText>
               </View>
-
-              <View style={styles.infoRow}>
-                <Feather name="clock" size={16} color="#ffc107" />
-                <CustomText style={styles.infoText}>
-                  {`${formatTime(item.workingHours?.from)} - ${formatTime(
-                    item.workingHours?.to
-                  )}`}
-                </CustomText>
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: "#e3f2fd" }]}
+                  onPress={() => handleEdit(item)}
+                >
+                  <Feather name="edit-2" size={18} color="#2196f3" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: "#ffebee" }]}
+                  onPress={() => handleDelete(item._id)}
+                >
+                  <Feather name="trash-2" size={18} color="#f44336" />
+                </TouchableOpacity>
               </View>
+            </TouchableOpacity>
 
-              <View style={styles.infoRow}>
-                <Feather name="calendar" size={16} color="#ffc107" />
-                <View style={styles.daysContainer}>
-                  {item.workingDays?.map((day, index) => (
-                    <View key={index} style={styles.dayBadge}>
-                      <CustomText style={styles.dayText}>{day}</CustomText>
-                    </View>
-                  ))}
+            {expandedCards.includes(item._id) && (
+              <View style={styles.cardContent}>
+                <View style={styles.infoRow}>
+                  <Feather name="map-pin" size={16} color="#ffc107" />
+                  <CustomText style={styles.infoText}>
+                    {item.addressOnly ||
+                      (item.location?.coordinates?.length
+                        ? `${item.location.coordinates[0]}, ${item.location.coordinates[1]}`
+                        : "Location not available")}
+                  </CustomText>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Feather name="clock" size={16} color="#ffc107" />
+                  <CustomText style={styles.infoText}>
+                    {`${formatTime(item.workingHours?.from)} - ${formatTime(
+                      item.workingHours?.to
+                    )}`}
+                  </CustomText>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Feather name="calendar" size={16} color="#ffc107" />
+                  <View style={styles.daysContainer}>
+                    {item.workingDays?.map((day, index) => (
+                      <View key={index} style={styles.dayBadge}>
+                        <CustomText style={styles.dayText}>{day}</CustomText>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-        </View>
-      ))}
-    </ScrollView>
+            )}
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa",
@@ -204,13 +226,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
-    marginTop: Platform.OS === "ios" ? 40 : 10,
+    marginTop: Platform.OS === "ios" ? 10 : 10, // Increased top margin to make room for back button
     marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#212529",
+    marginLeft: 10, // Adjust spacing between BackButton and title
   },
   card: {
     backgroundColor: "white",

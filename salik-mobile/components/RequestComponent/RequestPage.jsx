@@ -65,7 +65,15 @@ const RequestPage = () => {
   const [dropdownAnimation] = useState(new Animated.Value(0));
   const [isAddRateVisible, setIsAddRateVisible] = useState(false);
   const [currentRequest, setCurrentRequest] = useState(null);
-
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getAllResquestsAction()).then((result) => {
+        if (result.meta.requestStatus === "fulfilled") {
+          updateLocations(result.payload);
+        }
+      });
+    }, [dispatch])
+  );
   const toggleFilterBox = () => {
     if (showFilterBox) {
       Animated.parallel([
@@ -765,7 +773,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: "#f8f9fa",
-    },
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -787,7 +795,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     top: -42,
-    
   },
   filterBox: {
     backgroundColor: "white",
