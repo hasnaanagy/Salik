@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import { useSelector } from "react-redux";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 const SearchResultsComponent = ({ setDisplayResults, setSelectedRide }) => {
   const { rides, error, loading } = useSelector((state) => state.rideService);
@@ -19,11 +19,11 @@ const SearchResultsComponent = ({ setDisplayResults, setSelectedRide }) => {
   }, [rides]);
 
   // Filter rides to include only those with available seats
-  const availableRides = rides.filter(ride => ride.totalSeats - ride.bookedSeats > 0);
+  const availableRides = rides.filter((ride) => ride.totalSeats - ride.bookedSeats > 0);
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setDisplayResults(false)} >
+      <TouchableOpacity onPress={() => setDisplayResults(false)}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
       {loading && (
@@ -57,7 +57,14 @@ const SearchResultsComponent = ({ setDisplayResults, setSelectedRide }) => {
                   })}
                 </Text>
               </View>
-              <Image source={require("../../assets/car.png")} style={styles.carImage} />
+              <Image
+                source={
+                  item.providerId?.profileImg
+                    ? { uri: item.providerId.profileImg } // Render profile image if it exists
+                    : require("../../assets/car.png") // Fallback to car image
+                }
+                style={styles.carImage}
+              />
               <View style={styles.detailsContainer}>
                 <Text style={styles.rideText}>{item.providerId?.fullName}</Text>
                 <Text style={styles.rideDetails}>
@@ -129,6 +136,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginRight: 12,
+    borderRadius: 25, // Make the image circular
   },
   detailsContainer: {
     flex: 1,
