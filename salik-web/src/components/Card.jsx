@@ -26,6 +26,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 const Cards = ({ ride }) => {
+  console.log(ride);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [cancelled, setCancelled] = useState(ride.status === "canceled");
