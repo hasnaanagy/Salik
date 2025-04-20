@@ -18,8 +18,13 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
-*.ntvs*
+.ntvs
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore environment files
 *.env
+
+# Ignore chatbot service file
+[chatbotService.js](http://vscodecontentref/9)
