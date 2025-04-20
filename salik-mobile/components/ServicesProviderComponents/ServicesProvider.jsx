@@ -58,6 +58,7 @@ function ServicesProvider() {
         {
           text: "Edit",
           onPress: () => {
+
             let fromTime = item.workingHours?.from || "";
             let toTime = item.workingHours?.to || "";
 

@@ -62,7 +62,7 @@ export const updateService = createAsyncThunk(
         workingDays,
         workingHours,
       });
-    
+
       return response.data;
     } catch (error) {
       const errorMessage =
@@ -79,7 +79,7 @@ export const deleteService = createAsyncThunk(
   async (serviceId, { rejectWithValue }) => {
     try {
       const response = await api.delete(`service/`, `${serviceId}`);
-      
+
       return response.data;
     } catch (error) {
       const errorMessage =
@@ -105,7 +105,6 @@ const ServiceSlice = createSlice({
       state.error = null;
     },
     resetSuccess: (state) => {
-      console.log("Resetting success state");
       state.success = false;
     },
   },

@@ -70,8 +70,8 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, type: user.type },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" } // Add expiration for security
+      process.env.JWT_SECRET
+      // { expiresIn: "1h" } // Add expiration for security
     );
 
     res.status(200).json({
@@ -357,7 +357,9 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: error.message });
   }
 };
 async function generatePassword() {
