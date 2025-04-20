@@ -7,13 +7,6 @@ export const postServiceData = createAsyncThunk(
     { serviceType, location, addressOnly, workingDays, workingHours },
     { rejectWithValue }
   ) => {
-    console.log("API Call:", {
-      serviceType,
-      location,
-      addressOnly,
-      workingDays,
-      workingHours,
-    });
     try {
       const response = await api.create("service", {
         serviceType,
@@ -22,10 +15,8 @@ export const postServiceData = createAsyncThunk(
         workingDays,
         workingHours,
       });
-      console.log("Response data:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.response);
       return rejectWithValue(
         error.response?.data?.message || "Failed to add service"
       );
@@ -38,10 +29,8 @@ export const getProviderServices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.getAll("service");
-      console.log("Response data:", response);
       return response;
     } catch (error) {
-      console.error("Error response:", error.response);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -72,18 +61,9 @@ export const updateService = createAsyncThunk(
         workingDays,
         workingHours,
       });
-      console.log("API Call:", {
-        serviceId,
-        serviceType,
-        location,
-        addressOnly,
-        workingDays,
-        workingHours,
-      });
-      console.log("Response data:", response);
+
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.response);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -98,11 +78,9 @@ export const deleteService = createAsyncThunk(
   async (serviceId, { rejectWithValue }) => {
     try {
       const response = await api.delete(`service/`, `${serviceId}`);
-      console.log("API Call:", serviceId);
-      console.log("Response data:", response);
+
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.response);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -126,7 +104,6 @@ const ServiceSlice = createSlice({
       state.error = null;
     },
     resetSuccess: (state) => {
-      console.log("Resetting success state");
       state.success = false;
     },
   },

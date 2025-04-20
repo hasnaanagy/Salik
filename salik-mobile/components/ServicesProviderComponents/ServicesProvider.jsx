@@ -59,8 +59,6 @@ function ServicesProvider() {
         {
           text: "Edit",
           onPress: () => {
-            console.log("Navigating to edit service:", item._id);
-
             // Format the time strings properly for the form
             let fromTime = item.workingHours?.from || "";
             let toTime = item.workingHours?.to || "";

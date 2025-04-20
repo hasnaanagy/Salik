@@ -15,6 +15,7 @@ import ProtectedRoute from "./ProtectedRoute"; // Import ProtectedRoute
 import Home2 from "../pages/Home2";
 import Services from "../pages/Services";
 import Dashboard from "../pages/Dashboard";
+import Chat from "../pages/Chat";
 
 export default function MainLayout() {
   return (
@@ -39,6 +40,7 @@ export default function MainLayout() {
             <Route path="/requests" element={<Requests />} />
             <Route path="/home2" element={<Home2 />} />
             <Route path="/servicesprovider" element={<Services />} />
+            <Route path="/Salik Assistant" element={<Chat />} />
           </Route>
         </Route>
       </Routes>
