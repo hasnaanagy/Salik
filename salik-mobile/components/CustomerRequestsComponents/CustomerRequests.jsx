@@ -214,9 +214,9 @@ const CustomerRequests = () => {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.backButtonContainer}>
+    { !isSearchStarted && <View style={styles.backButtonContainer}>
         <BackButton />
-      </View>
+      </View>}
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}

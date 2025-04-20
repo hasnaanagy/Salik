@@ -1,5 +1,18 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Image } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "expo-router";
 import { registerUser } from "../../redux/slices/authSlice";
@@ -59,7 +72,7 @@ export default function SignupForm() {
   };
 
   const handleSignUp = async () => {
-    if (Object.values(errors).some(error => error !== "")) return;
+    if (Object.values(errors).some((error) => error !== "")) return;
     try {
       const result = await dispatch(registerUser(formData));
       if (registerUser.fulfilled.match(result)) {
@@ -73,119 +86,137 @@ export default function SignupForm() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create an Account</Text>
-      
-      <View style={styles.inputContainer}>
-        <View style={styles.iconCircle}>
-          <Icon name="user" size={20} color="#FFB800" />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name"
-          value={formData.fullName}
-          onChangeText={(text) => {
-            setFormData({ ...formData, fullName: text });
-            validateField("fullName", text);
-          }}
-        />
-      </View>
-      {errors.fullName ? <Text style={styles.error}>{errors.fullName}</Text> : null}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Create an Account</Text>
 
-      <View style={styles.inputContainer}>
-        <View style={styles.iconCircle}>
-          <Icon name="phone" size={20} color="#FFB800" />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Phone number"
-          keyboardType="phone-pad"
-          value={formData.phone}
-          onChangeText={(text) => {
-            setFormData({ ...formData, phone: text });
-            validateField("phone", text);
-          }}
-        />
-      </View>
-      {errors.phone ? <Text style={styles.error}>{errors.phone}</Text> : null}
+            <View style={styles.inputContainer}>
+              <View style={styles.iconCircle}>
+                <Icon name="user" size={20} color="#FFB800" />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, fullName: text });
+                  validateField("fullName", text);
+                }}
+              />
+            </View>
+            {errors.fullName ? <Text style={styles.error}>{errors.fullName}</Text> : null}
 
-      <View style={styles.inputContainer}>
-        <View style={styles.iconCircle}>
-          <Icon 
-            name={secureText ? "eye-off" : "eye"} 
-            size={20} 
-            color="#FFB800"
-            onPress={() => setSecureText(!secureText)}
-          />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry={secureText}
-          value={formData.password}
-          onChangeText={(text) => {
-            setFormData({ ...formData, password: text });
-            validateField("password", text);
-          }}
-        />
-      </View>
-      {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
+            <View style={styles.inputContainer}>
+              <View style={styles.iconCircle}>
+                <Icon name="phone" size={20} color="#FFB800" />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Phone number"
+                keyboardType="phone-pad"
+                value={formData.phone}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, phone: text });
+                  validateField("phone", text);
+                }}
+              />
+            </View>
+            {errors.phone ? <Text style={styles.error}>{errors.phone}</Text> : null}
 
-      <View style={styles.inputContainer}>
-        <View style={styles.iconCircle}>
-          <Icon 
-            name={secureConfirmText ? "eye-off" : "eye"} 
-            size={20} 
-            color="#FFB800"
-            onPress={() => setSecureConfirmText(!secureConfirmText)}
-          />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          secureTextEntry={secureConfirmText}
-          value={formData.confirmPassword}
-          onChangeText={(text) => {
-            setFormData({ ...formData, confirmPassword: text });
-            validateField("confirmPassword", text);
-          }}
-        />
-      </View>
-      {errors.confirmPassword ? <Text style={styles.error}>{errors.confirmPassword}</Text> : null}
+            <View style={styles.inputContainer}>
+              <View style={styles.iconCircle}>
+                <Icon
+                  name={secureText ? "eye-off" : "eye"}
+                  size={20}
+                  color="#FFB800"
+                  onPress={() => setSecureText(!secureText)}
+                />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry={secureText}
+                value={formData.password}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, password: text });
+                  validateField("password", text);
+                }}
+              />
+            </View>
+            {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
 
-      <View style={styles.inputContainer}>
-        <View style={styles.iconCircle}>
-          <Icon name="credit-card" size={20} color="#FFB800" />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="National ID"
-          keyboardType="numeric"
-          value={formData.nationalId}
-          onChangeText={(text) => {
-            setFormData({ ...formData, nationalId: text });
-            validateField("nationalId", text);
-          }}
-        />
-      </View>
-      {errors.nationalId ? <Text style={styles.error}>{errors.nationalId}</Text> : null}
+            <View style={styles.inputContainer}>
+              <View style={styles.iconCircle}>
+                <Icon
+                  name={secureConfirmText ? "eye-off" : "eye"}
+                  size={20}
+                  color="#FFB800"
+                  onPress={() => setSecureConfirmText(!secureConfirmText)}
+                />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                secureTextEntry={secureConfirmText}
+                value={formData.confirmPassword}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, confirmPassword: text });
+                  validateField("confirmPassword", text);
+                }}
+              />
+            </View>
+            {errors.confirmPassword ? <Text style={styles.error}>{errors.confirmPassword}</Text> : null}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#FFB800" style={styles.loading} />
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-      )}
-      {error && <Text style={styles.error}>{error}</Text>}
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={styles.link}> <Text style={styles.linkText}>Already have an account?</Text> Sign in</Text>
-      </TouchableOpacity>
-    </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.iconCircle}>
+                <Icon name="credit-card" size={20} color="#FFB800" />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="National ID"
+                keyboardType="numeric"
+                value={formData.nationalId}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, nationalId: text });
+                  validateField("nationalId", text);
+                }}
+              />
+            </View>
+            {errors.nationalId ? <Text style={styles.error}>{errors.nationalId}</Text> : null}
+
+            {loading ? (
+              <ActivityIndicator size="large" color="#FFB800" style={styles.loading} />
+            ) : (
+              <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+                <Text style={styles.buttonText}>Sign Up</Text>
+              </TouchableOpacity>
+            )}
+            {error && <Text style={styles.error}>{error}</Text>}
+            <TouchableOpacity onPress={() => router.push("/login")}>
+              <Text style={styles.link}>
+                <Text style={styles.linkText}>Already have an account?</Text> Sign in
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F6F5",
+    paddingVertical: 20,
+  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -239,7 +270,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#FFB800",
     paddingVertical: 15,
-    width: "100%",
+    width: "200", // Increased width to 80% of the screen
     alignItems: "center",
     borderRadius: 25,
     marginTop: 20,
@@ -248,6 +279,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    alignSelf: "center", // Center the button horizontally
   },
   buttonText: {
     color: "white",
@@ -262,7 +294,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   linkText: {
-    color:"black",
+    color: "black",
   },
   error: {
     color: "#FF4444",

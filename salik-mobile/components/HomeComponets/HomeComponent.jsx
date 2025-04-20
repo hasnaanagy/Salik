@@ -14,12 +14,13 @@ import SearchBar from '../../components/HomeComponets/SearchBar';
 import RecentrlySearched from './RecentrlySearched';
 import Services from './Services';
 import Slider from './Slider';
+import { useRouter } from 'expo-router';
 
 const HomeComponent = () => {
   const { user, error, loading } = useSelector((state) => state.auth);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-
+  const router = useRouter();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
@@ -72,7 +73,7 @@ const HomeComponent = () => {
       {/* ✅ Chat Button */}
       <TouchableOpacity
         style={styles.chatButton}
-        onPress={() => navigation.navigate('ChatInterface')}
+        onPress={() => router.push('/ChatInterface')}
       >
         <Text style={styles.chatButtonText}>💬</Text>
       </TouchableOpacity>
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   },
   chatButton: {
     position: 'absolute',
-    bottom: 90,
+    bottom: Platform.OS === 'ios' ? 125 : 90,
     right: 30,
     backgroundColor: '#FFB800',
     padding: 14,

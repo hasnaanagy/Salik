@@ -16,10 +16,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Animatable from "react-native-animatable";
+import { useRouter } from "expo-router";
 import { getChatResponse } from "../api/chatbot";
 import ServiceData from "../Service.json";
 
 const ChatInterface = () => {
+  const router = useRouter();
   const [messages, setMessages] = useState([
     {
       text: "مرحبًا! أنا مساعد سالك الذكي. كيف يمكنني مساعدتك اليوم؟",
@@ -75,7 +77,6 @@ const ChatInterface = () => {
     handleSend(question);
   };
 
-  // Only showing the relevant part that needs to be updated
   const handleSend = async (message = null) => {
     const textToSend = message || inputText.trim();
     if (!textToSend) return;
@@ -97,7 +98,6 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      // This will now first check for static responses, then use GPT-4 if needed
       const response = await getChatResponse(textToSend);
       if (response) {
         const newBotMessage = {
@@ -170,6 +170,11 @@ const ChatInterface = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+
       <ScrollView
         ref={scrollViewRef}
         style={styles.messagesContainer}
@@ -279,8 +284,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
+    marginBottom: Platform.OS === "ios" ? 30 : 0,
+  },
+  backButton: {
+    position: "absolute",
+    top: 60,
+    left: 15,
+    zIndex: 10,
   },
   messagesContainer: {
+    marginTop: Platform.OS === "ios" ? 70 : 0,
     flex: 1,
   },
   messagesContent: {

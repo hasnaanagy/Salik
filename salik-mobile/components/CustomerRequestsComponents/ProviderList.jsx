@@ -18,11 +18,14 @@ const ProviderList = ({
 
   return (
     <View style={styles.providersContainer}>
-      <TouchableOpacity style={styles.backButton} onPress={onBackToSearch}>
-        <Ionicons name="arrow-back" size={24} color="#FFB800" />
-        <CustomText style={styles.backButtonText}>Back to Search</CustomText>
-      </TouchableOpacity>
-      <CustomText style={styles.providersTitle}>Available Providers</CustomText>
+      {/* Back Arrow and Title in One Row */}
+      <View style={styles.headerRow}>
+        <TouchableOpacity style={styles.backButton} onPress={onBackToSearch}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+        <CustomText style={styles.providersTitle}>Available Providers</CustomText>
+      </View>
+
       {nearbyProviders.map((provider) => (
         <ProviderCard
           key={provider._id}
@@ -40,25 +43,24 @@ const ProviderList = ({
 const styles = StyleSheet.create({
   providersContainer: {
     width: "100%",
-    marginTop: height * 0.03,
+    marginTop: -30,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: height * 0.02,
+    justifyContent: "flex-start", // Align items to the start
   },
   providersTitle: {
     fontSize: width * 0.05,
     fontWeight: "bold",
     color: "#212529",
-    marginBottom: height * 0.02,
-    textAlign: "center",
+    marginLeft: 10, // Add spacing between the back arrow and the text
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    marginBottom: 10,
-  },
-  backButtonText: {
-    marginLeft: 10,
-    color: "#FFB800",
-    fontSize: 16,
   },
 });
 

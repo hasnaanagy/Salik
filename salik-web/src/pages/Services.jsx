@@ -1,5 +1,5 @@
 import React from "react";
-import ServicesProvider from "../components/ServicesProviderComponents/servicesProvider";
+import ServicesProvider from "../components/ServicesProviderComponents/ServicesProvider";
 
 function Services() {
   return (

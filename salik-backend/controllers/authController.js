@@ -362,9 +362,9 @@ exports.deleteUser = async (req, res) => {
       .json({ message: "Error deleting user", error: error.message });
   }
 };
-// async function generatePassword() {
-//   const hashedPassword = await bcrypt.hash("Admin@12345", 10);
-//   console.log(hashedPassword,"hello");
-// }
+async function generatePassword() {
+  const hashedPassword = await bcrypt.hash("Admin@12345", 10);
+  console.log(hashedPassword,"hello");
+}
 
-// generatePassword();
+generatePassword();

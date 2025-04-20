@@ -7,6 +7,7 @@ export const postServiceData = createAsyncThunk(
     { serviceType, location, addressOnly, workingDays, workingHours },
     { rejectWithValue }
   ) => {
+
     try {
       const response = await api.create("service", {
         serviceType,

@@ -114,7 +114,6 @@ const ReviewList = () => {
     )}
   />;
   return (
-    console.log(providerId),
     (
       <View style={styles.container}>
         <TouchableOpacity
@@ -172,7 +171,7 @@ const ReviewList = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flex: 1, padding: 20, },
   backButton: { position: "absolute", top: 23, left: 15, zIndex: 10 },
   title: {
     fontSize: 22,
