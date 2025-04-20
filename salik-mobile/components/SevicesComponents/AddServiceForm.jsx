@@ -274,82 +274,16 @@ function AddServiceForm() {
   const isEditMode = params.mode === "edit" || !!params.serviceId;
 
   // Initialize form state, pre-filling with params if in edit mode
-  const [form, setForm] = useState(() => {
-    // Parse working hours from params
-    let startTime = new Date();
-    let endTime = new Date(new Date().setHours(new Date().getHours() + 8));
-
-    try {
-      if (params.workingHoursFrom) {
-        // Handle different time formats
-        if (params.workingHoursFrom.includes(":")) {
-          // Format: "10:00 AM"
-          const [time, period] = params.workingHoursFrom.split(" ");
-          const [hours, minutes] = time.split(":");
-
-          startTime = new Date();
-          let hour = parseInt(hours);
-
-          // Convert to 24-hour format if PM
-          if (period && period.toUpperCase() === "PM" && hour < 12) {
-            hour += 12;
-          } else if (period && period.toUpperCase() === "AM" && hour === 12) {
-            hour = 0;
-          }
-
-          startTime.setHours(hour, parseInt(minutes), 0);
-        } else {
-          // Try ISO format
-          startTime = new Date(params.workingHoursFrom);
-        }
-
-        // Check if valid date
-        if (isNaN(startTime.getTime())) {
-          console.log("Invalid start time, using default");
-          startTime = new Date();
-        }
-      }
-
-      if (params.workingHoursTo) {
-        // Handle different time formats
-        if (params.workingHoursTo.includes(":")) {
-          // Format: "06:00 PM"
-          const [time, period] = params.workingHoursTo.split(" ");
-          const [hours, minutes] = time.split(":");
-
-          endTime = new Date();
-          let hour = parseInt(hours);
-
-          // Convert to 24-hour format if PM
-          if (period && period.toUpperCase() === "PM" && hour < 12) {
-            hour += 12;
-          } else if (period && period.toUpperCase() === "AM" && hour === 12) {
-            hour = 0;
-          }
-
-          endTime.setHours(hour, parseInt(minutes), 0);
-        } else {
-          // Try ISO format
-          endTime = new Date(params.workingHoursTo);
-        }
-
-        // Check if valid date
-        if (isNaN(endTime.getTime())) {
-          console.log("Invalid end time, using default");
-          endTime = new Date(new Date().setHours(new Date().getHours() + 8));
-        }
-      }
-    } catch (error) {
-      console.error("Error parsing dates:", error);
-    }
-
-    return {
-      location: params.location || "",
-      serviceType: params.serviceType || "",
-      workingDays: params.workingDays ? JSON.parse(params.workingDays) : [],
-      startTime,
-      endTime,
-    };
+  const [form, setForm] = useState({
+    location: params.location || "",
+    serviceType: params.serviceType || "",
+    workingDays: params.workingDays ? JSON.parse(params.workingDays) : [],
+    startTime: params.workingHoursFrom
+      ? new Date(params.workingHoursFrom)
+      : new Date(),
+    endTime: params.workingHoursTo
+      ? new Date(params.workingHoursTo)
+      : new Date(new Date().setHours(new Date().getHours() + 8)),
   });
 
   const [showStartTime, setShowStartTime] = useState(false);
@@ -359,15 +293,6 @@ function AddServiceForm() {
   // Clear success state on mount to prevent stale success triggers
   useEffect(() => {
     console.log("AddServiceForm mounted, params:", params);
-
-    // If in edit mode, log the received working hours for debugging
-    if (isEditMode) {
-      console.log("Edit mode working hours:", {
-        from: params.workingHoursFrom,
-        to: params.workingHoursTo,
-      });
-    }
-
     dispatch(resetSuccess());
     setHasShownSuccess(false);
     setAlertVisible(false);
@@ -405,29 +330,25 @@ function AddServiceForm() {
     if (!validateForm()) return;
     setHasShownSuccess(false);
 
-    // Format times for API
-    const formattedStartTime = form.startTime.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const formattedEndTime = form.endTime.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
     const serviceData = {
       serviceType: form.serviceType,
       location: {
         description: form.location.trim(),
       },
       addressOnly: form.location.trim(),
+
       workingDays: form.workingDays,
       workingHours: {
-        from: formattedStartTime,
-        to: formattedEndTime,
+        from: form.startTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        to: form.endTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
       },
     };
 

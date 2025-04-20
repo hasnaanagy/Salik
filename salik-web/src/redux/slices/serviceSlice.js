@@ -41,10 +41,8 @@ export const getProviderServices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.getAll("service");
-      console.log("Response data:", response);
       return response;
     } catch (error) {
-      console.error("Error response:", error.response); // Debugging
       const errorMessage =
         error.response?.data?.message ||
         error.message ||

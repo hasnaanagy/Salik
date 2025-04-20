@@ -75,19 +75,6 @@ const Services = () => {
       return;
     }
 
-    // Check document verification status for providers
-    if (user?.type === "provider") {
-      const hasDocuments = user?.nationalIdImage && user?.licenseImage;
-      const areDocumentsVerified = 
-        user?.nationalIdStatus === "verified" && 
-        user?.licenseStatus === "verified";
-
-      if (!hasDocuments || !areDocumentsVerified) {
-        router.push("license");
-        return;
-      }
-    }
-
     // If all checks pass, proceed with navigation
     navigationAction();
   };
@@ -100,6 +87,17 @@ const Services = () => {
       onPress: () => {
         handlePress(() => {
           if (user?.type === "provider") {
+            // Check document verification status for providers
+            const hasDocuments = user?.nationalIdImage && user?.licenseImage;
+            const areDocumentsVerified =
+              user?.nationalIdStatus === "verified" &&
+              user?.licenseStatus === "verified";
+
+            if (!hasDocuments || !areDocumentsVerified) {
+              router.push("license");
+              return;
+            }
+
             router.push("addTrip");
           } else {
             router.push("search");

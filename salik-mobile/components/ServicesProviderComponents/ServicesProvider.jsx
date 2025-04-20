@@ -17,6 +17,7 @@ import {
   getProviderServices,
   deleteService,
 } from "../../redux/slices/ServiceSlice";
+import BackButton from "../SevicesComponents/BackButton";
 
 const { width, height } = Dimensions.get("window");
 
@@ -40,9 +41,7 @@ function ServicesProvider() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            // 1. Dispatch the delete action
             await dispatch(deleteService(serviceId));
-            // 2. Dispatch action to fetch the updated list, triggering a re-render
             await dispatch(getProviderServices());
           },
         },
@@ -59,13 +58,9 @@ function ServicesProvider() {
         {
           text: "Edit",
           onPress: () => {
-            console.log("Navigating to edit service:", item._id);
-
-            // Format the time strings properly for the form
             let fromTime = item.workingHours?.from || "";
             let toTime = item.workingHours?.to || "";
 
-            // If the time is in ISO format, convert it to a proper time string
             if (fromTime.includes("T")) {
               fromTime = new Date(fromTime).toISOString();
             }
@@ -108,14 +103,11 @@ function ServicesProvider() {
         return date.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
-          hour12: true,
+          hour12: false,
         });
       }
       const [hours, minutes] = timeString.split(":");
-      const hour = parseInt(hours);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      const formattedHour = hour % 12 || 12;
-      return `${formattedHour}:${minutes} ${ampm}`;
+      return `${hours}:${minutes}`;
     } catch (error) {
       return timeString;
     }
@@ -125,6 +117,17 @@ function ServicesProvider() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#f5c518" />
+      </View>
+    );
+  }
+
+  if (error || !service?.services?.length) {
+    return (
+      <View style={styles.noServicesContainer}>
+        <BackButton  />
+        <CustomText style={styles.noServicesText}>
+          You have no services yet
+        </CustomText>
       </View>
     );
   }
@@ -219,13 +222,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
     padding: 16,
-    marginTop: Platform.OS === "ios" ? 50 : 0, // Adjusted for iOS
+    marginTop: Platform.OS === "ios" ? 50 : 0, 
 
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  noServicesContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+        marginTop: Platform.OS === "ios" ? 50 : 0, 
+
+  },
+  noServicesText: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
   },
   header: {
     marginTop: Platform.OS === "ios" ? 10 : 10, // Increased top margin to make room for back button
