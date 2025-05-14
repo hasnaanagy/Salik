@@ -51,11 +51,26 @@ export const updateUser = createAsyncThunk(
 );
 
 
+export const deleteUser = createAsyncThunk(
+  "auth/deleteUser",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const data = await apiService.delete(`auth/users`, userId);
+      console.log( data);
+      return data; 
+    } catch (error) {
+      console.log(error.response?.data?.message)
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
+    }
+  }
+);
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   localStorage.removeItem("token");
   return null;
 });
+
+
 
 // Auth Slice
 const authSlice = createSlice({
@@ -110,6 +125,17 @@ const authSlice = createSlice({
         state.user = action.payload; // Update with full user object
       })
       .addCase(updateUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

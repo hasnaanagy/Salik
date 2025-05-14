@@ -7,6 +7,7 @@ import { Box } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import UserProfile from "../components/UserProfile";
 import { useSelector } from "react-redux";
+import Users from "../pages/Users";
 
 /**
  * Simple placeholder component for routes that don't have their own pages yet
@@ -57,11 +58,7 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />
           <Route path="/documents" element={<Documents />} />
-          <Route path="/users" element={<PlaceholderPage title="Users" />} />
-          <Route path="/rides" element={<PlaceholderPage title="Rides" />} />
-          <Route path="/services" element={<PlaceholderPage title="Services" />} />
-          <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
-          <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+          <Route path="/users" element={<Users />} />
         </Routes>
       </Box>
     </Box>

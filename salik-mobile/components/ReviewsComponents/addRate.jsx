@@ -18,12 +18,15 @@ import appColors from "../../constants/colors.js";
 
 const AddRate = ({
   onClose,
+  onSubmitReview, // Add this prop
   initialRating = 0,
   initialReviewText = "",
   mode = "add",
-  providerId, // ⬅️ إضافة providerId
-  reviewId, // ⬅️ إضافة reviewId عند التعديل
+  providerId,
+  reviewId,
+  serviceType,
 }) => {
+  console.log("hhhhhhhhhhhhhhhhhhh:", serviceType, providerId);
   const dispatch = useDispatch();
   const [rating, setRating] = useState(initialRating);
   const [reviewText, setReviewText] = useState(initialReviewText);
@@ -32,19 +35,31 @@ const AddRate = ({
     setRating(index + 1);
   };
 
+  // Update the handleSubmit function
   const handleSubmit = async () => {
-    if (mode === "edit") {
-      await dispatch(
-        updateReviewAction({ reviewId, rating, comment: reviewText })
-      );
-    } else {
-      await dispatch(
-        addReviewsAction({ providerId, rating, comment: reviewText })
-      );
+    try {
+      if (mode === "edit") {
+        await dispatch(
+          updateReviewAction({ reviewId, rating, comment: reviewText })
+        );
+      } else {
+        await dispatch(
+          addReviewsAction({
+            providerId,
+            rating,
+            comment: reviewText,
+            serviceType,
+          })
+        );
+      }
+      await dispatch(getAllReviewsAction({ providerId, serviceType }));
+      if (onSubmitReview) {
+        await onSubmitReview(); // Call the callback after successful review submission
+      }
+      onClose();
+    } catch (error) {
+      console.error("Error submitting review:", error);
     }
-    dispatch(getAllReviewsAction(providerId));
-
-    onClose(); // ⬅️ إغلاق المودال بعد الإرسال
   };
 
   return (

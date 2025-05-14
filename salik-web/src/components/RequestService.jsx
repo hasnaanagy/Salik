@@ -147,22 +147,18 @@ export const RequestService = ({
     setLoading(true);
     try {
       const type = serviceType === "Mechanic" ? "mechanic" : "fuel";
-      await dispatch(
+      const result = await dispatch(
         getAllFilterServices({
           latitude: location.lat,
           longitude: location.lng,
           serviceType: type,
         })
-      ).unwrap();
+      ).unwrap(); // Wait for the action to complete
 
-      if (services && services.length > 0 && onProvidersFound) {
-        onProvidersFound(services); // Pass the services to the parent
-      } else {
-        setAlert({
-          open: true,
-          message: "No nearby service providers found.",
-          severity: "info",
-        });
+      if (result && result.length > 0) {
+        if (onProvidersFound) {
+          onProvidersFound(result); // Pass the services to the parent
+        }
       }
     } catch (error) {
       console.error("Error fetching nearby providers:", error);

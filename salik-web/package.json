@@ -19,6 +19,7 @@
     "@mui/icons-material": "^6.4.4",
     "@mui/joy": "^5.0.0-beta.51",
     "@mui/material": "^6.4.3",
+    "@react-google-maps/api": "^2.20.6",
     "@reduxjs/toolkit": "^2.5.1",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
@@ -43,6 +44,7 @@
     "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.15",
     "swiper": "^11.2.5",
+    "use-places-autocomplete": "^4.0.1",
     "yup": "^1.6.1"
   },
   "devDependencies": {

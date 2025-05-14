@@ -1,56 +1,66 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, useAnimatedValue } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { icons } from '../../constants/icons';
 import { Text, PlatformPressable } from '@react-navigation/elements';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@react-navigation/native';
-import Animated, { useSharedValue, withSpring, interpolate ,useAnimatedStyle} from 'react-native-reanimated';
-const TabBarButton = ({onPress,onLongPress,label,route,isFocused}) => {
-const { colors } = useTheme();
-const scale=useSharedValue(0);
-useEffect(()=>{
-scale.value=withSpring(
-  typeof isFocused==='boolean'? (isFocused?1:0):isFocused,
-  {duration:350}
-);
-},[scale,isFocused])
-const animatedTextStyle=useAnimatedStyle(()=>{
-  const opacity=interpolate(scale.value,[0,1],[1,0]);
-  return {opacity};
-})
-const animatedIconStyle=useAnimatedStyle(()=>{
-  const scaleValue=interpolate(scale.value,[0,1],[1,1.2]);
-  const top=interpolate(scale.value,[0,1],[0,9]);
-  return{
-    transform:[{
-      scale:scaleValue,
-    }],top
-  }
-})
-    return (
-        <PlatformPressable
-        android_ripple={{ color: 'transparent' }}
-        onPress={onPress}
-        onLongPress={onLongPress}
-        style={styles.tabBarItem}
-      >
-        <Animated.View style={animatedIconStyle}>
-        {icons[route.name]({ color: isFocused ? "#fff" : colors.text })}
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+
+const TabBarButton = ({ onPress, onLongPress, label, route, isFocused, isDrawerOpen }) => {
+  const { colors } = useTheme();
+
+
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: 1 }], 
+    };
+  });
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return { opacity: 1 }; 
+  });
+
+  return (
+    <PlatformPressable
+      android_ripple={{ color: 'transparent' }}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={styles.tabBarItem}
+    >
+      <View style={styles.iconTextContainer}>
+        <Animated.View style={[animatedIconStyle, styles.icon]}>
+          {icons[route.name]({ color: '#000' })}
         </Animated.View>
-        <Animated.Text style={[{ color: isFocused ? "#fff" : colors.text },animatedTextStyle]} >
+        <Animated.Text style={[styles.text, animatedTextStyle]}>
           {label}
         </Animated.Text>
-      </PlatformPressable>
-    );
-}
+      </View>
+    </PlatformPressable>
+  );
+};
 
 const styles = StyleSheet.create({
-    tabBarItem:{
-        flex:1,
-        justifyContent:'center',
-        alignItems:'center',
-      
-    }
-})
+  tabBarItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconTextContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#000', 
+    fontSize: 12, 
+    marginTop: 2, 
+  }
+});
 
 export default TabBarButton;

@@ -8,6 +8,10 @@ import {
   Button,
   CircularProgress,
   Badge,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
@@ -26,12 +30,12 @@ const LicenceForm = () => {
   const [selectedNationalIdImage, setSelectedNationalIdImage] = useState(null);
   const [selectedLicenseImage, setSelectedLicenseImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [dialog, setDialog] = useState({ open: false, title: "", message: "" });
 
   useEffect(() => {
     dispatch(getUser());
   }, [dispatch]);
 
-  // Set initial state from user data (Cloudinary URLs)
   useEffect(() => {
     if (user?.nationalIdImage) setSelectedNationalIdImage(user.nationalIdImage);
     if (user?.licenseImage) setSelectedLicenseImage(user.licenseImage);
@@ -40,7 +44,7 @@ const LicenceForm = () => {
   const uploadToCloudinary = async (file) => {
     if (!file || typeof file === "string") {
       console.log("Skipping upload: file is", file);
-      return file; // Return existing Cloudinary URL or null
+      return file;
     }
 
     console.log("Uploading file to Cloudinary:", file.name, file.type, file.size);
@@ -86,7 +90,11 @@ const LicenceForm = () => {
       if ((!nationalIdUrl && !licenseUrl) && (!selectedNationalIdImage && !selectedLicenseImage)) {
         console.log("No new images to upload");
         setUploading(false);
-        alert("❌ No new images selected!");
+        setDialog({
+          open: true,
+          title: "No Images Selected",
+          message: "❌ No new images selected!",
+        });
         return;
       }
 
@@ -100,15 +108,22 @@ const LicenceForm = () => {
       console.log("Update result:", result);
       await dispatch(getUser()).unwrap();
 
-      // Clear preview images after successful upload
       dispatch(clearImages());
 
       setUploading(false);
-      alert("✅ Images uploaded successfully!");
+      setDialog({
+        open: true,
+        title: "Success",
+        message: " Images uploaded successfully!",
+      });
     } catch (error) {
       console.error("❌ Upload failed:", error.message || error);
       setUploading(false);
-      alert(`❌ Upload failed: ${error.message || "Unknown error"}`);
+      setDialog({
+        open: true,
+        title: "Upload Failed",
+        message: ` Upload failed: ${error.message || "Unknown error"}`,
+      });
     }
   };
 
@@ -162,10 +177,10 @@ const LicenceForm = () => {
               label="National ID"
               setImage={(file) => {
                 console.log("Setting National ID file:", file);
-                setSelectedNationalIdImage(file); // Store File object
-                dispatch(setImage({ type: "nationalIdImage", url: file ? URL.createObjectURL(file) : null })); // Store preview URL
+                setSelectedNationalIdImage(file);
+                dispatch(setImage({ type: "nationalIdImage", url: file ? URL.createObjectURL(file) : null }));
               }}
-              existingImage={user?.nationalIdImage || nationalIdImage} // Show server URL or preview
+              existingImage={user?.nationalIdImage || nationalIdImage}
             />
           )}
           {user?.nationalIdStatus && (
@@ -190,10 +205,10 @@ const LicenceForm = () => {
               label="License Photo"
               setImage={(file) => {
                 console.log("Setting License file:", file);
-                setSelectedLicenseImage(file); // Store File object
-                dispatch(setImage({ type: "licenseImage", url: file ? URL.createObjectURL(file) : null })); // Store preview URL
+                setSelectedLicenseImage(file);
+                dispatch(setImage({ type: "licenseImage", url: file ? URL.createObjectURL(file) : null }));
               }}
-              existingImage={user?.licenseImage || licenseImage} // Show server URL or preview
+              existingImage={user?.licenseImage || licenseImage}
             />
           )}
           {user?.licenseStatus && (
@@ -229,6 +244,62 @@ const LicenceForm = () => {
       >
         Next
       </Button>
+
+      {/* Dialog for alerts */}
+      <Dialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            padding: '20px',
+            backgroundColor: '#fff8e1', // Light complementary shade of #ffb800
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '1.5rem',
+            color: '#ffb800',
+            textAlign: 'center',
+          }}
+        >
+          {dialog.title}
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            textAlign: 'center',
+            color: '#333',
+            fontSize: '1rem',
+            marginTop: '10px',
+          }}
+        >
+          <Typography>{dialog.message}</Typography>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: 'center',
+            marginTop: '10px',
+          }}
+        >
+          <Button
+            onClick={() => setDialog({ ...dialog, open: false })}
+            variant="contained"
+            sx={{
+              backgroundColor: '#ffb800',
+              color: '#fff',
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: '#e6a700',
+              },
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

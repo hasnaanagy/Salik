@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser, updateUser } from "../../redux/slices/authSlice";
 import { useRouter } from "expo-router";
+import BackButton from "../SharedComponents/BackButton";
 
 export default function EditProfileForm({ navigation }) {
   const router = useRouter();
@@ -122,6 +123,7 @@ export default function EditProfileForm({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <Text style={styles.title}>Hi, {user?.fullName}</Text>
       <Text style={styles.subtitle}>Manage your info to make Salik work better for you</Text>
       <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
@@ -168,6 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 5,
+    marginTop: 30,
   },
   subtitle: {
     fontSize: 16,

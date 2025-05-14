@@ -15,7 +15,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const rideBookingsRoutes = require("./routes/rideBookingRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const serviceReviewRoutes = require("./routes/serviceReviewRoutes"); // Add this line
-
+const adminRoutes = require("./routes/adminRoutes");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*" } });
@@ -40,7 +40,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/rideBooking", rideBookingsRoutes);
 app.use("/api/request", requestRoutes(io));
 app.use("/api/serviceReviews", serviceReviewRoutes); // Add this line
-
+app.use("/api/admin", adminRoutes);
 // WebSocket Handling
 io.on("connection", (socket) => {
   console.log("A provider connected:", socket.id);

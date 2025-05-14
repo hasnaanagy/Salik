@@ -12,7 +12,7 @@ const store = configureStore({
   reducer: {
     auth: authReducer,
     rideService: RideReducer,
-    addServices: ServiceReducer,
+    service: ServiceReducer,
     images: licenseReducer,
     reviews: reviewReducer,
     location: locationReducer,

@@ -17,6 +17,7 @@ import {
   Tooltip,
   Button,
   Avatar,
+  Pagination,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -40,6 +41,10 @@ const ActivityComponent = () => {
     canceled: [],
   });
   const [showTabsSidebar, setShowTabsSidebar] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const ridesPerPage = 3; // Number of rides per page
 
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -87,11 +92,25 @@ const ActivityComponent = () => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    setCurrentPage(1); // Reset to the first page when switching tabs
   };
 
-  // Toggle sidebar visibility
-  const toggleTabsSidebar = () => {
-    setShowTabsSidebar(!showTabsSidebar);
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  // Get the rides for the current page
+  const getPaginatedRides = () => {
+    const currentRides =
+      activeTab === 0
+        ? filteredRides.upcoming
+        : activeTab === 1
+        ? filteredRides.completed
+        : filteredRides.canceled;
+
+    const startIndex = (currentPage - 1) * ridesPerPage;
+    const endIndex = startIndex + ridesPerPage;
+    return currentRides.slice(startIndex, endIndex);
   };
 
   // Render content based on active tab
@@ -169,7 +188,7 @@ const ActivityComponent = () => {
       );
     }
 
-    return currentRides.map((ride) => <Cards key={ride._id} ride={ride} />);
+    return getPaginatedRides().map((ride) => <Cards key={ride._id} ride={ride} />);
   };
 
   // Tab colors
@@ -208,7 +227,7 @@ const ActivityComponent = () => {
           {/* Filter toggle button */}
           <Tooltip title="Filter rides">
             <IconButton
-              onClick={toggleTabsSidebar}
+              onClick={() => setShowTabsSidebar(!showTabsSidebar)}
               sx={{
                 bgcolor: showTabsSidebar
                   ? "rgba(0,0,0,0.08)"
@@ -225,12 +244,32 @@ const ActivityComponent = () => {
       </Box>
 
       <Grid container spacing={3}>
-        {/* Main content area - takes full width when filter is hidden, 9/12 when visible */}
+        {/* Main content area */}
         <Grid item xs={12} md={showTabsSidebar ? 9 : 12}>
           {renderContent()}
+
+          {/* Pagination */}
+          {filteredRides[activeTab === 0 ? "upcoming" : activeTab === 1 ? "completed" : "canceled"].length > ridesPerPage && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+              <Pagination
+                count={Math.ceil(
+                  filteredRides[
+                    activeTab === 0
+                      ? "upcoming"
+                      : activeTab === 1
+                      ? "completed"
+                      : "canceled"
+                  ].length / ridesPerPage
+                )}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+              />
+            </Box>
+          )}
         </Grid>
 
-        {/* Right sidebar with vertical tabs - only shown when filter is toggled */}
+        {/* Right sidebar */}
         {showTabsSidebar && (
           <Grid item xs={12} md={3}>
             <Paper

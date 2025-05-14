@@ -75,7 +75,7 @@ const Services = () => {
       return;
     }
 
-    // If token exists, proceed with the navigation action
+    // If all checks pass, proceed with navigation
     navigationAction();
   };
 
@@ -87,11 +87,18 @@ const Services = () => {
       onPress: () => {
         handlePress(() => {
           if (user?.type === "provider") {
-            if (user?.nationalIdImage === "" && user?.licenseImage === "") {
+            // Check document verification status for providers
+            const hasDocuments = user?.nationalIdImage && user?.licenseImage;
+            const areDocumentsVerified =
+              user?.nationalIdStatus === "verified" &&
+              user?.licenseStatus === "verified";
+
+            if (!hasDocuments || !areDocumentsVerified) {
               router.push("license");
-            } else {
-              router.push("addTrip");
+              return;
             }
+
+            router.push("addTrip");
           } else {
             router.push("search");
           }
